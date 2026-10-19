@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    NIVA UNIVERSAL GIFT EDITOR
    ========================================================= */
 "use strict";
@@ -911,6 +911,21 @@ function bindStaticEvents() {
       const gift = window.NIVAEditor.getGiftData();
       const photos = window.NIVAEditor.getPhotos();
       const media = window.NIVAEditor.getMediaFiles();
+      // Prevent oversized gifts from exhausting browser and Render memory.
+      const totalMediaBytes =
+        photos.reduce((sum, photo) => sum + (photo.file?.size || 0), 0) +
+        media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
+
+      const MAX_TOTAL_MEDIA_BYTES = 20 * 1024 * 1024;
+
+      if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
+        throw new Error(
+          `Your selected media totals ${(totalMediaBytes / 1048576).toFixed(1)} MB. ` +
+          `The current hosting setup supports gifts with up to 20 MB of source media. ` +
+          `Please reduce the media size. Larger gifts need separate media storage.`
+        );
+      }
+
       const totalSteps = photos.length + media.length + 2;
       let step = 0;
 

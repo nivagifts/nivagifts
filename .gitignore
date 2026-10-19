@@ -31,3 +31,12 @@ docs/
 # Test
 coverage/
 .nyc_output/
+# Sensitive backups and database dumps
+backups/
+*.dump
+*.sql
+*.backup
+
+
+# Local editor backups
+*.bak
