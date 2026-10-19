@@ -51,7 +51,7 @@
       "type": "imageGallery",
       "required": false,
       "maxFiles": 20,
-      "maxSizeMB": 50,
+      "maxSizeMB": 150,
       "accept": "image/jpeg,image/png,image/webp,image/gif",
       "help": "Photos up to 50 MB each."
     },

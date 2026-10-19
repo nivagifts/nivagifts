@@ -49,7 +49,7 @@
       "type": "imageGallery",
       "required": false,
       "maxFiles": 10,
-      "maxSizeMB": 50,
+      "maxSizeMB": 150,
       "accept": "image/jpeg,image/png,image/webp",
       "help": "Photos up to 50 MB each. Shown 5 per gallery page."
     },
@@ -70,7 +70,7 @@
       "label": "Memory video",
       "type": "video",
       "required": false,
-      "maxSizeMB": 100,
+      "maxSizeMB": 150,
       "accept": "video/mp4,video/webm",
       "help": "A short video memory (MP4 or WebM). Max 100 MB."
     },

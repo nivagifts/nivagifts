@@ -4,7 +4,7 @@
 "use strict";
 
 const MAX_PREVIEW_IMAGE_SIZE = 1400;
-const MAX_ENVELOPE_BYTES = 150 * 1024 * 1024;
+const MAX_ENVELOPE_BYTES = 300 * 1024 * 1024;
 const DRAFT_KEY_PREFIX = "niva-draft-";
 const PREVIEW_KEY_PREFIX = "niva-preview-";
 
@@ -876,7 +876,7 @@ function bindStaticEvents() {
 
     const size = encoder.encode(JSON.stringify(envelope)).length;
     if (size > MAX_ENVELOPE_BYTES) {
-      throw new Error(`Gift is ${(size / 1048576).toFixed(1)} MB — exceeds 150 MB limit.`);
+      throw new Error(`Gift is ${(size / 1048576).toFixed(1)} MB — exceeds 300 MB limit.`);
     }
     return envelope;
   }
