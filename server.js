@@ -83,7 +83,7 @@ app.use(helmet({
 }));
 
 /* ---------- 6. BODY PARSING — 200 MB for video/photo uploads ---------- */
-app.use(express.json({ limit: "400mb" }));
+app.use(express.json({ limit: "700mb" }));
 
 /* ---------- 7. SESSIONS ---------- */
 const PgSession = connectPgSimple(session);
@@ -325,8 +325,8 @@ const ALLOWED_TEMPLATE_IDS = new Set([
   "birthday-magic",
 ]);
 
-/* ═══ 150 MB envelope — video (100 MB) + photos (50 MB each) + overhead ═══ */
-const MAX_ENVELOPE_BYTES = 300 * 1024 * 1024;
+/* 512 MiB encrypted gift envelope limit */
+const MAX_ENVELOPE_BYTES = 512 * 1024 * 1024;
 
 function isValidPublicId(value) {
   return typeof value === "string" && /^[A-Za-z0-9_-]{20,80}$/.test(value);
@@ -588,3 +588,4 @@ async function shutdown() {
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
+

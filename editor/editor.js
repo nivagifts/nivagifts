@@ -1,10 +1,10 @@
-/* =========================================================
+﻿/* =========================================================
    NIVA UNIVERSAL GIFT EDITOR
    ========================================================= */
 "use strict";
 
 const MAX_PREVIEW_IMAGE_SIZE = 1400;
-const MAX_ENVELOPE_BYTES = 300 * 1024 * 1024;
+const MAX_ENVELOPE_BYTES = 512 * 1024 * 1024;
 const DRAFT_KEY_PREFIX = "niva-draft-";
 const PREVIEW_KEY_PREFIX = "niva-preview-";
 
@@ -121,7 +121,7 @@ function initLoginUI(onSuccess) {
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Signing in…";
+    submitBtn.textContent = "Signing inâ€¦";
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -171,7 +171,7 @@ function initLoginUI(onSuccess) {
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Creating account…";
+    submitBtn.textContent = "Creating accountâ€¦";
 
     try {
       const res = await fetch("/api/auth/register", {
@@ -204,7 +204,7 @@ async function loadConfig() {
   if (!res.ok) throw new Error(`Config not found: ${path} (HTTP ${res.status})`);
   const config = await res.json();
   if (!config.id || !config.name || !config.customization) {
-    throw new Error("Invalid config.json — missing id, name or customization.");
+    throw new Error("Invalid config.json â€” missing id, name or customization.");
   }
   return config;
 }
@@ -299,9 +299,9 @@ function renderField(key, spec) {
       const mb = spec.maxSizeMB || 50;
       wrap.innerHTML = `
         <label for="${id}" class="upload-box">
-          <span class="upload-icon" aria-hidden="true">＋</span>
+          <span class="upload-icon" aria-hidden="true">ï¼‹</span>
           <strong>${escapeHtml(spec.label || "Choose photos")}</strong>
-          <span>Up to ${spec.maxFiles || 20} images · ${mb} MB each</span>
+          <span>Up to ${spec.maxFiles || 20} images Â· ${mb} MB each</span>
           <input id="${id}" data-field-key="${key}" type="file"
                  accept="${escapeHtml(spec.accept || "image/*")}" multiple ${required}>
         </label>
@@ -323,9 +323,9 @@ function renderField(key, spec) {
       const mb = spec.maxSizeMB || 20;
       wrap.innerHTML = `
         <label for="${id}" class="upload-box">
-          <span class="upload-icon" aria-hidden="true">♫</span>
+          <span class="upload-icon" aria-hidden="true">â™«</span>
           <strong>${escapeHtml(spec.label || "Choose audio")}</strong>
-          <span>MP3, WAV or OGG · up to ${mb} MB</span>
+          <span>MP3, WAV or OGG Â· up to ${mb} MB</span>
           <input id="${id}" data-field-key="${key}" type="file"
                  accept="${escapeHtml(spec.accept || "audio/*")}" ${required}>
         </label>
@@ -338,9 +338,9 @@ function renderField(key, spec) {
       const mb = spec.maxSizeMB || 100;
       wrap.innerHTML = `
         <label for="${id}" class="upload-box">
-          <span class="upload-icon" aria-hidden="true">🎬</span>
+          <span class="upload-icon" aria-hidden="true">ðŸŽ¬</span>
           <strong>${escapeHtml(spec.label || "Choose video")}</strong>
-          <span>MP4 or WebM · up to ${mb} MB</span>
+          <span>MP4 or WebM Â· up to ${mb} MB</span>
           <input id="${id}" data-field-key="${key}" type="file"
                  accept="${escapeHtml(spec.accept || "video/*")}" ${required}>
         </label>
@@ -502,7 +502,7 @@ function renderFileGrid(key) {
       card.appendChild(vid);
     } else if (isAudio) {
       const icon = document.createElement("div");
-      icon.textContent = "♫";
+      icon.textContent = "â™«";
       icon.style.cssText = "font-size:32px;color:#ff9ab8;";
       card.appendChild(icon);
     } else {
@@ -515,7 +515,7 @@ function renderFileGrid(key) {
 
     const remove = document.createElement("button");
     remove.type = "button";
-    remove.textContent = "×";
+    remove.textContent = "Ã—";
     remove.setAttribute("aria-label", `Remove ${i + 1}`);
     remove.style.cssText = "position:absolute;top:4px;right:4px;width:24px;height:24px;border:0;border-radius:50%;background:rgba(9,8,14,.9);color:#fff;cursor:pointer;";
     remove.addEventListener("click", () => {
@@ -876,7 +876,7 @@ function bindStaticEvents() {
 
     const size = encoder.encode(JSON.stringify(envelope)).length;
     if (size > MAX_ENVELOPE_BYTES) {
-      throw new Error(`Gift is ${(size / 1048576).toFixed(1)} MB — exceeds 300 MB limit.`);
+      throw new Error(`Gift is ${(size / 1048576).toFixed(1)} MB â€” exceeds 300 MB limit.`);
     }
     return envelope;
   }
@@ -894,7 +894,7 @@ function bindStaticEvents() {
     const confirmation = confirmInput.value;
 
     if (password.length < 8 || password.length > 128) {
-      setStatus("Password must be 8–128 characters.", true);
+      setStatus("Password must be 8â€“128 characters.", true);
       passwordInput.focus();
       return;
     }
@@ -905,7 +905,7 @@ function bindStaticEvents() {
     }
 
     button.disabled = true;
-    setStatus("Preparing your gift…");
+    setStatus("Preparing your giftâ€¦");
 
     try {
       const gift = window.NIVAEditor.getGiftData();
@@ -916,7 +916,7 @@ function bindStaticEvents() {
 
       const photoPayload = [];
       for (const photo of photos) {
-        setProgress(`Compressing photo ${step + 1}/${photos.length}…`, (step / totalSteps) * 100);
+        setProgress(`Compressing photo ${step + 1}/${photos.length}â€¦`, (step / totalSteps) * 100);
         photoPayload.push({
           name: String(photo.name || "Memory").slice(0, 120),
           dataUrl: await fileAsCompressedDataUrl(photo.file),
@@ -926,17 +926,17 @@ function bindStaticEvents() {
 
       const mediaPayload = {};
       for (const item of media) {
-        setProgress(`Reading ${item.type}…`, (step / totalSteps) * 100);
+        setProgress(`Reading ${item.type}â€¦`, (step / totalSteps) * 100);
         try { mediaPayload[item.key] = await fileAsDataUrl(item.file); }
         catch (err) { mediaPayload[item.key] = ""; }
         step++;
       }
 
-      setProgress("Encrypting gift…", 90);
+      setProgress("Encrypting giftâ€¦", 90);
       const payload = { ...gift, ...mediaPayload, photos: photoPayload };
       const envelope = await encryptGift(payload, password);
 
-      setProgress("Uploading…", 95);
+      setProgress("Uploadingâ€¦", 95);
       const response = await fetch("/api/gifts", {
         method: "POST",
         credentials: "same-origin",
@@ -988,7 +988,7 @@ async function initEditor() {
 
     $("#templateName").textContent = context.config.name;
     $("#templateMeta").textContent =
-      `${(context.config.category || "").toUpperCase()} Collection · Customizable gift`;
+      `${(context.config.category || "").toUpperCase()} Collection Â· Customizable gift`;
 
     renderForm();
     loadDraft();
