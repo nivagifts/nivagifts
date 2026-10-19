@@ -82,7 +82,7 @@ app.use(helmet({
   strictTransportSecurity: IS_PRODUCTION ? undefined : false,
 }));
 
-/* ---------- 6. BODY PARSING — 200 MB for video/photo uploads ---------- */
+/* ---------- 6. BODY PARSING — 700 MB for video/photo uploads ---------- */
 app.use(express.json({ limit: "700mb" }));
 
 /* ---------- 7. SESSIONS ---------- */
@@ -588,4 +588,3 @@ async function shutdown() {
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
-

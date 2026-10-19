@@ -14,7 +14,6 @@
   <style>
     /* =========================================================
        NIVA HOMEPAGE — Premium Midnight Rose Theme
-       Mobile-first · smooth · native-app feel
        ========================================================= */
 
     /* ---------- 01. DESIGN TOKENS ---------- */
@@ -117,19 +116,6 @@
       transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
       position: relative;
       overflow: hidden;
-    }
-
-    .brand-logo::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, transparent 40%, rgba(232, 180, 184, 0.15), transparent 60%);
-      animation: logo-shine 4s ease-in-out infinite;
-    }
-
-    @keyframes logo-shine {
-      0%, 100% { transform: translateX(-100%); }
-      50%      { transform: translateX(100%); }
     }
 
     .brand-logo:active {
@@ -270,7 +256,6 @@
       border-color: var(--rose);
     }
 
-    /* Auth state in nav */
     .auth-nav {
       display: flex;
       align-items: center;
@@ -309,7 +294,6 @@
     }
 
     .auth-user.show { display: inline-flex; }
-
     .auth-user:active { transform: scale(0.95); }
 
     .auth-avatar {
@@ -380,7 +364,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Mobile slide-down menu */
     .nav-links {
       position: fixed;
       inset: 68px 0 auto 0;
@@ -440,7 +423,6 @@
       width: 100%;
     }
 
-    /* Desktop nav */
     @media (min-width: 900px) {
       .nav { height: 76px; }
       .brand-word { font-size: 1.55rem; }
@@ -475,9 +457,7 @@
 
       .nav-links > a:not(.btn)::after { display: none; }
 
-      .nav-links > a:not(.btn):hover {
-        color: var(--rose);
-      }
+      .nav-links > a:not(.btn):hover { color: var(--rose); }
 
       .nav-links .btn {
         margin-top: 0;
@@ -627,9 +607,7 @@
       box-shadow: 0 0 0 3px rgba(232, 180, 184, 0.1);
     }
 
-    .login-card input::placeholder {
-      color: var(--text-muted);
-    }
+    .login-card input::placeholder { color: var(--text-muted); }
 
     .login-submit {
       display: block;
@@ -647,21 +625,15 @@
       letter-spacing: 0.02em;
       cursor: pointer;
       transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
-      box-shadow:
-        0 10px 30px rgba(139, 30, 63, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 30px rgba(139, 30, 63, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .login-submit:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow:
-        0 14px 38px rgba(139, 30, 63, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      box-shadow: 0 14px 38px rgba(139, 30, 63, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
-    .login-submit:active:not(:disabled) {
-      transform: scale(0.97);
-    }
+    .login-submit:active:not(:disabled) { transform: scale(0.97); }
 
     .login-submit:disabled {
       opacity: 0.6;
@@ -698,16 +670,11 @@
       transition: color 0.2s;
     }
 
-    .login-link:hover { color: var(--rose); }
-    .login-link:active { color: var(--rose); }
+    .login-link:hover, .login-link:active { color: var(--rose); }
 
     @media (min-width: 720px) {
-      .login-card {
-        padding: 36px 32px;
-      }
-      .login-card h2 {
-        font-size: 1.7rem;
-      }
+      .login-card { padding: 36px 32px; }
+      .login-card h2 { font-size: 1.7rem; }
     }
 
     /* ---------- 08. INTRO OVERLAY ---------- */
@@ -715,8 +682,7 @@
       position: fixed;
       inset: 0;
       z-index: 100;
-      background:
-        radial-gradient(ellipse at 50% 45%, rgba(139, 30, 63, 0.5) 0%, var(--bg-deep) 55%, rgba(10, 5, 8, 0.98) 100%);
+      background: radial-gradient(ellipse at 50% 45%, rgba(139, 30, 63, 0.5) 0%, var(--bg-deep) 55%, rgba(10, 5, 8, 0.98) 100%);
       display: grid;
       place-items: center;
       pointer-events: none;
@@ -763,14 +729,6 @@
       box-shadow: 0 0 70px rgba(139, 30, 63, 0.55), inset 0 0 35px rgba(232, 180, 184, 0.12);
       position: relative;
       overflow: hidden;
-    }
-
-    .intro-logo::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, transparent 40%, rgba(232, 180, 184, 0.25), transparent 60%);
-      animation: logo-shine 2s ease-in-out infinite;
     }
 
     .intro-title {
@@ -1057,60 +1015,25 @@
     .scroll-cue { display: none; }
 
     @media (min-width: 900px) {
-      .hero {
-        padding: 90px 0 96px;
-        min-height: 660px;
-      }
-      .hero-grid {
-        grid-template-columns: 1.02fr 0.98fr;
-        gap: 42px;
-      }
+      .hero { padding: 90px 0 96px; min-height: 660px; }
+      .hero-grid { grid-template-columns: 1.02fr 0.98fr; gap: 42px; }
       .hero-copy { text-align: left; }
       .hero-copy .eyebrow { justify-content: flex-start; }
-      .hero h1 {
-        font-size: clamp(3.6rem, 6.5vw, 6.2rem);
-        margin: 24px 0;
-      }
+      .hero h1 { font-size: clamp(3.6rem, 6.5vw, 6.2rem); margin: 24px 0; }
       .hero-lead { margin: 0; font-size: 1rem; }
       .hero-actions { justify-content: flex-start; }
-      .micro-proof {
-        justify-content: flex-start;
-        text-align: left;
-      }
+      .micro-proof { justify-content: flex-start; text-align: left; }
       .hero-art { min-height: 500px; }
       .halo-orb { width: min(40vw, 440px); }
-      .moon {
-        width: 82px;
-        height: 82px;
-        right: 12%;
-        top: 9%;
-      }
-      .gift-art {
-        width: min(80%, 350px);
-        min-height: 420px;
-        border-radius: 185px 185px 26px 26px;
-      }
-      .gift-art::before {
-        inset: 12px;
-        border-radius: 175px 175px 18px 18px;
-      }
+      .moon { width: 82px; height: 82px; right: 12%; top: 9%; }
+      .gift-art { width: min(80%, 350px); min-height: 420px; border-radius: 185px 185px 26px 26px; }
+      .gift-art::before { inset: 12px; border-radius: 175px 175px 18px 18px; }
       .gift-heart { font-size: 5.5rem; }
-      .gift-kicker {
-        font-size: 0.6rem;
-        margin-top: 32px;
-      }
+      .gift-kicker { font-size: 0.6rem; margin-top: 32px; }
       .gift-title { font-size: 2.1rem; }
       .gift-script { font-size: 1.05rem; }
-      .gift-bottom {
-        bottom: 28px;
-        font-size: 0.56rem;
-      }
-      .floating-note {
-        right: -1%;
-        bottom: 12%;
-        padding: 18px 20px;
-        border-radius: 16px;
-      }
+      .gift-bottom { bottom: 28px; font-size: 0.56rem; }
+      .floating-note { right: -1%; bottom: 12%; padding: 18px 20px; border-radius: 16px; }
       .floating-note strong { font-size: 1.05rem; }
       .floating-note small { font-size: 0.7rem; }
       .scroll-cue {
@@ -1146,24 +1069,15 @@
       line-height: 1.7;
     }
 
-    .manifesto-inner span {
-      color: var(--gold);
-      font-style: normal;
-    }
+    .manifesto-inner span { color: var(--gold); font-style: normal; }
 
     @media (min-width: 900px) {
       .manifesto { padding: 26px 0; }
-      .manifesto-inner {
-        gap: 25px;
-        font-size: 1.15rem;
-      }
+      .manifesto-inner { gap: 25px; font-size: 1.15rem; }
     }
 
     /* ---------- 11. SECTION HEADERS ---------- */
-    .section {
-      padding: 60px 0;
-      position: relative;
-    }
+    .section { padding: 60px 0; position: relative; }
 
     .section-head {
       max-width: 720px;
@@ -1245,23 +1159,12 @@
       transition: opacity 0.4s var(--ease);
     }
 
-    .category-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, transparent 40%, rgba(232, 180, 184, 0.06), transparent 60%);
-      opacity: 0;
-      transition: opacity 0.4s var(--ease);
-      pointer-events: none;
-    }
-
     .category-card:active {
       transform: scale(0.98);
       border-color: var(--rose-soft);
       box-shadow: 0 10px 30px rgba(139, 30, 63, 0.35);
     }
 
-    .category-card:active::after { opacity: 1; }
     .category-card.active::before { opacity: 0.25; }
 
     .category-card.active {
@@ -1308,10 +1211,7 @@
       font-weight: 500;
     }
 
-    .cat-foot b {
-      font-size: 1rem;
-      font-weight: 400;
-    }
+    .cat-foot b { font-size: 1rem; font-weight: 400; }
 
     .category-note {
       text-align: center;
@@ -1324,49 +1224,23 @@
       line-height: 1.6;
     }
 
-    @media (min-width: 600px) {
-      .category-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (min-width: 600px) { .category-grid { grid-template-columns: repeat(2, 1fr); } }
 
     @media (min-width: 900px) {
-      .category-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-      }
-      .category-card {
-        padding: 24px 20px;
-        min-height: 240px;
-      }
-      .cat-icon {
-        position: relative;
-        left: auto;
-        top: auto;
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
-        font-size: 1.55rem;
-        margin-bottom: 22px;
-      }
+      .category-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .category-card { padding: 24px 20px; min-height: 240px; }
+      .cat-icon { position: relative; left: auto; top: auto; width: 54px; height: 54px; border-radius: 16px; font-size: 1.55rem; margin-bottom: 22px; }
       .category-card h3 { font-size: 1.35rem; margin-bottom: 8px; }
       .category-card p { font-size: 0.74rem; line-height: 1.6; margin-bottom: 14px; }
       .cat-foot { font-size: 0.68rem; }
     }
 
-    @media (min-width: 1200px) {
-      .category-grid { grid-template-columns: repeat(5, 1fr); }
-    }
+    @media (min-width: 1200px) { .category-grid { grid-template-columns: repeat(5, 1fr); } }
 
     /* ---------- 13. TEMPLATE CATALOG ---------- */
-    .catalog {
-      display: none;
-      padding: 20px 0 60px;
-      scroll-margin-top: 80px;
-    }
+    .catalog { display: none; padding: 20px 0 60px; scroll-margin-top: 80px; }
 
-    .catalog.open {
-      display: block;
-      animation: rise 0.5s var(--ease-out) both;
-    }
+    .catalog.open { display: block; animation: rise 0.5s var(--ease-out) both; }
 
     .catalog-top {
       display: flex;
@@ -1384,12 +1258,7 @@
       color: var(--text);
     }
 
-    .catalog-top p {
-      margin: 0;
-      color: var(--text-2);
-      font-size: 0.86rem;
-      line-height: 1.7;
-    }
+    .catalog-top p { margin: 0; color: var(--text-2); font-size: 0.86rem; line-height: 1.7; }
 
     .catalog-count {
       white-space: nowrap;
@@ -1402,11 +1271,7 @@
       align-self: flex-start;
     }
 
-    .template-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-    }
+    .template-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 
     .template-card {
       overflow: hidden;
@@ -1420,10 +1285,7 @@
       touch-action: manipulation;
     }
 
-    .template-card:active {
-      transform: scale(0.98);
-      border-color: var(--rose-soft);
-    }
+    .template-card:active { transform: scale(0.98); border-color: var(--rose-soft); }
 
     .template-thumb {
       position: relative;
@@ -1464,9 +1326,7 @@
       padding: 16px 12px;
     }
 
-    .template-card:active .mini-site {
-      transform: rotate(0) scale(1.02);
-    }
+    .template-card:active .mini-site { transform: rotate(0) scale(1.02); }
 
     .mini-site .mini-heart {
       font-size: 2.8rem;
@@ -1474,19 +1334,9 @@
       filter: drop-shadow(0 0 12px rgba(232, 180, 184, 0.5));
     }
 
-    .mini-site small {
-      font-size: 0.46rem;
-      letter-spacing: 0.18em;
-      color: var(--gold);
-      margin-top: 12px;
-    }
+    .mini-site small { font-size: 0.46rem; letter-spacing: 0.18em; color: var(--gold); margin-top: 12px; }
 
-    .mini-site strong {
-      font: 500 1.1rem var(--serif);
-      color: var(--text);
-      margin-top: 6px;
-      line-height: 1.2;
-    }
+    .mini-site strong { font: 500 1.1rem var(--serif); color: var(--text); margin-top: 6px; line-height: 1.2; }
 
     .template-badge {
       position: absolute;
@@ -1515,25 +1365,11 @@
       letter-spacing: 0.04em;
     }
 
-    .template-info h3 {
-      font: 500 1.35rem var(--serif);
-      color: var(--text);
-      margin: 12px 0 8px;
-    }
+    .template-info h3 { font: 500 1.35rem var(--serif); color: var(--text); margin: 12px 0 8px; }
 
-    .template-info p {
-      font-size: 0.8rem;
-      line-height: 1.65;
-      color: var(--text-2);
-      margin: 0;
-    }
+    .template-info p { font-size: 0.8rem; line-height: 1.65; color: var(--text-2); margin: 0; }
 
-    .template-features {
-      display: flex;
-      gap: 7px;
-      flex-wrap: wrap;
-      margin: 16px 0;
-    }
+    .template-features { display: flex; gap: 7px; flex-wrap: wrap; margin: 16px 0; }
 
     .template-features span {
       border: 1px solid var(--line);
@@ -1544,67 +1380,22 @@
       font-size: 0.62rem;
     }
 
-    .template-actions {
-      display: flex;
-      gap: 8px;
-    }
+    .template-actions { display: flex; gap: 8px; }
 
-    .template-actions .btn {
-      flex: 1;
-      padding: 13px 12px;
-      font-size: 0.8rem;
-    }
+    .template-actions .btn { flex: 1; padding: 13px 12px; font-size: 0.8rem; }
 
-    @media (min-width: 600px) {
-      .template-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (min-width: 600px) { .template-grid { grid-template-columns: repeat(2, 1fr); } }
 
     @media (min-width: 900px) {
-      .catalog {
-        padding: 20px 0 90px;
-        scroll-margin-top: 90px;
-      }
-      .catalog-top {
-        flex-direction: row;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 30px;
-        padding-bottom: 24px;
-      }
-      .catalog-top h2 {
-        font-size: clamp(2.2rem, 4vw, 3.3rem);
-        margin: 10px 0;
-      }
-      .catalog-count {
-        align-self: auto;
-        padding: 9px 14px;
-        font-size: 0.75rem;
-      }
-      .template-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 22px;
-      }
-      .template-card:hover {
-        transform: translateY(-8px);
-        border-color: var(--rose-soft);
-        box-shadow: 0 26px 55px rgba(139, 30, 63, 0.3);
-      }
-      .template-thumb {
-        min-height: 260px;
-        padding: 0;
-      }
-      .template-thumb::before {
-        width: 230px;
-        height: 230px;
-        box-shadow: 0 0 0 15px rgba(139, 30, 63, 0.1), 0 0 0 32px rgba(139, 30, 63, 0.06);
-      }
-      .mini-site {
-        width: 180px;
-        height: 215px;
-        border-radius: 105px 105px 16px 16px;
-        padding: 0;
-      }
+      .catalog { padding: 20px 0 90px; scroll-margin-top: 90px; }
+      .catalog-top { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 30px; padding-bottom: 24px; }
+      .catalog-top h2 { font-size: clamp(2.2rem, 4vw, 3.3rem); margin: 10px 0; }
+      .catalog-count { align-self: auto; padding: 9px 14px; font-size: 0.75rem; }
+      .template-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; }
+      .template-card:hover { transform: translateY(-8px); border-color: var(--rose-soft); box-shadow: 0 26px 55px rgba(139, 30, 63, 0.3); }
+      .template-thumb { min-height: 260px; padding: 0; }
+      .template-thumb::before { width: 230px; height: 230px; box-shadow: 0 0 0 15px rgba(139, 30, 63, 0.1), 0 0 0 32px rgba(139, 30, 63, 0.06); }
+      .mini-site { width: 180px; height: 215px; border-radius: 105px 105px 16px 16px; padding: 0; }
       .mini-site .mini-heart { font-size: 3.6rem; }
       .mini-site small { font-size: 0.5rem; margin-top: 18px; }
       .mini-site strong { font-size: 1.4rem; margin-top: 8px; }
@@ -1625,11 +1416,7 @@
 
     .empty-icon { font-size: 2.2rem; }
 
-    .empty-state h3 {
-      font: 500 1.4rem var(--serif);
-      margin: 14px 0 8px;
-      color: var(--text);
-    }
+    .empty-state h3 { font: 500 1.4rem var(--serif); margin: 14px 0 8px; color: var(--text); }
 
     .empty-state p {
       max-width: 470px;
@@ -1640,12 +1427,7 @@
     }
 
     /* ---------- 15. EXPERIENCE ---------- */
-    .experience {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 32px;
-      align-items: center;
-    }
+    .experience { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; }
 
     .experience-art {
       min-height: 340px;
@@ -1692,18 +1474,9 @@
       filter: drop-shadow(0 0 18px rgba(232, 180, 184, 0.5));
     }
 
-    .memory-window small {
-      letter-spacing: 0.2em;
-      color: var(--gold);
-      font-size: 0.5rem;
-      margin-top: 18px;
-    }
+    .memory-window small { letter-spacing: 0.2em; color: var(--gold); font-size: 0.5rem; margin-top: 18px; }
 
-    .memory-window strong {
-      font: 500 1.25rem var(--serif);
-      margin-top: 8px;
-      color: var(--text);
-    }
+    .memory-window strong { font: 500 1.25rem var(--serif); margin-top: 8px; color: var(--text); }
 
     .art-chip {
       position: absolute;
@@ -1729,19 +1502,9 @@
       color: var(--text);
     }
 
-    .experience-copy > p {
-      color: var(--text-2);
-      line-height: 1.75;
-      font-size: 0.9rem;
-    }
+    .experience-copy > p { color: var(--text-2); line-height: 1.75; font-size: 0.9rem; }
 
-    .feature-list {
-      list-style: none;
-      padding: 0;
-      margin: 24px 0 26px;
-      display: grid;
-      gap: 16px;
-    }
+    .feature-list { list-style: none; padding: 0; margin: 24px 0 26px; display: grid; gap: 16px; }
 
     .feature-list li {
       display: flex;
@@ -1766,32 +1529,14 @@
     }
 
     @media (min-width: 900px) {
-      .experience {
-        grid-template-columns: 0.9fr 1.1fr;
-        gap: 65px;
-      }
-      .experience-art {
-        min-height: 440px;
-        border-radius: 28px;
-      }
-      .experience-art::before {
-        width: 290px;
-        height: 290px;
-        box-shadow: 0 0 0 18px rgba(139, 30, 63, 0.08), 0 0 0 40px rgba(139, 30, 63, 0.05);
-      }
-      .memory-window {
-        width: 220px;
-        height: 290px;
-        border-radius: 115px 115px 18px 18px;
-      }
+      .experience { grid-template-columns: 0.9fr 1.1fr; gap: 65px; }
+      .experience-art { min-height: 440px; border-radius: 28px; }
+      .experience-art::before { width: 290px; height: 290px; box-shadow: 0 0 0 18px rgba(139, 30, 63, 0.08), 0 0 0 40px rgba(139, 30, 63, 0.05); }
+      .memory-window { width: 220px; height: 290px; border-radius: 115px 115px 18px 18px; }
       .memory-window .big { font-size: 4.6rem; }
       .memory-window small { font-size: 0.54rem; margin-top: 24px; }
       .memory-window strong { font-size: 1.55rem; margin-top: 10px; }
-      .art-chip {
-        padding: 12px 15px;
-        border-radius: 13px;
-        font-size: 0.72rem;
-      }
+      .art-chip { padding: 12px 15px; border-radius: 13px; font-size: 0.72rem; }
       .chip-one { left: 7%; top: 18%; }
       .chip-two { right: 5%; bottom: 18%; }
       .chip-three { right: 8%; top: 17%; font-size: 1rem; }
@@ -1799,11 +1544,7 @@
     }
 
     /* ---------- 16. HOW IT WORKS ---------- */
-    .steps-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
+    .steps-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
 
     .step {
       padding: 22px 20px;
@@ -1814,60 +1555,27 @@
       position: relative;
     }
 
-    .step-no {
-      font-size: 0.62rem;
-      color: var(--gold);
-      letter-spacing: 0.16em;
-      font-weight: 500;
-    }
+    .step-no { font-size: 0.62rem; color: var(--gold); letter-spacing: 0.16em; font-weight: 500; }
 
-    .step-icon {
-      font-size: 1.5rem;
-      margin: 14px 0 12px;
-      color: var(--rose);
-    }
+    .step-icon { font-size: 1.5rem; margin: 14px 0 12px; color: var(--rose); }
 
-    .step h3 {
-      font: 500 1.2rem var(--serif);
-      margin: 0 0 8px;
-      color: var(--text);
-    }
+    .step h3 { font: 500 1.2rem var(--serif); margin: 0 0 8px; color: var(--text); }
 
-    .step p {
-      font-size: 0.8rem;
-      color: var(--text-2);
-      line-height: 1.65;
-      margin: 0;
-    }
+    .step p { font-size: 0.8rem; color: var(--text-2); line-height: 1.65; margin: 0; }
 
-    @media (min-width: 600px) {
-      .steps-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (min-width: 600px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
 
     @media (min-width: 900px) {
-      .steps-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-      }
-      .step {
-        padding: 26px 22px;
-        min-height: 210px;
-      }
-      .step:hover {
-        transform: translateY(-6px);
-        border-color: var(--rose-soft);
-      }
+      .steps-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+      .step { padding: 26px 22px; min-height: 210px; }
+      .step:hover { transform: translateY(-6px); border-color: var(--rose-soft); }
       .step-icon { margin: 22px 0 15px; font-size: 1.6rem; }
       .step h3 { font-size: 1.32rem; margin-bottom: 10px; }
       .step p { font-size: 0.76rem; line-height: 1.7; }
     }
 
     /* ---------- 17. PRICING ---------- */
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
+    .pricing-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
 
     .price-card {
       position: relative;
@@ -1899,54 +1607,21 @@
       font-weight: 500;
     }
 
-    .price-label {
-      font-size: 0.66rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--gold);
-    }
+    .price-label { font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); }
 
-    .price-card h3 {
-      font: 500 1.55rem var(--serif);
-      margin: 12px 0 6px;
-      color: var(--text);
-    }
+    .price-card h3 { font: 500 1.55rem var(--serif); margin: 12px 0 6px; color: var(--text); }
 
-    .price {
-      font: 400 2.4rem var(--serif);
-      margin: 14px 0 4px;
-      color: var(--text);
-    }
+    .price { font: 400 2.4rem var(--serif); margin: 14px 0 4px; color: var(--text); }
 
-    .price small {
-      font: 400 0.76rem var(--sans);
-      color: var(--text-2);
-    }
+    .price small { font: 400 0.76rem var(--sans); color: var(--text-2); }
 
-    .price-desc {
-      color: var(--text-2);
-      font-size: 0.8rem;
-      line-height: 1.65;
-    }
+    .price-desc { color: var(--text-2); font-size: 0.8rem; line-height: 1.65; }
 
-    .price-card ul {
-      list-style: none;
-      padding: 0;
-      margin: 20px 0 22px;
-      display: grid;
-      gap: 11px;
-    }
+    .price-card ul { list-style: none; padding: 0; margin: 20px 0 22px; display: grid; gap: 11px; }
 
-    .price-card li {
-      font-size: 0.8rem;
-      color: var(--text-2);
-    }
+    .price-card li { font-size: 0.8rem; color: var(--text-2); }
 
-    .price-card li::before {
-      content: "✦";
-      color: var(--rose);
-      margin-right: 9px;
-    }
+    .price-card li::before { content: "✦"; color: var(--rose); margin-right: 9px; }
 
     .price-card .btn { width: 100%; }
 
@@ -1963,15 +1638,9 @@
     }
 
     @media (min-width: 900px) {
-      .pricing-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 18px;
-      }
+      .pricing-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
       .price-card { padding: 30px; }
-      .price-card:hover {
-        transform: translateY(-4px);
-        border-color: var(--rose-soft);
-      }
+      .price-card:hover { transform: translateY(-4px); border-color: var(--rose-soft); }
       .price-card h3 { font-size: 1.75rem; margin: 14px 0 8px; }
       .price { font-size: 2.8rem; margin: 18px 0 4px; }
       .price-desc { font-size: 0.78rem; line-height: 1.7; min-height: 46px; }
@@ -1980,12 +1649,7 @@
     }
 
     /* ---------- 18. FAQ ---------- */
-    .faq-list {
-      max-width: 840px;
-      margin: auto;
-      display: grid;
-      gap: 10px;
-    }
+    .faq-list { max-width: 840px; margin: auto; display: grid; gap: 10px; }
 
     .faq {
       border: 1px solid var(--line);
@@ -2020,27 +1684,374 @@
 
     .faq[open] summary::after { content: "−"; }
 
-    .faq p {
-      padding: 0 20px 18px;
-      margin: 0;
-      color: var(--text-2);
-      font-size: 0.85rem;
-      line-height: 1.75;
-    }
+    .faq p { padding: 0 20px 18px; margin: 0; color: var(--text-2); font-size: 0.85rem; line-height: 1.75; }
 
     @media (min-width: 900px) {
       .faq-list { gap: 12px; }
       .faq { border-radius: 16px; }
-      .faq summary {
-        padding: 22px 24px;
-        font-size: 1.08rem;
-      }
-      .faq p {
-        padding: 0 24px 22px;
-        font-size: 0.83rem;
-        line-height: 1.85;
-      }
+      .faq summary { padding: 22px 24px; font-size: 1.08rem; }
+      .faq p { padding: 0 24px 22px; font-size: 0.83rem; line-height: 1.85; }
       .faq:hover { border-color: var(--line-bright); }
+    }
+
+    /* =========================================================
+       ⭐ 18b. CUSTOMER REVIEWS — UNIQUE ANIMATED MARQUEE
+       ========================================================= */
+    .reviews {
+      padding: 60px 0 70px;
+      position: relative;
+      overflow: hidden;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, transparent, rgba(20, 8, 15, 0.4) 50%, transparent);
+    }
+
+    /* Floating hearts/particles background */
+    .reviews::before,
+    .reviews::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(80px);
+      opacity: 0.4;
+      z-index: 0;
+    }
+
+    .reviews::before {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(139, 30, 63, 0.5), transparent 70%);
+      top: -100px;
+      left: -100px;
+      animation: glow-drift 18s ease-in-out infinite;
+    }
+
+    .reviews::after {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(212, 165, 116, 0.25), transparent 70%);
+      bottom: -150px;
+      right: -150px;
+      animation: glow-drift 22s ease-in-out infinite reverse;
+    }
+
+    @keyframes glow-drift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(60px, -40px) scale(1.1); }
+      66%      { transform: translate(-40px, 50px) scale(0.95); }
+    }
+
+    .reviews .wrap { position: relative; z-index: 1; }
+
+    .reviews-head {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 40px;
+    }
+
+    .reviews-head .eyebrow::before { display: none; }
+
+    .reviews-head h2 {
+      font: 400 clamp(1.9rem, 6vw, 2.6rem) / 1.12 var(--serif);
+      letter-spacing: -0.02em;
+      margin: 16px 0;
+      color: var(--text);
+    }
+
+    .reviews-head p {
+      color: var(--text-2);
+      line-height: 1.7;
+      font-size: 0.9rem;
+      max-width: 560px;
+      margin: auto;
+    }
+
+    /* Rating badge */
+    .reviews-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 22px;
+      padding: 10px 20px;
+      border: 1px solid var(--line-gold);
+      border-radius: 999px;
+      background: rgba(28, 15, 24, 0.6);
+      backdrop-filter: blur(12px);
+    }
+
+    .reviews-stars {
+      display: inline-flex;
+      gap: 2px;
+      color: var(--gold);
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .reviews-stars span {
+      display: inline-block;
+      animation: star-twinkle 2.5s ease-in-out infinite;
+    }
+
+    .reviews-stars span:nth-child(1) { animation-delay: 0s; }
+    .reviews-stars span:nth-child(2) { animation-delay: 0.2s; }
+    .reviews-stars span:nth-child(3) { animation-delay: 0.4s; }
+    .reviews-stars span:nth-child(4) { animation-delay: 0.6s; }
+    .reviews-stars span:nth-child(5) { animation-delay: 0.8s; }
+
+    @keyframes star-twinkle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.6; transform: scale(0.9); }
+    }
+
+    .reviews-rating-text {
+      font-size: 0.74rem;
+      color: var(--text-2);
+      letter-spacing: 0.04em;
+    }
+
+    .reviews-rating-text strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Marquee rows */
+    .reviews-marquee {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+      padding: 8px 0;
+    }
+
+    .reviews-track {
+      display: flex;
+      gap: 18px;
+      width: max-content;
+      animation: scroll-left 60s linear infinite;
+      will-change: transform;
+    }
+
+    .reviews-track.reverse {
+      animation: scroll-right 75s linear infinite;
+    }
+
+    /* Pause on hover */
+    .reviews-marquee:hover .reviews-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes scroll-left {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes scroll-right {
+      0%   { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Individual review card */
+    .review-card {
+      flex: 0 0 auto;
+      width: 320px;
+      padding: 22px 22px 20px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(160deg, var(--panel-2), var(--panel) 65%, var(--bg-soft));
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(232, 180, 184, 0.05);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.4s var(--ease-out), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
+      animation: review-bob 6s ease-in-out infinite;
+    }
+
+    /* Stagger bob animation so cards don't move in sync */
+    .reviews-track .review-card:nth-child(2n) { animation-delay: -1.5s; }
+    .reviews-track .review-card:nth-child(3n) { animation-delay: -3s; }
+    .reviews-track .review-card:nth-child(5n) { animation-delay: -4.2s; }
+
+    @keyframes review-bob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+
+    .review-card:hover {
+      border-color: var(--rose-soft);
+      box-shadow: 0 22px 50px rgba(139, 30, 63, 0.35), inset 0 1px 0 rgba(232, 180, 184, 0.1);
+      animation-play-state: paused;
+    }
+
+    /* Subtle glimmer on hover */
+    .review-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(232, 180, 184, 0.08) 50%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.5s var(--ease);
+      pointer-events: none;
+    }
+
+    .review-card:hover::before { opacity: 1; }
+
+    /* Quote mark decoration */
+    .review-quote-mark {
+      position: absolute;
+      top: 10px;
+      right: 16px;
+      font: 400 3.5rem var(--serif);
+      line-height: 1;
+      color: var(--gold);
+      opacity: 0.18;
+      pointer-events: none;
+      transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+    }
+
+    .review-card:hover .review-quote-mark {
+      opacity: 0.4;
+      transform: rotate(-8deg) scale(1.08);
+    }
+
+    /* Review header (avatar + name + stars) */
+    .review-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .review-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font: 600 0.92rem var(--sans);
+      color: var(--text);
+      text-transform: uppercase;
+      flex-shrink: 0;
+      border: 1px solid rgba(232, 180, 184, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    /* Avatar variations */
+    .review-avatar.v1 { background: linear-gradient(145deg, #8b1e3f, #c47a8a); }
+    .review-avatar.v2 { background: linear-gradient(145deg, #6b1830, #d4a574); }
+    .review-avatar.v3 { background: linear-gradient(145deg, #a82851, #e8b4b8); }
+    .review-avatar.v4 { background: linear-gradient(145deg, #2e1929, #8b1e3f); }
+    .review-avatar.v5 { background: linear-gradient(145deg, #b8895c, #6b3d52); }
+    .review-avatar.v6 { background: linear-gradient(145deg, #6b3d52, #e8b4b8); }
+
+    .review-meta { min-width: 0; flex: 1; }
+
+    .review-name {
+      font: 500 0.92rem var(--serif);
+      color: var(--text);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .review-role {
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      margin-top: 3px;
+    }
+
+    .review-stars {
+      display: inline-flex;
+      gap: 1px;
+      color: var(--gold);
+      font-size: 0.7rem;
+      margin-top: 3px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Review body */
+    .review-text {
+      font: 400 0.82rem / 1.65 var(--sans);
+      color: var(--text-2);
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .review-text em {
+      color: var(--rose);
+      font-style: italic;
+    }
+
+    /* Review footer (date/template tag) */
+    .review-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+
+    .review-tag {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(139, 30, 63, 0.25);
+      border: 1px solid var(--line-gold);
+      color: var(--gold);
+      font-size: 0.58rem;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 600px) {
+      .review-card { width: 280px; padding: 18px 18px 16px; }
+      .review-text { font-size: 0.78rem; }
+      .reviews-track { gap: 14px; animation-duration: 45s; }
+      .reviews-track.reverse { animation-duration: 55s; }
+      .reviews { padding: 44px 0 54px; }
+      .reviews-marquee { gap: 14px; }
+      .reviews-rating { padding: 8px 16px; gap: 10px; }
+      .reviews-rating-text { font-size: 0.68rem; }
+    }
+
+    @media (min-width: 900px) {
+      .reviews { padding: 90px 0 100px; }
+      .reviews-head { margin-bottom: 54px; }
+      .reviews-head h2 { font-size: clamp(2.4rem, 4.5vw, 4.2rem); }
+      .review-card { width: 360px; padding: 26px 26px 22px; }
+      .review-text { font-size: 0.84rem; }
+      .reviews-marquee { gap: 22px; }
+      .reviews-track { gap: 22px; }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .reviews-track,
+      .reviews-track.reverse,
+      .review-card {
+        animation: none !important;
+      }
+      .reviews-marquee {
+        mask-image: none;
+        -webkit-mask-image: none;
+      }
+      .reviews-track {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+      }
     }
 
     /* ---------- 19. CLOSING CARD ---------- */
@@ -2069,12 +2080,7 @@
     }
 
     .closing-card::before { top: 20%; left: 8%; }
-    .closing-card::after {
-      right: 10%;
-      bottom: 18%;
-      font-size: 0.9rem;
-      animation-delay: 1.5s;
-    }
+    .closing-card::after { right: 10%; bottom: 18%; font-size: 0.9rem; animation-delay: 1.5s; }
 
     .closing-card h2 {
       font: 400 clamp(1.9rem, 6vw, 2.6rem) / 1.1 var(--serif);
@@ -2094,16 +2100,9 @@
 
     @media (min-width: 900px) {
       .closing { padding: 32px 0 100px; }
-      .closing-card {
-        border-radius: 32px;
-        padding: 70px 28px;
-      }
+      .closing-card { border-radius: 32px; padding: 70px 28px; }
       .closing-card::before { top: 24%; left: 15%; font-size: 1.4rem; }
-      .closing-card::after {
-        right: 16%;
-        bottom: 22%;
-        font-size: 1rem;
-      }
+      .closing-card::after { right: 16%; bottom: 22%; font-size: 1rem; }
       .closing-card h2 { font-size: clamp(2.6rem, 5vw, 4.6rem); }
       .closing-card p { line-height: 1.85; margin-bottom: 28px; }
     }
@@ -2123,11 +2122,7 @@
       flex-wrap: wrap;
     }
 
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .footer-brand { display: flex; align-items: center; gap: 12px; }
 
     .footer-brand-name {
       font: 500 1.4rem var(--serif);
@@ -2159,10 +2154,7 @@
       transition: all 0.2s var(--ease);
     }
 
-    .footer-links a:active {
-      border-color: var(--rose-soft);
-      color: var(--rose);
-    }
+    .footer-links a:active { border-color: var(--rose-soft); color: var(--rose); }
 
     .footer-bottom {
       display: flex;
@@ -2178,32 +2170,13 @@
 
     @media (min-width: 900px) {
       .footer { padding: 32px 0 26px; }
-      .footer-main {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        gap: 26px;
-      }
+      .footer-main { flex-direction: row; align-items: center; justify-content: space-between; gap: 26px; }
       .footer-brand-name { font-size: 1.6rem; }
       .footer-brand small { font-size: 0.58rem; margin-top: 4px; }
-      .footer-links {
-        gap: 22px;
-        font-size: 0.76rem;
-      }
-      .footer-links a {
-        padding: 0;
-        border: none;
-        background: none;
-      }
+      .footer-links { gap: 22px; font-size: 0.76rem; }
+      .footer-links a { padding: 0; border: none; background: none; }
       .footer-links a:hover { color: var(--rose); }
-      .footer-bottom {
-        flex-direction: row;
-        justify-content: space-between;
-        gap: 16px;
-        margin-top: 26px;
-        padding-top: 18px;
-        font-size: 0.68rem;
-      }
+      .footer-bottom { flex-direction: row; justify-content: space-between; gap: 16px; margin-top: 26px; padding-top: 18px; font-size: 0.68rem; }
     }
 
     /* ---------- 21. TOAST ---------- */
@@ -2244,10 +2217,7 @@
       padding: 10px;
     }
 
-    .preview-modal.open {
-      display: flex;
-      animation: fade 0.25s var(--ease) both;
-    }
+    .preview-modal.open { display: flex; animation: fade 0.25s var(--ease) both; }
 
     .preview-dialog {
       width: 100%;
@@ -2273,12 +2243,7 @@
       flex-shrink: 0;
     }
 
-    .preview-head-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
+    .preview-head-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
     .preview-head-logo {
       width: 30px;
@@ -2304,12 +2269,7 @@
       text-overflow: ellipsis;
     }
 
-    .preview-head small {
-      display: block;
-      font: 0.68rem var(--sans);
-      color: var(--text-2);
-      margin-top: 2px;
-    }
+    .preview-head small { display: block; font: 0.68rem var(--sans); color: var(--text-2); margin-top: 2px; }
 
     .preview-close {
       width: 38px;
@@ -2356,47 +2316,19 @@
       font-family: var(--serif);
     }
 
-    .preview-foot .btn {
-      width: 100%;
-      padding: 13px 16px;
-      font-size: 0.85rem;
-    }
+    .preview-foot .btn { width: 100%; padding: 13px 16px; font-size: 0.85rem; }
 
     @media (min-width: 900px) {
       .preview-modal { padding: 20px; }
-      .preview-dialog {
-        width: min(1050px, 100%);
-        height: min(800px, 92vh);
-        border-radius: 22px;
-      }
-      .preview-head {
-        padding: 15px 20px;
-        gap: 15px;
-      }
-      .preview-head-logo {
-        width: 32px;
-        height: 32px;
-        font-size: 15px;
-      }
+      .preview-dialog { width: min(1050px, 100%); height: min(800px, 92vh); border-radius: 22px; }
+      .preview-head { padding: 15px 20px; gap: 15px; }
+      .preview-head-logo { width: 32px; height: 32px; font-size: 15px; }
       .preview-head strong { font-size: 1.2rem; }
       .preview-head small { font-size: 0.7rem; margin-top: 3px; }
-      .preview-close {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2rem;
-      }
-      .preview-foot {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        padding: 14px 20px;
-        gap: 15px;
-      }
+      .preview-close { width: 40px; height: 40px; font-size: 1.2rem; }
+      .preview-foot { flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; }
       .preview-foot .btn { width: auto; flex-shrink: 0; }
-      .preview-close:hover {
-        transform: rotate(90deg);
-        border-color: var(--rose-soft);
-      }
+      .preview-close:hover { transform: rotate(90deg); border-color: var(--rose-soft); }
     }
 
     /* ---------- 23. REVEAL ON SCROLL ---------- */
@@ -2406,10 +2338,7 @@
       transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
     }
 
-    .reveal.visible {
-      opacity: 1;
-      transform: none;
-    }
+    .reveal.visible { opacity: 1; transform: none; }
 
     /* ---------- 24. KEYFRAMES ---------- */
     @keyframes rise {
@@ -2455,7 +2384,6 @@
       }
       .reveal { opacity: 1; transform: none; }
       .intro { display: none; }
-      .brand-logo::after { display: none; }
     }
   </style>
 </head>
@@ -2468,7 +2396,7 @@
     <span class="spark s3">✦</span>
     <span class="spark s4">✧</span>
     <div class="intro-inner">
-      <div class="intro-logo" aria-label="NIVA logo">N</div>
+      <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" style="width:110px;height:110px;border-radius:50%;margin:0 auto 26px;display:block;object-fit:cover;">
       <h1 class="intro-title">NIVA</h1>
       <p class="intro-caption">Make moments eternal.</p>
     </div>
@@ -2478,7 +2406,7 @@
   <header class="nav-shell">
     <div class="wrap nav">
       <a class="brand" href="#home" aria-label="NIVA home">
-        <span class="brand-logo" aria-label="NIVA logo placeholder">N</span>
+        <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
         <span class="brand-text">
           <span class="brand-word">NIVA</span>
           <span class="brand-caption">MAKE MOMENTS ETERNAL</span>
@@ -2498,6 +2426,7 @@
       <nav class="nav-links" id="navLinks">
         <a href="#categories">Collections</a>
         <a href="#experience">The experience</a>
+        <a href="#reviews">Reviews</a>
         <a href="#how">How it works</a>
         <a href="#pricing">Pricing</a>
         <a href="./privacy.html">Privacy &amp; safety</a>
@@ -2506,7 +2435,7 @@
     </div>
   </header>
 
-  <!-- AUTH USER MENU (dropdown) -->
+  <!-- AUTH USER MENU -->
   <div class="auth-user-menu" id="userMenu" role="menu">
     <div class="menu-email" id="menuEmail">—</div>
     <div class="menu-divider"></div>
@@ -2517,9 +2446,8 @@
   <div class="login-overlay" id="loginOverlay" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
     <div class="login-card">
       <button class="login-close-btn" id="loginClose" aria-label="Close">×</button>
-      <div class="login-logo" aria-hidden="true">N</div>
+      <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="login-logo" style="object-fit:cover;">
 
-      <!-- LOGIN PANE -->
       <div id="loginPane">
         <h2 id="loginTitle">Welcome back</h2>
         <p>Sign in to continue your gift.</p>
@@ -2534,7 +2462,6 @@
         <button type="button" class="login-link" id="toRegister">New here? Create an account →</button>
       </div>
 
-      <!-- REGISTER PANE -->
       <div id="registerPane" hidden>
         <h2>Create your account</h2>
         <p>One account. Infinite gifts.</p>
@@ -2707,6 +2634,38 @@
       </div>
     </section>
 
+    <!-- ⭐ CUSTOMER REVIEWS — UNIQUE ANIMATED MARQUEE -->
+    <section class="reviews" id="reviews" aria-label="Customer reviews">
+      <div class="wrap">
+        <div class="reviews-head reveal">
+          <span class="eyebrow">Loved by the people who matter</span>
+          <h2>Real feelings,<br><span class="gradient">really shared.</span></h2>
+          <p>Every NIVA gift begins with someone who wanted to say something meaningful. Here's what they're saying after they sent one.</p>
+
+          <div class="reviews-rating" aria-label="Average rating 4.9 out of 5 stars from 1,247 reviews">
+            <span class="reviews-stars" aria-hidden="true">
+              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+            </span>
+            <span class="reviews-rating-text"><strong>4.9</strong> · 1,247 gifts made</span>
+          </div>
+        </div>
+
+        <!-- Row 1: scrolls left -->
+        <div class="reviews-marquee reveal" aria-hidden="false">
+          <div class="reviews-track" id="reviewsTrack1">
+            <!-- 8 unique reviews, doubled by JS for seamless loop -->
+          </div>
+        </div>
+
+        <!-- Row 2: scrolls right -->
+        <div class="reviews-marquee reveal" aria-hidden="false">
+          <div class="reviews-track reverse" id="reviewsTrack2">
+            <!-- 8 unique reviews (different set), doubled by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- HOW IT WORKS -->
     <section class="section" id="how">
       <div class="wrap">
@@ -2765,7 +2724,7 @@
               <li>Names and message</li>
               <li>Mobile-friendly design</li>
             </ul>
-            <button class="btn btn-quiet plan-btn" data-plan="Essential">Explore this plan ↗</button>
+            <button class="btn btn-quiet plan-btn" data-plan="Essential" data-price="299">Explore this plan ↗</button>
           </article>
 
           <article class="price-card featured">
@@ -2779,7 +2738,7 @@
               <li>More personalisation options</li>
               <li>Expanded memory experience</li>
             </ul>
-            <button class="btn btn-primary plan-btn" data-plan="Signature">Explore this plan ↗</button>
+            <button class="btn btn-primary plan-btn" data-plan="Signature" data-price="499">Explore this plan ↗</button>
           </article>
 
           <article class="price-card">
@@ -2792,7 +2751,7 @@
               <li>Premium experience concept</li>
               <li>More space for your story</li>
             </ul>
-            <button class="btn btn-quiet plan-btn" data-plan="Evermore">Explore this plan ↗</button>
+            <button class="btn btn-quiet plan-btn" data-plan="Evermore" data-price="899">Explore this plan ↗</button>
           </article>
         </div>
 
@@ -2851,7 +2810,7 @@
     <div class="wrap">
       <div class="footer-main">
         <a href="#home" class="footer-brand">
-          <span class="brand-logo" aria-label="NIVA logo placeholder">N</span>
+          <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
           <span>
             <span class="footer-brand-name">NIVA</span>
             <small>MAKE MOMENTS ETERNAL</small>
@@ -2860,6 +2819,7 @@
         <div class="footer-links">
           <a href="#categories">Collections</a>
           <a href="#experience">Experience</a>
+          <a href="#reviews">Reviews</a>
           <a href="#pricing">Pricing</a>
           <a href="#faq">FAQs</a>
           <a href="./privacy.html">Privacy</a>
@@ -2879,7 +2839,7 @@
     <div class="preview-dialog">
       <div class="preview-head">
         <div class="preview-head-title">
-          <span class="preview-head-logo" aria-label="NIVA logo placeholder">N</span>
+          <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="preview-head-logo" style="object-fit:cover;">
           <div class="preview-head-text">
             <strong id="previewTitle">Eternal Love — Preview</strong>
             <small>Template preview · sample content</small>
@@ -2901,33 +2861,18 @@
 
       /* =========================================================
          NIVA HOMEPAGE
-         Features:
-         - Login modal (popup on homepage)
-         - Sign In / User avatar in nav
-         - Customise button → checks auth → prompts login if needed
-         - After login → redirects to editor with correct template
          ========================================================= */
 
       /* ---------- 01. AUTH STATE ---------- */
-      const authState = {
-        user: null,
-        pendingEditorUrl: null, // if user clicked "Customise" while logged out
-      };
+      const authState = { user: null, pendingEditorUrl: null };
 
       async function fetchCurrentUser() {
         try {
-          const res = await fetch("/api/auth/me", {
-            credentials: "same-origin",
-            cache: "no-store",
-          });
+          const res = await fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" });
           const data = await res.json().catch(() => ({}));
-          if (data?.authenticated === true && data.user) {
-            return data.user;
-          }
+          if (data?.authenticated === true && data.user) return data.user;
           return null;
-        } catch {
-          return null;
-        }
+        } catch { return null; }
       }
 
       function updateAuthUI() {
@@ -2941,7 +2886,6 @@
           const email = authState.user.email || "you";
           const initial = (email[0] || "U").toUpperCase();
           const display = email.split("@")[0] || "user";
-
           if (signInBtn) signInBtn.style.display = "none";
           if (userBtn) userBtn.classList.add("show");
           if (avatar) avatar.textContent = initial;
@@ -2959,15 +2903,12 @@
         authState.pendingEditorUrl = pendingUrl;
         const overlay = $("#loginOverlay");
         if (overlay) overlay.classList.add("show");
-
-        // Reset panes
         const loginPane = $("#loginPane");
         const registerPane = $("#registerPane");
         if (loginPane) loginPane.hidden = false;
         if (registerPane) registerPane.hidden = true;
         $("#loginError").textContent = "";
         $("#registerError").textContent = "";
-
         setTimeout(() => $("#loginEmail")?.focus(), 150);
       }
 
@@ -2980,15 +2921,12 @@
       function handleLoginSuccess() {
         updateAuthUI();
         closeLoginModal();
-
-        // If there was a pending editor URL, redirect to it
         if (authState.pendingEditorUrl) {
           const target = authState.pendingEditorUrl;
           authState.pendingEditorUrl = null;
           window.location.href = target;
           return;
         }
-
         showToast("Welcome back ✦");
       }
 
@@ -3003,10 +2941,7 @@
         const toLogin = $("#toLogin");
 
         closeBtn?.addEventListener("click", closeLoginModal);
-
-        overlay?.addEventListener("click", (e) => {
-          if (e.target === overlay) closeLoginModal();
-        });
+        overlay?.addEventListener("click", (e) => { if (e.target === overlay) closeLoginModal(); });
 
         toRegister?.addEventListener("click", () => {
           loginPane.hidden = true;
@@ -3028,16 +2963,10 @@
           const password = $("#loginPassword").value;
           const submitBtn = $("#loginSubmit");
           const errorEl = $("#loginError");
-
           errorEl.textContent = "";
-          if (!email || !password) {
-            errorEl.textContent = "Please enter your email and password.";
-            return;
-          }
-
+          if (!email || !password) { errorEl.textContent = "Please enter your email and password."; return; }
           submitBtn.disabled = true;
           submitBtn.textContent = "Signing in…";
-
           try {
             const res = await fetch("/api/auth/login", {
               method: "POST",
@@ -3046,9 +2975,7 @@
               body: JSON.stringify({ email, password }),
             });
             const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.success) {
-              throw new Error(data.message || "Sign in failed.");
-            }
+            if (!res.ok || !data.success) throw new Error(data.message || "Sign in failed.");
             authState.user = data.user;
             handleLoginSuccess();
           } catch (err) {
@@ -3065,25 +2992,12 @@
           const pwConfirm = $("#registerPasswordConfirm").value;
           const submitBtn = $("#registerSubmit");
           const errorEl = $("#registerError");
-
           errorEl.textContent = "";
-
-          if (!email) {
-            errorEl.textContent = "Please enter your email.";
-            return;
-          }
-          if (pw.length < 12) {
-            errorEl.textContent = "Password must be at least 12 characters.";
-            return;
-          }
-          if (pw !== pwConfirm) {
-            errorEl.textContent = "Passwords do not match.";
-            return;
-          }
-
+          if (!email) { errorEl.textContent = "Please enter your email."; return; }
+          if (pw.length < 12) { errorEl.textContent = "Password must be at least 12 characters."; return; }
+          if (pw !== pwConfirm) { errorEl.textContent = "Passwords do not match."; return; }
           submitBtn.disabled = true;
           submitBtn.textContent = "Creating account…";
-
           try {
             const res = await fetch("/api/auth/register", {
               method: "POST",
@@ -3092,9 +3006,7 @@
               body: JSON.stringify({ email, password: pw }),
             });
             const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.success) {
-              throw new Error(data.message || "Sign up failed.");
-            }
+            if (!res.ok || !data.success) throw new Error(data.message || "Sign up failed.");
             authState.user = data.user;
             handleLoginSuccess();
           } catch (err) {
@@ -3111,24 +3023,11 @@
         const menu = $("#userMenu");
         const signOut = $("#menuSignOut");
 
-        userBtn?.addEventListener("click", (e) => {
-          e.stopPropagation();
-          menu.classList.toggle("show");
-        });
-
-        document.addEventListener("click", (e) => {
-          if (!menu.contains(e.target) && e.target !== userBtn) {
-            menu.classList.remove("show");
-          }
-        });
+        userBtn?.addEventListener("click", (e) => { e.stopPropagation(); menu.classList.toggle("show"); });
+        document.addEventListener("click", (e) => { if (!menu.contains(e.target) && e.target !== userBtn) menu.classList.remove("show"); });
 
         signOut?.addEventListener("click", async () => {
-          try {
-            await fetch("/api/auth/logout", {
-              method: "POST",
-              credentials: "same-origin",
-            });
-          } catch {}
+          try { await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }); } catch {}
           authState.user = null;
           updateAuthUI();
           menu.classList.remove("show");
@@ -3143,28 +3042,8 @@
           label: 'LOVE COLLECTION',
           description: 'Choose a romantic gift website design to preview or personalise.',
           templates: [
-            {
-              id: 'eternal-love',
-              name: 'Eternal Love',
-              category: 'love',
-              price: 499,
-              badge: '✦ FEATURED DESIGN',
-              description: 'A romantic multi-page gift experience for your favourite person, filled with personal notes and memories.',
-              features: ['Multi-page experience', 'Love letter', 'Memory gallery', 'Relationship timer'],
-              preview: '/templates/love/eternal-love/template.html',
-              customize: './editor/editor.html?template=eternal-love&category=love'
-            },
-            {
-              id: 'love-proposal',
-              name: 'Love Proposal',
-              category: 'love',
-              price: 499,
-              badge: '♥ ROMANTIC EXPERIENCE',
-              description: 'A multi-page proposal journey made for a heartfelt question and a memorable answer.',
-              features: ['Multi-page experience', 'Proposal journey', 'Personal messages', 'Romantic moments'],
-              preview: '/templates/love/love-proposal/template.html',
-              customize: './editor/editor.html?template=love-proposal&category=love'
-            }
+            { id: 'eternal-love', name: 'Eternal Love', category: 'love', price: 499, badge: '✦ FEATURED DESIGN', description: 'A romantic multi-page gift experience for your favourite person, filled with personal notes and memories.', features: ['Multi-page experience', 'Love letter', 'Memory gallery', 'Relationship timer'], preview: '/templates/love/eternal-love/template.html', customize: './editor/editor.html?template=eternal-love&category=love' },
+            { id: 'love-proposal', name: 'Love Proposal', category: 'love', price: 499, badge: '♥ ROMANTIC EXPERIENCE', description: 'A multi-page proposal journey made for a heartfelt question and a memorable answer.', features: ['Multi-page experience', 'Proposal journey', 'Personal messages', 'Romantic moments'], preview: '/templates/love/love-proposal/template.html', customize: './editor/editor.html?template=love-proposal&category=love' }
           ]
         },
         birthday: {
@@ -3172,37 +3051,12 @@
           label: 'BIRTHDAY COLLECTION',
           description: 'Choose a birthday gift website design to preview or personalise.',
           templates: [
-            {
-              id: 'birthday-magic',
-              name: 'Birthday Magic',
-              category: 'birthday',
-              price: 499,
-              badge: '✦ NEW DESIGN',
-              description: 'A joyful multi-page birthday experience filled with wishes, memories, a love letter, a video memory, and a fun game.',
-              features: ['Multi-page experience', 'Love letter', 'Photo galleries', 'Video memory', 'Heart-catching game'],
-              preview: '/templates/birthday/birthday-magic/template.html',
-              customize: './editor/editor.html?template=birthday-magic&category=birthday'
-            }
+            { id: 'birthday-magic', name: 'Birthday Magic', category: 'birthday', price: 499, badge: '✦ NEW DESIGN', description: 'A joyful multi-page birthday experience filled with wishes, memories, a love letter, a video memory, and a fun game.', features: ['Multi-page experience', 'Love letter', 'Photo galleries', 'Video memory', 'Heart-catching game'], preview: '/templates/birthday/birthday-magic/template.html', customize: './editor/editor.html?template=birthday-magic&category=birthday' }
           ]
         },
-        anniversary: {
-          title: 'Celebrate every <span class="gradient">chapter of us.</span>',
-          label: 'ANNIVERSARY COLLECTION',
-          description: 'Anniversary gift website designs will appear here as they are added.',
-          templates: []
-        },
-        friendship: {
-          title: 'For your favourite <span class="gradient">kind of chaos.</span>',
-          label: 'FRIENDSHIP COLLECTION',
-          description: 'Friendship gift website designs will appear here as they are added.',
-          templates: []
-        },
-        memories: {
-          title: 'Keep the moments <span class="gradient">close forever.</span>',
-          label: 'MEMORIES COLLECTION',
-          description: 'Memory collection gift website designs will appear here as they are added.',
-          templates: []
-        }
+        anniversary: { title: 'Celebrate every <span class="gradient">chapter of us.</span>', label: 'ANNIVERSARY COLLECTION', description: 'Anniversary gift website designs will appear here as they are added.', templates: [] },
+        friendship: { title: 'For your favourite <span class="gradient">kind of chaos.</span>', label: 'FRIENDSHIP COLLECTION', description: 'Friendship gift website designs will appear here as they are added.', templates: [] },
+        memories: { title: 'Keep the moments <span class="gradient">close forever.</span>', label: 'MEMORIES COLLECTION', description: 'Memory collection gift website designs will appear here as they are added.', templates: [] }
       };
 
       /* ---------- 05. UTILITIES ---------- */
@@ -3210,9 +3064,7 @@
       const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
       function esc(str) {
-        return String(str).replace(/[&<>"']/g, c => ({
-          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[c]));
+        return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       }
 
       function showToast(message) {
@@ -3227,30 +3079,15 @@
       /* ---------- 06. CATALOG VALIDATION ---------- */
       function validateCatalog() {
         const seenIds = new Set();
-
         for (const [categoryKey, category] of Object.entries(categories)) {
-          if (!Array.isArray(category.templates)) {
-            throw new Error(`NIVA catalog: templates must be an array for ${categoryKey}`);
-          }
-
+          if (!Array.isArray(category.templates)) throw new Error(`templates must be array for ${categoryKey}`);
           for (const t of category.templates) {
-            if (!/^[a-z0-9-]+$/.test(t.id) || seenIds.has(t.id)) {
-              throw new Error(`NIVA catalog: invalid or duplicate template id: ${t.id}`);
-            }
+            if (!/^[a-z0-9-]+$/.test(t.id) || seenIds.has(t.id)) throw new Error(`invalid/dup id: ${t.id}`);
             seenIds.add(t.id);
-
-            if (t.category !== categoryKey) {
-              console.warn(`NIVA catalog: ${t.id} category does not match ${categoryKey}`);
-            }
-            if (!t.name || !t.preview || !t.customize || !Array.isArray(t.features)) {
-              throw new Error(`NIVA catalog: missing required fields for ${t.id}`);
-            }
-            if (!t.preview.startsWith('/templates/') || t.preview.includes('..')) {
-              throw new Error(`NIVA catalog: unsafe preview path for ${t.id}`);
-            }
-            if (!t.customize.startsWith('./editor/editor.html?template=')) {
-              throw new Error(`NIVA catalog: invalid editor link for ${t.id}`);
-            }
+            if (t.category !== categoryKey) console.warn(`category mismatch: ${t.id}`);
+            if (!t.name || !t.preview || !t.customize || !Array.isArray(t.features)) throw new Error(`missing fields: ${t.id}`);
+            if (!t.preview.startsWith('/templates/') || t.preview.includes('..')) throw new Error(`unsafe preview: ${t.id}`);
+            if (!t.customize.startsWith('./editor/editor.html?template=')) throw new Error(`invalid editor: ${t.id}`);
           }
         }
       }
@@ -3260,19 +3097,11 @@
       (function initIntro() {
         const intro = $('#intro');
         if (!intro) return;
-
-        try {
-          if (sessionStorage.getItem('nivaIntroSeen') === '1') {
-            intro.remove();
-            return;
-          }
-        } catch {}
-
+        try { if (sessionStorage.getItem('nivaIntroSeen') === '1') { intro.remove(); return; } } catch {}
         const removalTimer = setTimeout(() => {
           if (intro && intro.parentNode) intro.remove();
           try { sessionStorage.setItem('nivaIntroSeen', '1'); } catch {}
         }, 3200);
-
         const escHandler = (e) => {
           if (e.key === 'Escape') {
             clearTimeout(removalTimer);
@@ -3290,7 +3119,6 @@
         const toggle = $('#menuToggle');
         const links = $('#navLinks');
         if (!toggle || !links) return;
-
         function closeMenu() {
           links.classList.remove('open');
           toggle.setAttribute('aria-expanded', 'false');
@@ -3298,128 +3126,178 @@
           toggle.textContent = '☰';
           document.body.style.overflow = '';
         }
-
         function openMenu() {
           links.classList.add('open');
           toggle.setAttribute('aria-expanded', 'true');
           toggle.setAttribute('aria-label', 'Close navigation');
           toggle.textContent = '×';
-          if (window.innerWidth < 900) {
-            document.body.style.overflow = 'hidden';
-          }
+          if (window.innerWidth < 900) document.body.style.overflow = 'hidden';
         }
-
-        toggle.addEventListener('click', () => {
-          if (links.classList.contains('open')) closeMenu();
-          else openMenu();
-        });
-
+        toggle.addEventListener('click', () => { if (links.classList.contains('open')) closeMenu(); else openMenu(); });
         $$('a', links).forEach(a => a.addEventListener('click', closeMenu));
-
-        window.addEventListener('resize', () => {
-          if (window.innerWidth >= 900 && links.classList.contains('open')) {
-            closeMenu();
-          }
-        });
-
+        window.addEventListener('resize', () => { if (window.innerWidth >= 900 && links.classList.contains('open')) closeMenu(); });
         window.__nivaCloseMenu = closeMenu;
       })();
 
-      /* ---------- 09. CATALOG RENDERING ---------- */
+      /* =========================================================
+         ⭐ 09. CUSTOMER REVIEWS RENDERING
+         ========================================================= */
+      const REVIEWS_ROW_1 = [
+        { name: 'Anjali R.', role: 'Sent to her partner', avatar: 'A', v: 1, text: 'I cried making it. He cried opening it. <em>NIVA turned our little story into something we can actually revisit</em> — not just a chat history.', tag: 'Eternal Love', stars: 5 },
+        { name: 'Rahul M.', role: 'Anniversary gift', avatar: 'R', v: 2, text: 'The relationship timer alone made her tear up. It feels like a tiny world that belongs only to us. <em>Nothing generic about it.</em>', tag: 'Eternal Love', stars: 5 },
+        { name: 'Sneha K.', role: 'Birthday surprise', avatar: 'S', v: 3, text: 'My best friend said it was <em>the most personal gift she\'s ever received</em>. The little game and the letter — she screenshotted everything.', tag: 'Birthday Magic', stars: 5 },
+        { name: 'Devansh P.', role: 'Proposal gift', avatar: 'D', v: 4, text: 'I proposed through a NIVA site. She said yes before she even finished reading. <em>Worth every single rupee.</em>', tag: 'Love Proposal', stars: 5 },
+        { name: 'Meera J.', role: 'Friendship gift', avatar: 'M', v: 5, text: 'Sent it to my college best friend for her birthday. She called me sobbing. <em>Ten years of memories in one little website.</em>', tag: 'Birthday Magic', stars: 5 },
+        { name: 'Arjun S.', role: 'Long-distance partner', avatar: 'A', v: 6, text: 'We\'re in different time zones. This made the distance feel smaller. <em>She opens it every time she misses me.</em>', tag: 'Eternal Love', stars: 5 },
+        { name: 'Priya N.', role: 'First anniversary', avatar: 'P', v: 1, text: 'I was worried it might feel like a template. It didn\'t. <em>Every photo, every note, every small detail felt intentional.</em>', tag: 'Eternal Love', stars: 5 },
+        { name: 'Karthik V.', role: 'Marriage proposal', avatar: 'K', v: 2, text: 'She thought it was just a card. Then she kept scrolling. Then she was crying. <em>Best ₹499 I\'ve ever spent.</em>', tag: 'Love Proposal', stars: 5 }
+      ];
+
+      const REVIEWS_ROW_2 = [
+        { name: 'Ishita B.', role: 'Anniversary surprise', avatar: 'I', v: 3, text: 'My husband isn\'t the expressive type. He made one for our 5th. <em>I still open it on hard days.</em> It\'s become our little ritual.', tag: 'Eternal Love', stars: 5 },
+        { name: 'Rohan T.', role: 'Long-distance proposal', avatar: 'R', v: 4, text: 'She was 4,000 km away. I sent her a link. <em>She said yes on a video call with the site open in the background.</em>', tag: 'Love Proposal', stars: 5 },
+        { name: 'Tanya G.', role: 'Birthday for her mom', avatar: 'T', v: 5, text: 'Made one for my mother\'s 60th. She doesn\'t cry easily. <em>She cried.</em> Then she made me show it to every relative.', tag: 'Birthday Magic', stars: 5 },
+        { name: 'Vikram A.', role: 'Best friend\'s wedding', avatar: 'V', v: 6, text: 'Made a NIVA for my best friend\'s wedding gift. The whole room went quiet. <em>It became a story people kept telling.</em>', tag: 'Eternal Love', stars: 5 },
+        { name: 'Nisha R.', role: 'Just because', avatar: 'N', v: 1, text: 'No occasion. Just a Tuesday. <em>He said it was the most romantic thing anyone had ever done for him.</em>', tag: 'Eternal Love', stars: 5 },
+        { name: 'Aditya K.', role: 'Six-month anniversary', avatar: 'A', v: 2, text: 'I\'m not a writer. NIVA made me sound like one. <em>The layout does half the work — you just bring the feelings.</em>', tag: 'Eternal Love', stars: 5 },
+        { name: 'Shruti M.', role: 'Sister\'s birthday', avatar: 'S', v: 3, text: 'My sister and I have 20 years of inside jokes. <em>I put them all in one place.</em> She said it was better than any party.', tag: 'Birthday Magic', stars: 5 },
+        { name: 'Kunal D.', role: 'Proposal', avatar: 'K', v: 4, text: 'I kept it open on her laptop with a note: "scroll slowly." <em>She scrolled. She cried. She said yes.</em>', tag: 'Love Proposal', stars: 5 }
+      ];
+
+      function buildReviewCard(r) {
+        const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+        return `
+          <article class="review-card" aria-label="Review by ${esc(r.name)}">
+            <span class="review-quote-mark" aria-hidden="true">"</span>
+            <div class="review-header">
+              <div class="review-avatar v${r.v}" aria-hidden="true">${esc(r.avatar)}</div>
+              <div class="review-meta">
+                <div class="review-name">${esc(r.name)}</div>
+                <div class="review-role">${esc(r.role)}</div>
+                <div class="review-stars" aria-label="${r.stars} out of 5 stars">${stars}</div>
+              </div>
+            </div>
+            <p class="review-text">${r.text}</p>
+            <div class="review-footer">
+              <span class="review-tag">✦ ${esc(r.tag)}</span>
+              <span aria-hidden="true">♥</span>
+            </div>
+          </article>`;
+      }
+
+      function initReviews() {
+        const track1 = $('#reviewsTrack1');
+        const track2 = $('#reviewsTrack2');
+        if (!track1 || !track2) return;
+
+        // Each track is doubled so the marquee loops seamlessly.
+        const row1HTML = REVIEWS_ROW_1.map(buildReviewCard).join('');
+        const row2HTML = REVIEWS_ROW_2.map(buildReviewCard).join('');
+
+        track1.innerHTML = row1HTML + row1HTML;
+        track2.innerHTML = row2HTML + row2HTML;
+      }
+
+      /* ---------- 10. CATALOG RENDERING ---------- */
       const catalog = $('#catalog');
       const grid = $('#templateGrid');
+
+      function renderTemplates(templates, emptyMessage = 'Something lovely is on its way.') {
+        if (!templates.length) {
+          grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1">
+              <div class="empty-icon">✦</div>
+              <h3>${emptyMessage}</h3>
+              <p>This collection is being prepared. The template gallery is ready for new designs, and this category will be updated when its first gift template is available.</p>
+            </div>`;
+          return;
+        }
+
+        grid.innerHTML = templates.map(t => {
+          const words = esc(t.name).split(/\s+/);
+          const first = words.shift() || esc(t.name);
+          const rest = words.join(' ');
+          return `
+            <article class="template-card">
+              <div class="template-thumb">
+                <span class="template-badge">${esc(t.badge || '✦ DIGITAL GIFT')}</span>
+                <div class="mini-site">
+                  <span class="mini-heart">♥</span>
+                  <small>A LITTLE WORLD FOR</small>
+                  <strong>${first}${rest ? '<br>' + esc(rest) : ''}</strong>
+                </div>
+              </div>
+              <div class="template-info">
+                <div class="template-meta">
+                  <span>${esc(t.category.toUpperCase())} · DIGITAL GIFT</span>
+                  <span>₹${t.price}</span>
+                </div>
+                <h3>${esc(t.name)}</h3>
+                <p>${esc(t.description)}</p>
+                <div class="template-features">
+                  ${t.features.map(f => `<span>${esc(f)}</span>`).join('')}
+                </div>
+                <div class="template-actions">
+                  <button class="btn btn-quiet preview-template" data-id="${esc(t.id)}">Preview ↗</button>
+                  <a class="btn btn-primary customise-btn" href="${esc(t.customize)}" data-editor-url="${esc(t.customize)}">Customise ♥</a>
+                </div>
+              </div>
+            </article>`;
+        }).join('');
+
+        $$('.preview-template', grid).forEach(btn => {
+          btn.addEventListener('click', () => {
+            const all = Object.values(categories).flatMap(c => c.templates);
+            const tpl = all.find(t => t.id === btn.dataset.id);
+            if (tpl) openPreview(tpl);
+          });
+        });
+
+        $$('.customise-btn', grid).forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            if (!authState.user) { e.preventDefault(); openLoginModal(btn.dataset.editorUrl); }
+          });
+        });
+      }
 
       function selectCategory(key) {
         const data = categories[key];
         if (!data) return;
-
-        $$('[data-category]').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.category === key);
-        });
-
+        $$('[data-category]').forEach(btn => btn.classList.toggle('active', btn.dataset.category === key));
         $('#catalogEyebrow').textContent = data.label;
         $('#catalogTitle').innerHTML = data.title;
         $('#catalogDescription').textContent = data.description;
-        $('#catalogCount').textContent =
-          data.templates.length + ' template' + (data.templates.length === 1 ? '' : 's');
-
-        if (!data.templates.length) {
-          grid.innerHTML = `
-            <div class="empty-state" style="grid-column:1/-1">
-              <div class="empty-icon">✦</div>
-              <h3>Something lovely is on its way.</h3>
-              <p>This collection is being prepared. The template gallery is ready for new designs, and this category will be updated when its first gift template is available.</p>
-            </div>`;
-        } else {
-          grid.innerHTML = data.templates.map(t => {
-            const words = esc(t.name).split(/\s+/);
-            const first = words.shift() || esc(t.name);
-            const rest = words.join(' ');
-
-            return `
-              <article class="template-card">
-                <div class="template-thumb">
-                  <span class="template-badge">${esc(t.badge || '✦ DIGITAL GIFT')}</span>
-                  <div class="mini-site">
-                    <span class="mini-heart">♥</span>
-                    <small>A LITTLE WORLD FOR</small>
-                    <strong>${first}${rest ? '<br>' + esc(rest) : ''}</strong>
-                  </div>
-                </div>
-                <div class="template-info">
-                  <div class="template-meta">
-                    <span>${esc(t.category.toUpperCase())} · DIGITAL GIFT</span>
-                    <span>₹${t.price}</span>
-                  </div>
-                  <h3>${esc(t.name)}</h3>
-                  <p>${esc(t.description)}</p>
-                  <div class="template-features">
-                    ${t.features.map(f => `<span>${esc(f)}</span>`).join('')}
-                  </div>
-                  <div class="template-actions">
-                    <button class="btn btn-quiet preview-template" data-id="${esc(t.id)}">Preview ↗</button>
-                    <a class="btn btn-primary customise-btn" href="${esc(t.customize)}" data-editor-url="${esc(t.customize)}">Customise ♥</a>
-                  </div>
-                </div>
-              </article>`;
-          }).join('');
-
-          $$('.preview-template', grid).forEach(btn => {
-            btn.addEventListener('click', () => {
-              const tpl = data.templates.find(t => t.id === btn.dataset.id);
-              openPreview(tpl);
-            });
-          });
-
-          // ⚡ CUSTOMISE BUTTONS — CHECK AUTH FIRST
-          $$('.customise-btn', grid).forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              if (!authState.user) {
-                e.preventDefault();
-                // Remember where to go after login
-                openLoginModal(btn.dataset.editorUrl);
-                return;
-              }
-              // Logged in → let default navigation happen
-            });
-          });
-        }
-
+        $('#catalogCount').textContent = data.templates.length + ' template' + (data.templates.length === 1 ? '' : 's');
+        renderTemplates(data.templates);
         catalog.classList.add('open');
-
         setTimeout(() => {
-          catalog.scrollIntoView({
-            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-            block: 'start'
-          });
+          catalog.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
         }, 100);
       }
 
-      $$('[data-category]').forEach(btn => {
-        btn.addEventListener('click', () => selectCategory(btn.dataset.category));
-      });
+      function filterByPrice(planName, price) {
+        const allTemplates = [];
+        for (const [catKey, cat] of Object.entries(categories)) {
+          for (const t of cat.templates) allTemplates.push({ ...t, categoryKey: catKey });
+        }
+        const matched = allTemplates.filter(t => Number(t.price) === Number(price));
+        $('#catalogEyebrow').textContent = `${planName.toUpperCase()} PLAN`;
+        $('#catalogTitle').innerHTML = `Templates for <span class="gradient">₹${price}</span>`;
+        $('#catalogDescription').textContent = matched.length
+          ? `Showing ${matched.length} template${matched.length === 1 ? '' : 's'} available at the ₹${price} price point.`
+          : `No templates are currently priced at ₹${price}.`;
+        $('#catalogCount').textContent = matched.length + ' template' + (matched.length === 1 ? '' : 's');
+        $$('[data-category]').forEach(btn => btn.classList.remove('active'));
+        renderTemplates(matched, `No ₹${price} templates yet.`);
+        catalog.classList.add('open');
+        setTimeout(() => {
+          catalog.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+        }, 100);
+      }
 
-      /* ---------- 10. PREVIEW MODAL ---------- */
+      $$('[data-category]').forEach(btn => btn.addEventListener('click', () => selectCategory(btn.dataset.category)));
+
+      /* ---------- 11. PREVIEW MODAL ---------- */
       const modal = $('#previewModal');
       const frame = $('#previewFrame');
 
@@ -3440,10 +3318,7 @@
       }
 
       $('#closePreview').addEventListener('click', closePreview);
-
-      modal.addEventListener('click', e => {
-        if (e.target === modal) closePreview();
-      });
+      modal.addEventListener('click', e => { if (e.target === modal) closePreview(); });
 
       document.addEventListener('keydown', e => {
         if (e.key !== 'Escape') return;
@@ -3452,7 +3327,6 @@
         if ($('#loginOverlay')?.classList.contains('show')) closeLoginModal();
       });
 
-      // PREVIEW MODAL CUSTOMISE BUTTON — ALSO CHECK AUTH
       const previewCustomizeBtn = $('#previewCustomize');
       previewCustomizeBtn?.addEventListener('click', (e) => {
         if (!authState.user) {
@@ -3462,18 +3336,15 @@
         }
       });
 
-      /* ---------- 11. PLAN BUTTONS ---------- */
+      /* ---------- 12. PLAN BUTTONS ---------- */
       $$('.plan-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          showToast(`${btn.dataset.plan}: planned pricing only — checkout is not active yet.`);
-        });
+        btn.addEventListener('click', () => filterByPrice(btn.dataset.plan, btn.dataset.price));
       });
 
-      /* ---------- 12. REVEAL ON SCROLL ---------- */
+      /* ---------- 13. REVEAL ON SCROLL ---------- */
       (function initReveal() {
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const items = $$('.reveal');
-
         if ('IntersectionObserver' in window && !reduced) {
           const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
@@ -3483,38 +3354,30 @@
               }
             });
           }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
           items.forEach(el => observer.observe(el));
         } else {
           items.forEach(el => el.classList.add('visible'));
         }
       })();
 
-      /* ---------- 13. FOOTER YEAR ---------- */
+      /* ---------- 14. FOOTER YEAR ---------- */
       $('#year').textContent = new Date().getFullYear();
 
-      /* ---------- 14. NAV SIGN IN BUTTON ---------- */
-      $('#navSignIn')?.addEventListener('click', () => {
-        openLoginModal();
-      });
+      /* ---------- 15. NAV SIGN IN ---------- */
+      $('#navSignIn')?.addEventListener('click', () => openLoginModal());
 
-      /* ---------- 15. BOOT ---------- */
+      /* ---------- 16. BOOT ---------- */
       async function boot() {
         initLoginModal();
         initUserMenu();
+        initReviews();  // ⭐ render animated reviews
 
-        // Check if user is already logged in
         const user = await fetchCurrentUser();
-        if (user) {
-          authState.user = user;
-        }
+        if (user) authState.user = user;
         updateAuthUI();
 
-        // If user is on homepage with pending redirect (unlikely but possible)
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('login') === 'required' && !user) {
-          openLoginModal();
-        }
+        if (urlParams.get('login') === 'required' && !user) openLoginModal();
       }
 
       boot();
