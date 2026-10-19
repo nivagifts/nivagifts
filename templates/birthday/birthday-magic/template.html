@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0508">
+<title>A Little Birthday Magic ♥</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:     #0a0508;
+  --bg-soft:     #14080f;
+  --panel:       #1c0f18;
+  --panel-2:     #241421;
+  --panel-3:     #2e1929;
+  --wine:        #8b1e3f;
+  --wine-soft:   #6b1830;
+  --rose:        #e8b4b8;
+  --rose-soft:   #c47a8a;
+  --rose-bright: #f4c8cc;
+  --gold:        #d4a574;
+  --gold-soft:   #b8895c;
+  --text:        #f5e6d3;
+  --text-2:      #c9b3b8;
+  --text-muted:  #8a6f78;
+  --line:        #3d2433;
+  --line-gold:   rgba(212, 165, 116, 0.35);
+  --serif:       'Cormorant Garamond', Georgia, serif;
+  --sans:        'Inter', system-ui, sans-serif;
+  --ease:        cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg-deep);
+  color: var(--text);
+  overflow: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; border: 0; cursor: pointer; }
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 12% 12%, rgba(139, 30, 63, 0.28), transparent 36%),
+    radial-gradient(ellipse at 90% 85%, rgba(122, 82, 168, 0.2), transparent 36%),
+    var(--bg-deep);
+}
+
+#petals, #confetti {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#petals { z-index: 2; }
+#confetti { z-index: 20; }
+
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 22px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(32px) scale(0.985);
+  transition: opacity 0.55s var(--ease), transform 0.65s var(--ease), visibility 0.55s;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 10% 10%, rgba(139, 30, 63, 0.22), transparent 45%),
+    radial-gradient(ellipse at 90% 90%, rgba(122, 82, 168, 0.15), transparent 45%),
+    var(--bg-deep);
+}
+
+.page.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+  z-index: 3;
+}
+
+.page.exit-left {
+  opacity: 0;
+  transform: translateX(-32px) scale(0.985);
+}
+
+.content {
+  width: min(100%, 800px);
+  text-align: center;
+  margin: auto;
+  padding: 26px 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+}
+
+h1, h2, .serif {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+h1 { font-size: clamp(44px, 9vw, 88px); line-height: 1.08; }
+h2 { font-size: clamp(34px, 6vw, 58px); line-height: 1.16; margin-bottom: 20px; }
+h1 em, h2 em { color: var(--rose); font-weight: 400; font-style: italic; }
+
+.subtitle {
+  color: var(--text-2);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.85;
+  max-width: 480px;
+  margin: 22px auto 0;
+}
+
+.tiny-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 22px;
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.page-number {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--text-muted);
+  margin-top: 34px;
+  text-transform: uppercase;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(110deg, var(--wine), #a82851);
+  color: var(--text);
+  border: 1px solid rgba(232, 180, 184, 0.35);
+  padding: 17px 30px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  box-shadow: 0 12px 32px rgba(139, 30, 63, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  margin-top: 30px;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 42px rgba(139, 30, 63, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn.secondary {
+  background: rgba(28, 15, 24, 0.8);
+  color: var(--rose);
+  border: 1px solid var(--line-gold);
+  box-shadow: none;
+}
+
+.btn.secondary:hover {
+  border-color: var(--rose-soft);
+  background: rgba(36, 20, 33, 0.9);
+}
+
+.hero-art {
+  position: relative;
+  width: 190px;
+  height: 180px;
+  margin: 0 auto 30px;
+  display: grid;
+  place-items: center;
+  animation: float 4s ease-in-out infinite;
+}
+
+.gift {
+  width: 108px;
+  height: 96px;
+  background: linear-gradient(135deg, var(--rose-soft), var(--wine));
+  border: 1px solid var(--line-gold);
+  border-radius: 14px 14px 20px 20px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(139, 30, 63, 0.45);
+  animation: giftGlow 3s ease-in-out infinite;
+}
+
+.gift:before {
+  content: "";
+  position: absolute;
+  width: 124px;
+  height: 20px;
+  top: -10px;
+  left: -8px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--rose), var(--rose-soft));
+  border: 1px solid var(--line-gold);
+}
+
+.gift:after {
+  content: "♥";
+  position: absolute;
+  color: var(--gold);
+  font-size: 38px;
+  inset: 20px 0 0;
+  font-family: var(--serif);
+}
+
+.bow {
+  position: absolute;
+  top: -46px;
+  left: 30px;
+  font-size: 52px;
+  filter: drop-shadow(0 6px 16px rgba(139, 30, 63, 0.5));
+}
+
+.spark {
+  position: absolute;
+  font-size: 24px;
+  color: var(--gold);
+  animation: twinkle 2s ease-in-out infinite;
+}
+.s1 { left: 0; top: 28px; }
+.s2 { right: 0; top: 18px; animation-delay: 0.6s; }
+.s3 { left: 18px; bottom: 8px; animation-delay: 1s; }
+.s4 { right: 18px; bottom: 2px; animation-delay: 0.3s; }
+
+.letter {
+  width: min(100%, 580px);
+  margin: 28px auto 0;
+  padding: clamp(28px, 6vw, 52px);
+  border: 1px solid var(--line-gold);
+  background: linear-gradient(145deg, var(--panel), var(--panel-2));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  text-align: left;
+  position: relative;
+}
+
+.letter:before {
+  content: "❦";
+  position: absolute;
+  right: 26px;
+  top: 18px;
+  color: var(--gold);
+  font-size: 30px;
+  opacity: 0.7;
+}
+
+.letter h3 {
+  font: 400 28px var(--serif);
+  color: var(--rose);
+  margin-bottom: 22px;
+  letter-spacing: -0.01em;
+}
+
+.letter p {
+  font-size: 15px;
+  line-height: 1.95;
+  color: var(--text);
+  margin-bottom: 16px;
+  white-space: pre-line;
+  font-family: var(--serif);
+}
+
+.signature {
+  font: italic 22px var(--serif);
+  color: var(--rose);
+  margin-top: 24px;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin: 30px auto 0;
+  max-width: 690px;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--panel-2), var(--panel-3));
+  border: 1px solid var(--line-gold);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  animation: photoAppear 0.65s both;
+  transition: transform 0.4s var(--ease);
+}
+
+.photo:nth-child(2n) { transform: translateY(8px); }
+.photo:nth-child(3n) { transform: translateY(-5px); }
+
+.photo:hover {
+  transform: translateY(-6px);
+  z-index: 2;
+}
+
+.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s var(--ease);
+}
+
+.photo:hover img { transform: scale(1.08); }
+
+.photo .placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  color: var(--rose);
+}
+
+.photo .caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 22px 5px 10px;
+  font-size: 10px;
+  color: var(--text);
+  background: linear-gradient(transparent, rgba(10, 5, 8, 0.85));
+  z-index: 1;
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.memory-video {
+  width: min(100%, 560px);
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, var(--panel-2), var(--panel-3));
+  border: 1px solid var(--line-gold);
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 28px auto 0;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.5);
+}
+
+.memory-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.game-box {
+  width: min(100%, 470px);
+  margin: 28px auto 0;
+  background: linear-gradient(145deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line-gold);
+  border-radius: 26px;
+  padding: 30px 22px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+}
+
+.game-heart {
+  display: block;
+  font-size: 66px;
+  margin-bottom: 18px;
+  color: var(--rose);
+  animation: heartbeat 1.5s infinite;
+  filter: drop-shadow(0 0 20px rgba(232, 180, 184, 0.5));
+}
+
+.game-box p {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.85;
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.game-stats {
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 600;
+  margin-top: 14px;
+  letter-spacing: 0.06em;
+}
+
+.game-arena {
+  position: relative;
+  height: 185px;
+  overflow: hidden;
+  margin-top: 20px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, var(--bg-soft), var(--panel-3));
+  border: 1px solid var(--line);
+}
+
+.game-start-btn { margin-top: 66px; padding: 14px 24px; }
+
+.catch-heart {
+  position: absolute;
+  font-size: 34px;
+  padding: 8px;
+  background: transparent;
+  animation: heartDrop 2.8s linear forwards;
+  color: var(--rose);
+}
+
+.final-card {
+  width: min(100%, 560px);
+  margin: 28px auto 0;
+  padding: 42px 28px;
+  border-radius: 32px;
+  background: linear-gradient(145deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line-gold);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.final-heart {
+  font-size: 72px;
+  display: block;
+  color: var(--rose);
+  animation: heartbeat 1.5s infinite;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 30px rgba(232, 180, 184, 0.5));
+}
+
+.final-card p {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.95;
+  font-family: var(--serif);
+}
+
+.floating {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  color: var(--rose);
+  animation: floatUp var(--duration, 7s) linear forwards;
+  z-index: 1;
+}
+
+#musicButton {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 30;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(28, 15, 24, 0.9);
+  border: 1px solid var(--line-gold);
+  color: var(--rose);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  font-size: 20px;
+  transition: transform 0.3s var(--ease), border-color 0.3s var(--ease);
+  backdrop-filter: blur(8px);
+}
+
+#musicButton:hover {
+  transform: scale(1.1);
+  border-color: var(--rose-soft);
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 80px;
+  transform: translate(-50%, 12px);
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line-gold);
+  padding: 14px 22px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-family: var(--serif);
+  font-style: italic;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.3s var(--ease);
+  z-index: 40;
+  white-space: nowrap;
+}
+
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-12px) rotate(2deg); }
+}
+@keyframes twinkle {
+  0%, 100% { transform: scale(0.8) rotate(0); opacity: 0.5; }
+  50%      { transform: scale(1.2) rotate(15deg); opacity: 1; }
+}
+@keyframes giftGlow {
+  0%, 100% { box-shadow: 0 20px 50px rgba(139, 30, 63, 0.4); }
+  50%      { box-shadow: 0 20px 60px rgba(232, 180, 184, 0.5); }
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.12); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+}
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(0) rotate(0); }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-110vh) rotate(35deg); }
+}
+@keyframes photoAppear {
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  to   { opacity: 1; }
+}
+@keyframes heartDrop {
+  from { transform: translateY(-20px) rotate(-15deg); }
+  to   { transform: translateY(200px) rotate(25deg); }
+}
+@keyframes pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 560px) {
+  .page { padding: 26px 16px; }
+  .content { padding: 18px 0; }
+  .hero-art { transform: scale(0.9); margin-bottom: 16px; }
+  .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 350px; }
+  .photo { aspect-ratio: 1 / 1.12; }
+  .photo:nth-child(n) { transform: none; }
+  .gallery .photo:last-child { grid-column: 1 / -1; width: 50%; justify-self: center; }
+  .page-number { margin-top: 26px; }
+  .letter { padding: 28px 22px; }
+  .memory-video { border-radius: 14px; }
+}
+
+@media (max-height: 690px) {
+  .page { align-items: flex-start; }
+  .content { padding: 8px 0; }
+  .hero-art { margin-bottom: 8px; transform: scale(0.82); }
+  .eyebrow { margin-bottom: 14px; }
+  .subtitle { margin-top: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<main id="app">
+  <div id="petals" aria-hidden="true"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <section class="page active" id="page1">
+    <div class="content">
+      <div class="eyebrow">✦ A little surprise for you ✦</div>
+      <div class="hero-art" aria-hidden="true">
+        <span class="spark s1">✦</span>
+        <span class="spark s2">♥</span>
+        <span class="spark s3">✧</span>
+        <span class="spark s4">✦</span>
+        <div class="gift"><span class="bow">🎀</span></div>
+      </div>
+      <h1>Someone<br>is <em>so loved.</em></h1>
+      <p class="subtitle">A little world made just for you,<br>filled with memories, smiles and love.</p>
+      <button class="btn" onclick="goTo(2)">Open your surprise ♥</button>
+      <p class="tiny-note">made with a little extra love</p>
+    </div>
+  </section>
+
+  <section class="page" id="page2">
+    <div class="content">
+      <div class="eyebrow">✧ Today is all about you ✧</div>
+      <div style="font-size:60px;margin-bottom:24px;animation:float 3s infinite">🎂</div>
+      <h1>Happy Birthday,<br><em id="personName">My Favourite Person</em>!</h1>
+      <p class="subtitle">Today the world became a little more beautiful<br>because you were born.<br><br>I hope your day feels as magical as you make<br>ordinary days feel to me.</p>
+      <button class="btn" onclick="goTo(3)">A letter for you ✉</button>
+      <div class="page-number">A DAY MADE JUST FOR YOU</div>
+    </div>
+  </section>
+
+  <section class="page" id="page3">
+    <div class="content">
+      <div class="eyebrow">♥ From my heart to yours</div>
+      <h2>A little <em>love letter.</em></h2>
+      <article class="letter">
+        <h3>To my favourite human,</h3>
+        <p id="letterBody"></p>
+        <div class="signature" id="letterSignature"></div>
+      </article>
+      <button class="btn" onclick="goTo(4)">Our little memories ✦</button>
+    </div>
+  </section>
+
+  <section class="page" id="page4">
+    <div class="content">
+      <div class="eyebrow">✧ Little moments, big feelings</div>
+      <h2>My favourite <em>memories.</em></h2>
+      <p class="subtitle">Some moments deserve to stay in our hearts forever.</p>
+      <div class="gallery" id="galleryOne"></div>
+      <button class="btn" onclick="goTo(5)">More memories ♥</button>
+    </div>
+  </section>
+
+  <section class="page" id="page5">
+    <div class="content">
+      <div class="eyebrow">♥ Ten little pieces of happiness</div>
+      <h2>Every picture tells <em>our story.</em></h2>
+      <p class="subtitle">And somehow, every memory makes me smile all over again.</p>
+      <div class="gallery" id="galleryTwo"></div>
+      <button class="btn" onclick="goTo(6)">A little movie ✦</button>
+    </div>
+  </section>
+
+  <section class="page" id="page6">
+    <div class="content">
+      <div class="eyebrow">✧ Press play on a memory</div>
+      <h2>Our own little <em>movie.</em></h2>
+      <p class="subtitle">A few seconds of memories, a lifetime of feelings.</p>
+      <div class="memory-video">
+        <video id="memoryVideo" controls playsinline preload="metadata">
+          <source id="videoSource" type="video/mp4">
+          Your browser does not support this video.
+        </video>
+      </div>
+      <p class="tiny-note">A favourite memory, preserved forever.</p>
+      <button class="btn" onclick="goTo(7)">Let's play a game ✧</button>
+    </div>
+  </section>
+
+  <section class="page" id="page7">
+    <div class="content">
+      <div class="eyebrow">♥ A tiny birthday challenge</div>
+      <h2>Catch the <em>love!</em></h2>
+      <p class="subtitle">Catch as many hearts as you can before time runs out.</p>
+      <div class="game-box">
+        <span class="game-heart">♥</span>
+        <p id="gameDescription">Ready to collect some love? You have 15 seconds!</p>
+        <div class="game-stats">
+          Score: <span id="score">0</span>
+          &nbsp;·&nbsp;
+          Time: <span id="timeLeft">15</span>s
+        </div>
+        <div class="game-arena" id="gameArena"></div>
+      </div>
+      <button class="btn secondary" onclick="goTo(8)">One last surprise ✦</button>
+    </div>
+  </section>
+
+  <section class="page" id="page8">
+    <div class="content">
+      <div class="eyebrow">✧ One last little thing ✧</div>
+      <div class="final-card">
+        <span class="final-heart">♥</span>
+        <h2>You're my kind<br>of <em>magic.</em></h2>
+        <p>
+          If I could gift you one thing today,<br>
+          it would be the chance to see yourself<br>
+          through my eyes, just for a moment.<br><br>
+          You would understand why you are<br>
+          so incredibly special to me.<br><br>
+          Happy Birthday, my favourite person.
+        </p>
+        <div class="signature" id="finalSignature"></div>
+      </div>
+      <button class="btn" onclick="restartExperience()">Relive the magic ↻</button>
+      <p class="tiny-note">Your birthday, your little universe.</p>
+    </div>
+  </section>
+
+  <button id="musicButton" aria-label="Play background music" title="Background music" onclick="toggleMusic()">♪</button>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <audio id="backgroundMusic" loop preload="none"><source type="audio/mpeg"></audio>
+</main>
+
+<script>
+/* =========================================================
+   NIVA TEMPLATE BRIDGE — Birthday Magic
+   Change TEMPLATE_ID below to match config.json "id"
+   ========================================================= */
+"use strict";
+
+const TEMPLATE_ID = "birthday-magic";
+
+const CONFIG = {
+  personName: "My Favourite Person",
+  senderName: "Your Favourite Human",
+  letter: "Happy Birthday, my love.\n\nI wish I could put into words how much happiness you bring into my life. Every little moment with you becomes a memory I want to keep forever.\n\nYou deserve all the beautiful things this world has to offer. I hope this new chapter brings you countless reasons to smile.\n\nThank you for being you.",
+  photos: [],
+  captions: [
+    "A favourite moment", "Your beautiful smile", "A memory to keep",
+    "My happy place", "Just us", "Little things, big love",
+    "Forever remembered", "My favourite human", "Another reason to smile",
+    "A moment with you"
+  ],
+  video: "",
+  music: "",
+  totalPages: 8,
+  gameDuration: 15
+};
+
+try {
+  const saved = sessionStorage.getItem("niva-preview-" + TEMPLATE_ID);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed && typeof parsed === "object") {
+      if (parsed.personName) CONFIG.personName = parsed.personName;
+      if (parsed.senderName) CONFIG.senderName = parsed.senderName;
+      if (parsed.letter) CONFIG.letter = parsed.letter;
+      if (Array.isArray(parsed.captions)) CONFIG.captions = parsed.captions;
+      if (Array.isArray(parsed.photos)) {
+        CONFIG.photos = parsed.photos.slice(0, 10).map((src, i) => ({
+          src: typeof src === "string" ? src : (src?.src || ""),
+          caption: parsed.captions?.[i] || CONFIG.captions[i] || `Memory ${i + 1}`
+        })).filter(p => p.src);
+      }
+      if (parsed.video) CONFIG.video = parsed.video;
+      if (parsed.music) CONFIG.music = parsed.music;
+      if (parsed.gameDuration) {
+        const n = parseInt(parsed.gameDuration, 10);
+        if (Number.isInteger(n) && n >= 5 && n <= 60) CONFIG.gameDuration = n;
+      }
+    }
+  }
+} catch (err) { console.warn("[NIVA] preview load:", err); }
+
+function applyConfig() {
+  const nameEl = document.getElementById("personName");
+  if (nameEl) nameEl.textContent = CONFIG.personName;
+
+  const letterEl = document.getElementById("letterBody");
+  if (letterEl) letterEl.textContent = CONFIG.letter;
+
+  const sigEl = document.getElementById("letterSignature");
+  if (sigEl) sigEl.textContent = "Always yours, ♥";
+
+  const finalSig = document.getElementById("finalSignature");
+  if (finalSig) finalSig.textContent = "With all my love, " + CONFIG.senderName + " ♥";
+
+  const videoSource = document.getElementById("videoSource");
+  const videoEl = document.getElementById("memoryVideo");
+  if (videoSource && videoEl) {
+    if (CONFIG.video) { videoSource.src = CONFIG.video; videoEl.load(); }
+    else { videoSource.removeAttribute("src"); videoEl.load(); }
+  }
+
+  const musicSource = document.querySelector("#backgroundMusic source");
+  const musicEl = document.getElementById("backgroundMusic");
+  if (musicSource && musicEl) {
+    if (CONFIG.music) { musicSource.src = CONFIG.music; musicEl.load(); }
+    else { musicSource.removeAttribute("src"); musicEl.load(); }
+  }
+
+  const desc = document.getElementById("gameDescription");
+  if (desc) desc.textContent = `Ready to collect some love? You have ${CONFIG.gameDuration} seconds!`;
+  const timeEl = document.getElementById("timeLeft");
+  if (timeEl) timeEl.textContent = CONFIG.gameDuration;
+  timeLeft = CONFIG.gameDuration;
+}
+
+function createGallery(containerId, photos, animationOffset = 0) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = "";
+
+  photos.forEach((photo, index) => {
+    const card = document.createElement("div");
+    card.className = "photo";
+    card.style.animationDelay = ((index + animationOffset) * 0.09) + "s";
+
+    const placeholder = document.createElement("span");
+    placeholder.className = "placeholder";
+    placeholder.textContent = "♥";
+
+    const img = document.createElement("img");
+    img.src = photo.src;
+    img.alt = photo.caption || `Memory ${index + 1}`;
+    img.loading = "lazy";
+    img.onerror = () => { img.style.display = "none"; placeholder.style.display = "grid"; };
+    img.onload = () => { placeholder.style.display = "none"; };
+
+    const caption = document.createElement("div");
+    caption.className = "caption";
+    caption.textContent = photo.caption || "";
+
+    card.append(placeholder, img, caption);
+    container.appendChild(card);
+  });
+}
+
+function refreshGalleries() {
+  createGallery("galleryOne", CONFIG.photos.slice(0, 5));
+  createGallery("galleryTwo", CONFIG.photos.slice(5, 10), 5);
+}
+
+let currentPage = 1;
+let isChanging = false;
+
+function goTo(pageNumber) {
+  if (isChanging || pageNumber === currentPage || pageNumber < 1 || pageNumber > CONFIG.totalPages) return;
+  isChanging = true;
+  const current = document.getElementById("page" + currentPage);
+  const next = document.getElementById("page" + pageNumber);
+  if (currentPage === 6) {
+    const v = document.getElementById("memoryVideo");
+    if (v) v.pause();
+  }
+  current.classList.remove("active");
+  current.classList.add("exit-left");
+  next.classList.remove("exit-left");
+  next.classList.add("active");
+  currentPage = pageNumber;
+  next.scrollTop = 0;
+  if (pageNumber === 8) launchConfetti();
+  setTimeout(() => {
+    current.classList.remove("exit-left");
+    isChanging = false;
+  }, 650);
+}
+
+const petals = document.getElementById("petals");
+function createFloatingHeart() {
+  if (document.hidden) return;
+  const heart = document.createElement("span");
+  heart.className = "floating";
+  heart.textContent = ["♥", "♡", "✧", "❦"][Math.floor(Math.random() * 4)];
+  heart.style.left = Math.random() * 100 + "%";
+  heart.style.top = (75 + Math.random() * 30) + "%";
+  heart.style.fontSize = (12 + Math.random() * 18) + "px";
+  heart.style.setProperty("--duration", (6 + Math.random() * 6) + "s");
+  petals.appendChild(heart);
+  setTimeout(() => heart.remove(), 12500);
+}
+setInterval(createFloatingHeart, 750);
+
+const music = document.getElementById("backgroundMusic");
+async function toggleMusic() {
+  const button = document.getElementById("musicButton");
+  if (!music.paused) {
+    music.pause();
+    button.textContent = "♪";
+    return;
+  }
+  try {
+    await music.play();
+    button.textContent = "❚❚";
+  } catch {
+    showToast("Add a song to make this magic musical ♥");
+  }
+}
+music.addEventListener("play", () => document.getElementById("musicButton").textContent = "❚❚");
+music.addEventListener("pause", () => document.getElementById("musicButton").textContent = "♪");
+
+let score = 0;
+let timeLeft = CONFIG.gameDuration;
+let gameInterval = null;
+let spawnInterval = null;
+let gameRunning = false;
+const arena = document.getElementById("gameArena");
+
+function renderGameStartButton() {
+  arena.innerHTML = "";
+  const btn = document.createElement("button");
+  btn.className = "btn game-start-btn";
+  btn.textContent = "Start game ♥";
+  btn.addEventListener("click", startGame);
+  arena.appendChild(btn);
+}
+
+function updateGameStats() {
+  const s = document.getElementById("score");
+  const t = document.getElementById("timeLeft");
+  if (s) s.textContent = score;
+  if (t) t.textContent = timeLeft;
+}
+
+function startGame() {
+  stopGame();
+  score = 0;
+  timeLeft = CONFIG.gameDuration;
+  gameRunning = true;
+  updateGameStats();
+  const desc = document.getElementById("gameDescription");
+  if (desc) desc.textContent = "Tap every heart to collect your love!";
+  arena.innerHTML = "";
+  spawnHeart();
+  spawnInterval = setInterval(spawnHeart, 700);
+  gameInterval = setInterval(() => {
+    timeLeft--;
+    updateGameStats();
+    if (timeLeft <= 0) finishGame();
+  }, 1000);
+}
+
+function spawnHeart() {
+  if (!gameRunning) return;
+  const heart = document.createElement("button");
+  heart.className = "catch-heart";
+  heart.type = "button";
+  heart.textContent = ["♥", "♡", "❦", "✦"][Math.floor(Math.random() * 4)];
+  heart.style.left = (Math.random() * 78) + "%";
+  heart.style.top = (Math.random() * 45) + "%";
+  heart.style.animationDuration = "2.2s";
+  heart.onclick = () => {
+    if (!gameRunning) return;
+    score++;
+    updateGameStats();
+    heart.remove();
+  };
+  arena.appendChild(heart);
+  setTimeout(() => heart.remove(), 2300);
+}
+
+function stopGame() {
+  gameRunning = false;
+  clearInterval(gameInterval);
+  clearInterval(spawnInterval);
+  gameInterval = null;
+  spawnInterval = null;
+}
+
+function finishGame() {
+  stopGame();
+  arena.innerHTML = "";
+  const result = document.createElement("div");
+  result.style.cssText = "padding:30px 10px;animation:pop .5s both";
+  const emoji = document.createElement("div");
+  emoji.style.fontSize = "42px";
+  emoji.textContent = "♥";
+  emoji.style.color = "var(--rose)";
+  const message = document.createElement("p");
+  message.style.cssText = "font-size:15px;color:var(--rose);font-weight:600;margin-top:10px;font-family:var(--serif);font-style:italic";
+  message.textContent = score >= 15 ? "A heart-catching superstar!" : score >= 7 ? "You collected so much love!" : "Every heart is a little reminder that you're loved!";
+  const again = document.createElement("button");
+  again.className = "btn";
+  again.style.marginTop = "16px";
+  again.textContent = "Play again ↻";
+  again.onclick = startGame;
+  result.append(emoji, message, again);
+  arena.appendChild(result);
+  const desc = document.getElementById("gameDescription");
+  if (desc) desc.textContent = `You collected ${score} hearts. Every one is for you!`;
+}
+
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+let confettiPieces = [];
+let confettiFrame = null;
+
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener("resize", resizeCanvas);
+
+function launchConfetti() {
+  cancelAnimationFrame(confettiFrame);
+  resizeCanvas();
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  confettiPieces = Array.from({ length: 120 }, () => ({
+    x: Math.random() * width,
+    y: -Math.random() * height,
+    size: 3 + Math.random() * 5,
+    speed: 1.5 + Math.random() * 3,
+    drift: (Math.random() - 0.5) * 2,
+    rotation: Math.random() * 6,
+    spin: (Math.random() - 0.5) * 0.15,
+    color: ["#e8b4b8", "#d4a574", "#8b1e3f", "#f4c8cc", "#c47a8a"][Math.floor(Math.random() * 5)]
+  }));
+  let frames = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    confettiPieces.forEach(piece => {
+      piece.y += piece.speed;
+      piece.x += piece.drift;
+      piece.rotation += piece.spin;
+      ctx.save();
+      ctx.translate(piece.x, piece.y);
+      ctx.rotate(piece.rotation);
+      ctx.fillStyle = piece.color;
+      ctx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size * 1.5);
+      ctx.restore();
+    });
+    frames++;
+    if (frames < 180) confettiFrame = requestAnimationFrame(animate);
+    else ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+  }
+  animate();
+}
+
+let toastTimer;
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
+
+function restartExperience() {
+  stopGame();
+  score = 0;
+  timeLeft = CONFIG.gameDuration;
+  updateGameStats();
+  const desc = document.getElementById("gameDescription");
+  if (desc) desc.textContent = "Ready to collect some love? You have " + CONFIG.gameDuration + " seconds!";
+  renderGameStartButton();
+  goTo(1);
+}
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && gameRunning) {
+    stopGame();
+    const desc = document.getElementById("gameDescription");
+    if (desc) desc.textContent = "Game paused. You can start again!";
+  }
+});
+
+/* ---- INIT ---- */
+applyConfig();
+refreshGalleries();
+renderGameStartButton();
+resizeCanvas();
+
+/* ---- PREVIEW BRIDGE — DO NOT REMOVE ---- */
+(function initPreviewBridge() {
+  function applyIncoming(data) {
+    if (!data || typeof data !== "object") return;
+    if (data.personName) CONFIG.personName = data.personName;
+    if (data.senderName) CONFIG.senderName = data.senderName;
+    if (data.letter) CONFIG.letter = data.letter;
+    if (Array.isArray(data.captions)) CONFIG.captions = data.captions;
+    if (Array.isArray(data.photos)) {
+      CONFIG.photos = data.photos.slice(0, 10).map((src, i) => ({
+        src: typeof src === "string" ? src : (src?.src || ""),
+        caption: CONFIG.captions?.[i] || `Memory ${i + 1}`
+      })).filter(p => p.src);
+    }
+    if (data.video !== undefined) CONFIG.video = data.video;
+    if (data.music !== undefined) CONFIG.music = data.music;
+    if (data.gameDuration) {
+      const n = parseInt(data.gameDuration, 10);
+      if (Number.isInteger(n) && n >= 5 && n <= 60) CONFIG.gameDuration = n;
+    }
+
+    applyConfig();
+    refreshGalleries();
+  }
+
+  try {
+    const saved = sessionStorage.getItem("niva-preview-" + TEMPLATE_ID);
+    if (saved) applyIncoming(JSON.parse(saved));
+  } catch {}
+
+  if (window.parent === window) return;
+
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin) return;
+    if (event.data?.type !== "NIVA_PREVIEW_UPDATE") return;
+    applyIncoming(event.data.data);
+  });
+
+  window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin);
+})();
+</script>
+</body>
+</html>

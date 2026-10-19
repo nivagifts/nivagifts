@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0508">
+  <meta name="description" content="Personalize your NIVA digital gift.">
+  <title>Craft Your Gift | NIVA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+  <!-- ═══ LOGIN GATE ═══ -->
+  <div class="login-gate" id="loginGate" hidden>
+    <div class="login-card">
+      <div class="login-logo" aria-hidden="true">N</div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginPane">
+        <h2>Welcome back</h2>
+        <p>Sign in to create your gift.</p>
+        <form id="loginForm" novalidate>
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" placeholder="you@example.com" required autocomplete="email">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Your password" required autocomplete="current-password">
+          <button type="submit" class="login-submit" id="loginSubmit">Sign in</button>
+          <p class="login-error" id="loginError" role="alert"></p>
+        </form>
+        <button type="button" class="login-link" id="toRegister">New here? Create an account →</button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="registerPane" hidden>
+        <h2>Create your account</h2>
+        <p>Your gift needs an account to be saved.</p>
+        <form id="registerForm" novalidate>
+          <label for="registerEmail">Email</label>
+          <input id="registerEmail" type="email" placeholder="you@example.com" required autocomplete="email">
+          <label for="registerPassword">Password <span class="login-hint">(12+ characters)</span></label>
+          <input id="registerPassword" type="password" placeholder="At least 12 characters" required minlength="12" autocomplete="new-password">
+          <label for="registerPasswordConfirm">Confirm password</label>
+          <input id="registerPasswordConfirm" type="password" placeholder="Type it again" required minlength="12" autocomplete="new-password">
+          <button type="submit" class="login-submit" id="registerSubmit">Create account</button>
+          <p class="login-error" id="registerError" role="alert"></p>
+        </form>
+        <button type="button" class="login-link" id="toLogin">Already have an account? Sign in →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN EDITOR ═══ -->
+  <div id="editorRoot" hidden>
+
+    <header class="topbar">
+      <a href="../index.html" class="brand" aria-label="NIVA home">
+        <span class="brand-logo" aria-label="NIVA logo placeholder">N</span>
+        <span class="brand-copy">
+          <span class="brand-name">NIVA</span>
+          <span class="brand-tagline">MAKE MOMENTS ETERNAL</span>
+        </span>
+      </a>
+      <div class="topbar-right">
+        <span class="save-status" id="saveStatus" aria-live="polite">Loading template…</span>
+        <button class="button button-primary" id="saveButton" type="button">Save Draft</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="editor-panel">
+        <div class="heading">
+          <p class="eyebrow">YOUR CREATIVE SPACE</p>
+          <h1>Make it <span>personal.</span></h1>
+          <p class="description">Add your memories, write from your heart, and create a gift that feels like yours.</p>
+        </div>
+
+        <div class="template-info" id="templateInfo">
+          <div class="template-icon" aria-hidden="true">♥</div>
+          <div>
+            <h2 id="templateName">Loading…</h2>
+            <p id="templateMeta">—</p>
+          </div>
+          <span class="draft-badge">DRAFT</span>
+        </div>
+
+        <form id="giftForm" novalidate>
+          <div id="dynamicSections" aria-live="polite">
+            <div class="editor-loading">Loading template fields…</div>
+          </div>
+
+          <div class="form-actions">
+            <button class="button button-secondary" type="button" id="resetButton">Reset</button>
+            <button class="button button-primary" type="button" id="previewButton">Refresh Preview ↗</button>
+          </div>
+
+          <section class="form-section" id="publishSection">
+            <div class="section-title">
+              <span class="step-number" data-step-no>—</span>
+              <div>
+                <h2>Create your gift</h2>
+                <p>Protect your memories with a private password.</p>
+              </div>
+            </div>
+            <label for="giftPassword">Gift password</label>
+            <input id="giftPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="At least 8 characters">
+            <label for="giftPasswordConfirm">Confirm gift password</label>
+            <input id="giftPasswordConfirm" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="Enter the same password">
+            <button class="button button-primary" type="button" id="publishGiftButton" style="width:100%;margin-top:17px">Create My Gift</button>
+            <p id="publishStatus" role="status" aria-live="polite"></p>
+            <div id="publishedGiftResult" hidden>
+              <strong>Your gift is published!</strong>
+              <p>Share this private link with your recipient:</p>
+              <input id="publishedGiftUrl" type="url" readonly>
+              <button class="button button-secondary" type="button" id="copyGiftLinkButton" style="margin-top:10px">Copy Gift Link</button>
+            </div>
+          </section>
+
+          <p class="notice">
+            Save Draft stores your current draft in this browser. Publishing requires the backend to be running.
+          </p>
+        </form>
+      </section>
+
+      <section class="preview-panel">
+        <div class="preview-heading">
+          <div>
+            <p class="eyebrow">LIVE PREVIEW</p>
+            <h2>Your little world</h2>
+          </div>
+          <span class="live-indicator"><i></i> LIVE PREVIEW</span>
+        </div>
+
+        <div class="preview-frame" id="previewFrameWrap">
+          <iframe
+            id="previewIframe"
+            title="Live gift preview"
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            loading="lazy">
+          </iframe>
+        </div>
+
+        <p class="preview-caption">
+          Your edits appear here as you work. This is the real gift website, rendered live.
+        </p>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="editor-progress" id="editorProgress">
+      <div class="editor-progress-card">
+        <p id="progressMessage">Preparing your gift…</p>
+        <div class="editor-progress-bar">
+          <div class="editor-progress-fill" id="progressFill"></div>
+        </div>
+        <span class="editor-progress-percent" id="progressPercent">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="editor.js" defer></script>
+</body>
+</html>

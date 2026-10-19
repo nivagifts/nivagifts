@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0508">
+<title>Eternal Love ♥</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:     #0a0508;
+  --bg-soft:     #14080f;
+  --panel:       #1c0f18;
+  --panel-2:     #241421;
+  --wine:        #8b1e3f;
+  --wine-soft:   #6b1830;
+  --rose:        #e8b4b8;
+  --rose-soft:   #c47a8a;
+  --rose-bright: #f4c8cc;
+  --gold:        #d4a574;
+  --text:        #f5e6d3;
+  --text-2:      #c9b3b8;
+  --text-muted:  #8a6f78;
+  --line:        #3d2433;
+  --line-gold:   rgba(212, 165, 116, 0.35);
+  --serif:       'Cormorant Garamond', Georgia, serif;
+  --sans:        'Inter', system-ui, sans-serif;
+  --ease:        cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--sans);
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 15% 5%, rgba(139, 30, 63, 0.28) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 90%, rgba(139, 30, 63, 0.22) 0%, transparent 45%),
+    var(--bg-deep);
+  min-height: 100vh;
+  padding: 40px 20px;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.6s var(--ease);
+}
+
+body[data-theme="violet"] {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(122, 82, 168, 0.3) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(100, 60, 140, 0.2) 0%, transparent 45%),
+    var(--bg-deep);
+}
+body[data-theme="midnight"] {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(50, 85, 140, 0.3) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(40, 70, 120, 0.2) 0%, transparent 45%),
+    var(--bg-deep);
+}
+
+.shell { max-width: 720px; margin: auto; position: relative; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.brand {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+
+.content { text-align: center; padding: 48px clamp(20px, 5vw, 50px) 60px; }
+
+.heart {
+  color: var(--rose);
+  font-size: 40px;
+  line-height: 1.2;
+  filter: drop-shadow(0 0 20px rgba(232, 180, 184, 0.4));
+  animation: gentle-beat 3s ease-in-out infinite;
+}
+
+@keyframes gentle-beat {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+.eyebrow, .label {
+  margin: 20px 0 14px;
+  color: var(--gold);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 22px 0;
+  font-family: var(--serif);
+  font-size: clamp(42px, 7vw, 64px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+h1 span {
+  color: var(--rose);
+  font-style: italic;
+  display: inline-block;
+}
+
+.intro {
+  max-width: 420px;
+  margin: 0 auto;
+  color: var(--text-2);
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.75;
+  font-style: italic;
+}
+
+.divider {
+  width: 70px;
+  height: 1px;
+  margin: 32px auto;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.message {
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 2;
+  white-space: pre-wrap;
+  text-align: left;
+  margin-top: 22px;
+  letter-spacing: 0.005em;
+}
+
+.signature {
+  margin: 28px 0 0;
+  color: var(--rose);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.9;
+  text-align: right;
+}
+
+.signature span {
+  color: var(--gold);
+  font-size: 22px;
+}
+
+.photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.photos img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border: 1px solid var(--line-gold);
+  border-radius: 14px;
+  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
+}
+
+.photos img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 12px 40px rgba(139, 30, 63, 0.4);
+}
+
+.photos.empty { grid-template-columns: 1fr; }
+
+.photos.empty::before {
+  content: "Your photos will appear here ♥";
+  grid-column: 1 / -1;
+  padding: 34px;
+  border: 1px dashed var(--line-gold);
+  border-radius: 14px;
+  color: var(--text-muted);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+}
+
+.timer {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.timer > div {
+  padding: 20px 10px;
+  border: 1px solid var(--line-gold);
+  border-radius: 16px;
+  background: rgba(28, 15, 24, 0.6);
+  transition: border-color 0.4s var(--ease);
+}
+
+.timer > div:hover { border-color: var(--rose-soft); }
+
+.timer strong {
+  display: block;
+  color: var(--rose);
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.timer span {
+  color: var(--text-muted);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.date {
+  color: var(--text-muted);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  margin-top: 14px;
+}
+
+.final { margin-top: 24px; }
+.final span { font-size: 32px; }
+
+.final h3 {
+  margin: 12px 0;
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--rose);
+  letter-spacing: -0.01em;
+}
+
+.final p {
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.9;
+  font-style: italic;
+}
+
+.footer {
+  padding: 22px;
+  border-top: 1px solid var(--line);
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+[hidden] { display: none !important; }
+
+@media (max-width: 560px) {
+  body { padding: 24px 14px; }
+  .content { padding: 32px 18px 42px; }
+  .photos img { height: 130px; }
+  h1 { font-size: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar"><span class="brand">NIVA</span><span>MADE WITH ♥</span></div>
+  <div class="content">
+    <div class="heart">♥</div>
+    <p class="eyebrow">A STORY WRITTEN BY TWO HEARTS</p>
+    <h1>To My<br><span data-field="partnerName">My Love</span></h1>
+    <p class="intro">A little world filled with the moments and memories that make your story special.</p>
+    <div class="divider"></div>
+    <p class="label">A LETTER FROM THE HEART</p>
+    <p class="message" data-field="loveMessage"></p>
+    <p class="signature">Forever yours,<br><span data-field="senderName">Forever Yours</span></p>
+
+    <div class="divider" data-photos-divider></div>
+    <p class="label" data-photos-divider>OUR MEMORIES</p>
+    <div class="photos" data-photos data-photos-divider></div>
+
+    <div class="divider" data-timer-divider></div>
+    <p class="label" data-timer-divider>TIME WITH YOU</p>
+    <div class="timer" data-timer-divider>
+      <div><strong data-timer="days">—</strong><span>DAYS</span></div>
+      <div><strong data-timer="hours">—</strong><span>HOURS</span></div>
+      <div><strong data-timer="minutes">—</strong><span>MINUTES</span></div>
+    </div>
+    <p class="date" data-timer-divider data-timer-date>Choose your special date</p>
+
+    <div class="divider"></div>
+    <div class="final">
+      <span>💗</span>
+      <h3>Our story continues...</h3>
+      <p>A beautiful reminder that the best memories are still waiting to be made.</p>
+    </div>
+  </div>
+  <div class="footer">A LITTLE UNIVERSE OF MEMORIES</div>
+</div>
+
+<script>
+/* =========================================================
+   NIVA TEMPLATE BRIDGE
+   ─────────────────────────────────────────────────────────
+   HOW TO USE THIS FILE FOR A NEW TEMPLATE:
+   1. Change TEMPLATE_ID below to match config.json "id"
+   2. Change DEFAULT_GIFT defaults as needed
+   3. Update applyGiftData() for your template's DOM structure
+   4. Keep the bridge IIFE at the bottom UNCHANGED
+   ========================================================= */
+
+"use strict";
+
+const TEMPLATE_ID = "eternal-love";
+
+const DEFAULT_GIFT = {
+  partnerName: "My Love",
+  senderName: "Forever Yours",
+  loveMessage: "Every beautiful memory with you is a part of my favourite story.",
+  relationshipDate: "",
+  photos: [],
+  theme: "rose"
+};
+
+let giftData = { ...DEFAULT_GIFT };
+
+try {
+  const saved = sessionStorage.getItem("niva-preview-" + TEMPLATE_ID);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed && typeof parsed === "object") Object.assign(giftData, parsed);
+  }
+} catch (err) {
+  console.warn("[NIVA] Could not load saved preview:", err);
+}
+
+function applyGiftData() {
+  document.querySelectorAll("[data-field]").forEach(el => {
+    const key = el.dataset.field;
+    const val = giftData[key];
+    if (typeof val === "string") el.textContent = val;
+  });
+
+  document.body.dataset.theme = giftData.theme || "rose";
+
+  const photosEl = document.querySelector("[data-photos]");
+  const photosDivs = document.querySelectorAll("[data-photos-divider]");
+  const photos = Array.isArray(giftData.photos) ? giftData.photos : [];
+  const hasPhotos = photos.length > 0;
+
+  photosDivs.forEach(el => el.hidden = !hasPhotos);
+  if (photosEl) {
+    if (hasPhotos) {
+      photosEl.classList.remove("empty");
+      photosEl.innerHTML = "";
+      photos.forEach(url => {
+        if (typeof url !== "string" || !url) return;
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "Memory";
+        img.loading = "lazy";
+        photosEl.appendChild(img);
+      });
+    } else {
+      photosEl.classList.add("empty");
+      photosEl.innerHTML = "";
+    }
+  }
+
+  const timerDivs = document.querySelectorAll("[data-timer-divider]");
+  const dateVal = giftData.relationshipDate;
+  const dateObj = dateVal ? new Date(`${dateVal}T00:00:00`) : null;
+  const hasTimer = Boolean(dateObj) && !isNaN(dateObj.getTime()) && dateObj <= new Date();
+
+  timerDivs.forEach(el => el.hidden = !hasTimer);
+
+  if (hasTimer) {
+    const elapsed = Math.floor((Date.now() - dateObj.getTime()) / 1000);
+    const daysEl = document.querySelector('[data-timer="days"]');
+    const hoursEl = document.querySelector('[data-timer="hours"]');
+    const minsEl = document.querySelector('[data-timer="minutes"]');
+    const dateLabel = document.querySelector("[data-timer-date]");
+
+    if (daysEl) daysEl.textContent = Math.floor(elapsed / 86400).toLocaleString();
+    if (hoursEl) hoursEl.textContent = String(Math.floor((elapsed % 86400) / 3600)).padStart(2, "0");
+    if (minsEl) minsEl.textContent = String(Math.floor((elapsed % 3600) / 60)).padStart(2, "0");
+    if (dateLabel) {
+      const formatted = dateObj.toLocaleDateString(undefined, {
+        day: "numeric", month: "long", year: "numeric"
+      });
+      dateLabel.textContent = `Counting moments since ${formatted}`;
+    }
+  }
+}
+
+applyGiftData();
+
+/* ---- PREVIEW BRIDGE — DO NOT REMOVE ---- */
+(function initPreviewBridge() {
+  if (window.parent === window) return;
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin) return;
+    if (event.data?.type !== "NIVA_PREVIEW_UPDATE") return;
+    const incoming = event.data.data || {};
+    if (incoming && typeof incoming === "object") {
+      Object.assign(giftData, incoming);
+      applyGiftData();
+    }
+  });
+  window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin);
+})();
+</script>
+</body>
+</html>

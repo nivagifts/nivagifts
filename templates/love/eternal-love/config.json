@@ -1,0 +1,84 @@
+{
+  "id": "eternal-love",
+  "name": "Eternal Love",
+  "category": "love",
+  "description": "A romantic multi-page gift experience for your favourite person, filled with personal notes and memories.",
+  "price": 499,
+  "currency": "INR",
+  "version": "1.0.0",
+  "active": true,
+  "templatePath": "/templates/love/eternal-love/template.html",
+  "previewImage": "/templates/love/eternal-love/preview.jpg",
+  "features": [
+    "Multi-page experience",
+    "Love letter",
+    "Memory gallery",
+    "Relationship timer"
+  ],
+  "customization": {
+    "partnerName": {
+      "label": "Their name",
+      "type": "text",
+      "default": "My Love",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "e.g. My Love"
+    },
+    "senderName": {
+      "label": "Your name",
+      "type": "text",
+      "default": "Forever Yours",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "e.g. Forever Yours"
+    },
+    "loveMessage": {
+      "label": "Personal message",
+      "type": "textarea",
+      "default": "Every beautiful memory with you is a part of my favourite story.\n\nYou make ordinary days feel special, and the smallest moments become memories I want to keep forever.\n\nThank you for being a beautiful part of my story. ♥",
+      "required": true,
+      "maxLength": 2000
+    },
+    "relationshipDate": {
+      "label": "Choose a date",
+      "type": "date",
+      "default": "",
+      "required": false,
+      "help": "Used for the relationship timer. Choose a date in the past."
+    },
+    "photos": {
+      "label": "Choose your photos",
+      "type": "imageGallery",
+      "required": false,
+      "maxFiles": 20,
+      "maxSizeMB": 50,
+      "accept": "image/jpeg,image/png,image/webp,image/gif",
+      "help": "Photos up to 50 MB each."
+    },
+    "theme": {
+      "label": "Choose your mood",
+      "type": "theme",
+      "default": "rose",
+      "options": [
+        { "value": "rose", "label": "Rose", "swatch": "rose" },
+        { "value": "violet", "label": "Violet", "swatch": "violet" },
+        { "value": "midnight", "label": "Midnight", "swatch": "midnight" }
+      ]
+    }
+  },
+  "sections": [
+    { "title": "The names", "subtitle": "Who is this little world for?", "fields": ["partnerName", "senderName"] },
+    { "title": "Your letter", "subtitle": "Put the feelings into words.", "fields": ["loveMessage"] },
+    { "title": "Your special date", "subtitle": "A day that means something to you.", "fields": ["relationshipDate"] },
+    { "title": "Your memories", "subtitle": "Select photos to see them in this preview.", "fields": ["photos"] },
+    { "title": "Choose your mood", "subtitle": "Select a colour style.", "fields": ["theme"] }
+  ],
+  "preview": {
+    "nameField": "partnerName",
+    "senderField": "senderName",
+    "messageField": "loveMessage",
+    "dateField": "relationshipDate",
+    "photosField": "photos",
+    "themeField": "theme"
+  }
+}

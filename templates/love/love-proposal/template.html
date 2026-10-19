@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0508">
+<meta name="description" content="A little world made with love, just for you.">
+<title>A Little World for You ♥</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:     #0a0508;
+  --bg-soft:     #14080f;
+  --panel:       #1c0f18;
+  --panel-2:     #241421;
+  --panel-3:     #2e1929;
+  --wine:        #8b1e3f;
+  --wine-soft:   #6b1830;
+  --rose:        #e8b4b8;
+  --rose-soft:   #c47a8a;
+  --rose-bright: #f4c8cc;
+  --gold:        #d4a574;
+  --gold-soft:   #b8895c;
+  --text:        #f5e6d3;
+  --text-2:      #c9b3b8;
+  --text-muted:  #8a6f78;
+  --line:        #3d2433;
+  --line-gold:   rgba(212, 165, 116, 0.35);
+  --serif:       'Cormorant Garamond', Georgia, serif;
+  --sans:        'Inter', system-ui, sans-serif;
+  --ease:        cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--bg-deep);
+  overflow: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; border: 0; cursor: pointer; }
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.page {
+  display: none;
+  position: absolute;
+  inset: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 40px 22px;
+  opacity: 0;
+  transform: translateY(16px);
+  background:
+    radial-gradient(ellipse at 10% 10%, rgba(139, 30, 63, 0.28), transparent 45%),
+    radial-gradient(ellipse at 90% 90%, rgba(122, 82, 168, 0.2), transparent 45%),
+    var(--bg-deep);
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+
+.page::-webkit-scrollbar { display: none; }
+
+.page.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: pageEnter 0.9s var(--ease) forwards;
+}
+.page.active.scroll-page { justify-content: flex-start; }
+
+@keyframes pageEnter {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.content {
+  width: 100%;
+  max-width: 780px;
+  margin: auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 22px;
+}
+
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+h1 { font-size: clamp(44px, 8vw, 82px); letter-spacing: -0.02em; }
+h2 { font-size: clamp(34px, 6vw, 56px); letter-spacing: -0.015em; margin-bottom: 20px; }
+h1 em, h2 em { color: var(--rose); font-style: italic; }
+
+p { line-height: 1.9; }
+
+.subtitle {
+  max-width: 520px;
+  margin: 22px auto 0;
+  font-size: 15px;
+  color: var(--text-2);
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.script { font-family: var(--serif); font-style: italic; }
+.pink-text { color: var(--rose); }
+
+.heart {
+  display: inline-block;
+  color: var(--rose);
+  animation: heartbeat 1.8s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  12% { transform: scale(1.13); }
+  25% { transform: scale(1); }
+  38% { transform: scale(1.08); }
+}
+
+.primary-btn, .soft-btn {
+  border-radius: 999px;
+  padding: 16px 28px;
+  cursor: pointer;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  min-height: 50px;
+}
+
+.primary-btn {
+  color: var(--text);
+  background: linear-gradient(110deg, var(--wine), #a82851);
+  border: 1px solid rgba(232, 180, 184, 0.35);
+  box-shadow: 0 12px 32px rgba(139, 30, 63, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(139, 30, 63, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.soft-btn {
+  color: var(--rose);
+  background: rgba(28, 15, 24, 0.8);
+  border: 1px solid var(--line-gold);
+}
+
+.soft-btn:hover {
+  transform: translateY(-3px);
+  border-color: var(--rose-soft);
+  background: rgba(36, 20, 33, 0.9);
+}
+
+.primary-btn:active, .soft-btn:active { transform: scale(0.97); }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.small-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 20px;
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.deco-heart {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+  color: var(--rose);
+  animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(110vh) rotate(0); opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-15vh) rotate(35deg); opacity: 0; }
+}
+
+.glow-orb {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.4;
+  background: rgba(139, 30, 63, 0.7);
+  pointer-events: none;
+}
+
+.orb-one { top: 5%; left: -110px; }
+.orb-two { right: -110px; bottom: 5%; background: rgba(122, 82, 168, 0.5); }
+
+.envelope-wrap {
+  width: 160px;
+  height: 120px;
+  margin: 0 auto 35px;
+  position: relative;
+  cursor: pointer;
+  animation: envelopeFloat 3s ease-in-out infinite;
+}
+
+.envelope {
+  position: absolute;
+  inset: 22px 0 0;
+  background: linear-gradient(135deg, var(--wine), var(--wine-soft));
+  border: 1px solid var(--line-gold);
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgba(139, 30, 63, 0.35);
+}
+
+.envelope::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--rose-soft), var(--rose));
+  clip-path: polygon(0 0, 50% 55%, 100% 0);
+  transform-origin: top;
+  animation: flapOpen 1.2s 1s ease forwards;
+  border-radius: 10px 10px 0 0;
+}
+
+.envelope::after {
+  content: "♥";
+  position: absolute;
+  top: 32%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  color: var(--gold);
+}
+
+.envelope-letter {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 0;
+  height: 80px;
+  border-radius: 6px;
+  background: var(--text);
+  animation: letterRise 1s 1.2s ease forwards;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes flapOpen { to { transform: rotateX(180deg); } }
+@keyframes letterRise { to { transform: translateY(-30px); } }
+@keyframes envelopeFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-10px) rotate(2deg); }
+}
+
+.teddy {
+  font-size: clamp(4rem, 15vw, 7rem);
+  margin-bottom: 22px;
+  animation: teddyFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 10px 30px rgba(139, 30, 63, 0.4));
+}
+
+@keyframes teddyFloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-12px) rotate(3deg); }
+}
+
+.message-lines {
+  max-width: 560px;
+  margin: 25px auto 0;
+}
+
+.message-lines p {
+  margin: 16px 0;
+  opacity: 0;
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--text);
+  line-height: 1.85;
+  animation: revealText 0.8s var(--ease) forwards;
+}
+
+.message-lines p:nth-child(2) { animation-delay: 0.35s; }
+.message-lines p:nth-child(3) { animation-delay: 0.7s; }
+.message-lines p:nth-child(4) { animation-delay: 1.05s; }
+
+@keyframes revealText {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  width: 100%;
+  max-width: 620px;
+  margin: 35px auto 0;
+}
+
+.memory-card {
+  background: var(--panel);
+  padding: 12px 12px 20px;
+  border: 1px solid var(--line-gold);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  transform: rotate(-2deg);
+  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.memory-card:nth-child(even) { transform: rotate(2.5deg); }
+
+.memory-card:hover {
+  transform: rotate(0) translateY(-6px);
+  box-shadow: 0 20px 50px rgba(139, 30, 63, 0.35);
+}
+
+.memory-card img {
+  width: 100%;
+  aspect-ratio: 4 / 4.3;
+  object-fit: cover;
+  display: block;
+  border-radius: 6px;
+  background: var(--panel-2);
+}
+
+.photo-placeholder {
+  width: 100%;
+  aspect-ratio: 4 / 4.3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(145deg, var(--panel-2), var(--panel-3));
+  font-size: 2.3rem;
+  border-radius: 6px;
+  color: var(--rose);
+}
+
+.photo-placeholder span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.memory-caption {
+  margin-top: 14px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.photo-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 20px;
+  font-style: italic;
+}
+
+.letter-paper {
+  position: relative;
+  width: 100%;
+  max-width: 620px;
+  margin: 28px auto 0;
+  padding: clamp(28px, 6vw, 52px);
+  background: linear-gradient(145deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line-gold);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  text-align: left;
+}
+
+.letter-paper::before {
+  content: "❦";
+  position: absolute;
+  top: 14px;
+  right: 22px;
+  color: var(--gold);
+  font-size: 30px;
+  opacity: 0.7;
+}
+
+.letter-paper p {
+  margin: 16px 0;
+  font-size: 15px;
+  font-family: var(--serif);
+  line-height: 1.9;
+  color: var(--text);
+}
+
+.letter-sign {
+  text-align: right;
+  color: var(--rose);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  margin-top: 24px;
+}
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(70px, 110px));
+  justify-content: center;
+  gap: 16px;
+  margin: 32px auto;
+}
+
+.game-heart {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--line-gold);
+  border-radius: 24px;
+  background: rgba(28, 15, 24, 0.7);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  font-size: 2rem;
+  color: var(--rose);
+  cursor: pointer;
+  transition: transform 0.3s var(--ease), background 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.game-heart:hover {
+  transform: translateY(-5px) rotate(-4deg);
+  border-color: var(--rose-soft);
+  background: rgba(36, 20, 33, 0.8);
+}
+
+.game-heart.found {
+  background: rgba(139, 30, 63, 0.3);
+  border-color: var(--rose);
+  animation: heartPop 0.4s ease;
+}
+
+.game-heart:disabled { cursor: default; }
+
+@keyframes heartPop { 50% { transform: scale(1.2); } }
+
+.game-message {
+  max-width: 420px;
+  min-height: 50px;
+  margin: 0 auto;
+  color: var(--rose);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.game-counter {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 12px;
+  letter-spacing: 0.1em;
+}
+
+.big-glow-heart {
+  font-size: clamp(5rem, 18vw, 9rem);
+  margin: 20px 0;
+  color: var(--rose);
+  filter: drop-shadow(0 0 40px rgba(232, 180, 184, 0.5));
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+.story-text {
+  min-height: 140px;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: clamp(20px, 4.5vw, 30px);
+  line-height: 1.6;
+  color: var(--text);
+  font-style: italic;
+}
+
+.proposal-page {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(139, 30, 63, 0.5), transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(122, 82, 168, 0.35), transparent 45%),
+    var(--bg-deep);
+}
+
+.proposal-heart {
+  font-size: clamp(5rem, 18vw, 9rem);
+  margin: 15px 0 28px;
+  filter: drop-shadow(0 10px 40px rgba(139, 30, 63, 0.5));
+  animation: heartbeat 2s infinite;
+}
+
+.proposal-question {
+  margin-top: 16px;
+  color: var(--rose);
+  font-size: clamp(2.8rem, 10vw, 5.7rem);
+  font-style: italic;
+}
+
+.proposal-subtext {
+  margin-top: 22px;
+  color: var(--text-2);
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.proposal-feedback {
+  max-width: 480px;
+  min-height: 60px;
+  margin: 24px auto 0;
+  line-height: 1.9;
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--text);
+}
+
+.celebration {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+  font-size: 26px;
+  animation: celebrate 2.5s ease-out forwards;
+}
+
+@keyframes celebrate {
+  0% { transform: translateY(0) rotate(0); opacity: 1; }
+  100% { transform: translateY(-100vh) rotate(500deg); opacity: 0; }
+}
+
+.moon {
+  font-size: clamp(4rem, 14vw, 7rem);
+  margin-bottom: 22px;
+  filter: drop-shadow(0 0 30px rgba(232, 180, 184, 0.6));
+  animation: moonFloat 5s ease-in-out infinite;
+}
+
+@keyframes moonFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+.ending-card {
+  max-width: 580px;
+  margin: 28px auto;
+  padding: 36px 30px;
+  border: 1px solid var(--line-gold);
+  background: linear-gradient(145deg, rgba(28, 15, 24, 0.7), rgba(20, 8, 15, 0.85));
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+}
+
+.ending-card p {
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--text);
+}
+
+.footer-heart { font-size: 2rem; margin-top: 22px; color: var(--rose); }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  background: rgba(10, 5, 8, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.lightbox.open { display: flex; animation: pageEnter 0.3s ease forwards; }
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line-gold);
+  border-radius: 50%;
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .page { padding: 30px 16px; }
+  .memory-grid { gap: 14px; }
+  .memory-card { padding: 8px 8px 14px; }
+  .memory-caption { font-size: 13px; }
+  .game-board { gap: 12px; }
+  .letter-paper { padding: 28px 22px; }
+  .primary-btn, .soft-btn { padding: 14px 22px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="glow-orb orb-one"></div>
+  <div class="glow-orb orb-two"></div>
+
+  <section class="page active" id="page-1">
+    <div class="content">
+      <div class="eyebrow">A little surprise for you</div>
+      <div class="envelope-wrap" aria-hidden="true">
+        <div class="envelope-letter"></div>
+        <div class="envelope"></div>
+      </div>
+      <h1>Hey, <span class="pink-text" data-field="recipientName">My Favourite Person</span>! <span class="heart">♥</span></h1>
+      <p class="subtitle" data-field="welcomeMessage">I made a little something just for you. A tiny world filled with memories, smiles, and a little bit of magic.</p>
+      <div class="actions">
+        <button class="primary-btn" data-next="2">Open your little surprise ✉</button>
+      </div>
+      <p class="small-note">Made with a whole lot of love</p>
+    </div>
+  </section>
+
+  <section class="page" id="page-2">
+    <div class="content">
+      <div class="teddy" aria-hidden="true">🧸</div>
+      <div class="eyebrow">Before we begin</div>
+      <h2>A little thing about you...</h2>
+      <div class="message-lines">
+        <p>Out of all the people in this world, you have a way of making ordinary moments feel special.</p>
+        <p>Your smile can make a simple day feel a little brighter.</p>
+        <p>And the little things about you? They're pretty wonderful.</p>
+        <p><strong>This little world is all about you. <span class="pink-text">♥</span></strong></p>
+      </div>
+      <div class="actions">
+        <button class="primary-btn" data-next="3">Let's make a memory ✧</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page scroll-page" id="page-3">
+    <div class="content">
+      <div class="eyebrow">Little moments, big feelings</div>
+      <h2>Our Little <span class="pink-text">Memories</span></h2>
+      <p class="subtitle">Every picture tells a little story. Here are some moments worth keeping close.</p>
+      <div class="memory-grid">
+        <div class="memory-card" data-photo="0">
+          <div class="photo-placeholder">♡<span>Our beginning</span></div>
+          <p class="memory-caption">The beginning of something beautiful</p>
+        </div>
+        <div class="memory-card" data-photo="1">
+          <div class="photo-placeholder">♥<span>A favourite moment</span></div>
+          <p class="memory-caption">One of my favourite moments</p>
+        </div>
+        <div class="memory-card" data-photo="2">
+          <div class="photo-placeholder">❦<span>Your smile</span></div>
+          <p class="memory-caption">That smile I never get tired of</p>
+        </div>
+        <div class="memory-card" data-photo="3">
+          <div class="photo-placeholder">✧<span>A little forever</span></div>
+          <p class="memory-caption">A memory worth keeping forever</p>
+        </div>
+      </div>
+      <p class="photo-hint">Tap a photo to see it closer.</p>
+      <div class="actions">
+        <button class="primary-btn" data-next="4">A letter for you ♥</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page scroll-page" id="page-4">
+    <div class="content">
+      <div class="eyebrow">From my heart to yours</div>
+      <h2>A Letter for <span class="pink-text" data-field="recipientName">You</span></h2>
+      <div class="letter-paper">
+        <p class="script">My favourite human,</p>
+        <p data-field="letter">Sometimes, the smallest things become the most beautiful memories. A smile, a little conversation, or a moment that makes an ordinary day feel different.</p>
+        <p>I hope you always remember how special you are. You deserve kindness, happiness, beautiful surprises, and all the little things that make your heart smile.</p>
+        <p>If this little website can make you smile even for a moment, then creating it was worth every second.</p>
+        <p>And there's still a little surprise waiting for you...</p>
+        <div class="letter-sign">With love,<br><span data-field="senderName">Someone who cares about you</span></div>
+      </div>
+      <div class="actions">
+        <button class="primary-btn" data-next="5">One tiny game? ✦</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-5">
+    <div class="content">
+      <div class="eyebrow">A little moment of fun</div>
+      <h2>Heart <span class="pink-text">Hunt</span> ♥</h2>
+      <p class="subtitle">There are six little hearts hiding here. Tap each one and discover its tiny message!</p>
+      <div class="game-board" id="game-board">
+        <button class="game-heart" aria-label="Discover heart 1">♡</button>
+        <button class="game-heart" aria-label="Discover heart 2">♡</button>
+        <button class="game-heart" aria-label="Discover heart 3">♡</button>
+        <button class="game-heart" aria-label="Discover heart 4">♡</button>
+        <button class="game-heart" aria-label="Discover heart 5">♡</button>
+        <button class="game-heart" aria-label="Discover heart 6">♡</button>
+      </div>
+      <p class="game-message" id="game-message" aria-live="polite">Find all six hearts to reveal your surprise.</p>
+      <p class="game-counter" id="game-counter">0 of 6 hearts found</p>
+      <div class="actions" id="game-actions" hidden>
+        <button class="primary-btn" data-next="6">What's next? ✧</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-6">
+    <div class="content">
+      <div class="eyebrow">Just one more thing</div>
+      <div class="big-glow-heart" aria-hidden="true">♥</div>
+      <div class="story-text" id="story-text" aria-live="polite">If I could save one feeling forever...</div>
+      <div class="actions">
+        <button class="primary-btn" id="story-next">And then...?</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page proposal-page" id="page-7">
+    <div class="content">
+      <div class="eyebrow">A question from my heart</div>
+      <div class="proposal-heart" aria-hidden="true">♥</div>
+      <p class="subtitle">There's one little question I've been saving for you...</p>
+      <h1 class="proposal-question">Will you be mine?</h1>
+      <p class="proposal-subtext">No perfect words, just a little question that means a lot to me.</p>
+      <div class="actions" id="proposal-actions">
+        <button class="primary-btn" id="yes-button">YES ♥</button>
+        <button class="soft-btn" id="moment-button">I need a moment</button>
+      </div>
+      <div class="proposal-feedback" id="proposal-feedback" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="page" id="page-8">
+    <div class="content">
+      <div class="moon" aria-hidden="true">☾</div>
+      <div class="eyebrow">A little memory to keep</div>
+      <h2>Some moments are <span class="pink-text">special.</span></h2>
+      <div class="ending-card">
+        <p>I made this little world just for you.</p>
+        <p style="margin-top: 16px;">Wherever life takes us, I hope this moment brings you a smile whenever you remember it.</p>
+        <p style="margin-top: 16px;">Thank you for taking a little time to explore this tiny world.</p>
+        <div class="footer-heart">♥</div>
+        <p style="margin-top: 12px;">Made with love,<br><strong data-field="senderName">Someone who cares about you</strong></p>
+      </div>
+      <p class="small-note">A little world, made just for you.</p>
+    </div>
+  </section>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Memory photo">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close photo">×</button>
+    <img id="lightbox-image" alt="A special memory">
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   NIVA TEMPLATE BRIDGE — Love Proposal
+   Change TEMPLATE_ID below to match config.json "id"
+   ========================================================= */
+"use strict";
+
+const TEMPLATE_ID = "love-proposal";
+
+const DEFAULT_GIFT_DATA = {
+  recipientName: "My Favourite Person",
+  senderName: "Someone who cares about you",
+  welcomeMessage: "I made a little something just for you. A tiny world filled with memories, smiles, and a little bit of magic.",
+  letter: "Sometimes, the smallest things become the most beautiful memories. I hope you always remember how special you are.",
+  photos: [],
+  captions: [
+    "The beginning of something beautiful",
+    "One of my favourite moments",
+    "That smile I never get tired of",
+    "A memory worth keeping forever"
+  ],
+  musicUrl: ""
+};
+
+const giftData = { ...DEFAULT_GIFT_DATA };
+
+try {
+  const saved = sessionStorage.getItem("niva-preview-" + TEMPLATE_ID);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed && typeof parsed === "object") Object.assign(giftData, parsed);
+  }
+} catch (err) {
+  console.warn("[NIVA] Could not load preview data:", err);
+}
+
+function applyGiftData() {
+  document.querySelectorAll("[data-field]").forEach(el => {
+    const key = el.dataset.field;
+    const val = giftData[key];
+    if (typeof val === "string" && val.trim()) el.textContent = val;
+  });
+
+  document.querySelectorAll(".memory-card").forEach((card, index) => {
+    const caption = card.querySelector(".memory-caption");
+    const customCaption = giftData.captions?.[index];
+    if (caption && typeof customCaption === "string") caption.textContent = customCaption;
+
+    const photoUrl = giftData.photos?.[index];
+    if (typeof photoUrl === "string" && photoUrl.trim()) {
+      let img = card.querySelector("img");
+      if (!img) {
+        img = document.createElement("img");
+        img.alt = customCaption || `Memory ${index + 1}`;
+        img.loading = "lazy";
+        const ph = card.querySelector(".photo-placeholder");
+        if (ph) ph.replaceWith(img); else card.prepend(img);
+      }
+      if (img.src !== photoUrl) img.src = photoUrl;
+    }
+  });
+}
+
+applyGiftData();
+
+/* ---------- FLOATING HEARTS ---------- */
+function createFloatingHeart() {
+  const heart = document.createElement("span");
+  heart.className = "deco-heart";
+  heart.textContent = ["♡", "♥", "✧", "❦"][Math.floor(Math.random() * 4)];
+  heart.style.left = `${Math.random() * 100}%`;
+  heart.style.fontSize = `${12 + Math.random() * 20}px`;
+  heart.style.animationDuration = `${9 + Math.random() * 12}s`;
+  heart.style.animationDelay = `${Math.random() * 3}s`;
+  document.getElementById("app").appendChild(heart);
+  setTimeout(() => heart.remove(), 24000);
+}
+for (let i = 0; i < 12; i++) setTimeout(createFloatingHeart, i * 350);
+setInterval(createFloatingHeart, 1800);
+
+/* ---------- PAGE NAV ---------- */
+const pages = [...document.querySelectorAll(".page")];
+let currentPage = 1;
+let heartsFound = 0;
+let storyIndex = 0;
+let proposalAnswer = "";
+let gameFinished = false;
+
+function showPage(pageNumber) {
+  const target = document.getElementById(`page-${pageNumber}`);
+  if (!target || pageNumber < 1 || pageNumber > 8) return;
+  pages.forEach(p => p.classList.remove("active"));
+  currentPage = pageNumber;
+  target.classList.add("active");
+  target.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: "instant" });
+  if (pageNumber === 6) resetStory();
+  if (pageNumber === 7) resetProposal();
+}
+
+document.querySelectorAll("[data-next]").forEach(button => {
+  button.addEventListener("click", () => showPage(Number(button.dataset.next)));
+});
+
+/* ---------- LIGHTBOX ---------- */
+const lightbox = document.getElementById("lightbox");
+const lightboxImage = document.getElementById("lightbox-image");
+const lightboxClose = document.getElementById("lightbox-close");
+
+document.querySelectorAll(".memory-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const image = card.querySelector("img");
+    if (!image || !image.src) return;
+    lightboxImage.src = image.src;
+    lightboxImage.alt = image.alt;
+    lightbox.classList.add("open");
+    lightboxClose.focus();
+  });
+});
+
+function closeLightbox() {
+  lightbox.classList.remove("open");
+  lightboxImage.removeAttribute("src");
+}
+
+lightboxClose.addEventListener("click", closeLightbox);
+lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
+
+/* ---------- HEART HUNT ---------- */
+const gameButtons = [...document.querySelectorAll(".game-heart")];
+const gameMessage = document.getElementById("game-message");
+const gameCounter = document.getElementById("game-counter");
+const gameActions = document.getElementById("game-actions");
+
+const heartMessages = [
+  "You are wonderfully unique.",
+  "Your smile deserves its own little sunshine.",
+  "You deserve all the happiness in the world.",
+  "Never forget how special you are.",
+  "Little moments can mean so much.",
+  "There's one last surprise waiting for you."
+];
+
+gameButtons.forEach((button, index) => {
+  button.addEventListener("click", () => {
+    if (button.disabled || gameFinished) return;
+    button.disabled = true;
+    button.classList.add("found");
+    button.textContent = "♥";
+    heartsFound++;
+    gameMessage.textContent = heartMessages[index];
+    gameCounter.textContent = `${heartsFound} of 6 hearts found`;
+    if (heartsFound === gameButtons.length) {
+      gameFinished = true;
+      gameMessage.textContent = "You found every heart! There's one last surprise waiting for you.";
+      gameActions.hidden = false;
+    }
+  });
+});
+
+/* ---------- STORY ---------- */
+const storyText = document.getElementById("story-text");
+const storyNext = document.getElementById("story-next");
+const storyMessages = [
+  "If I could save one feeling forever... it would be the happiness of seeing you smile.",
+  "If I could keep one moment close... it would be every little moment that made me smile because of you.",
+  "And if I could ask for one beautiful possibility... it would be a chance to make more beautiful memories together."
+];
+
+function resetStory() {
+  storyIndex = 0;
+  storyText.textContent = "If I could save one feeling forever...";
+  storyNext.textContent = "And then...?";
+}
+
+storyNext.addEventListener("click", () => {
+  storyIndex++;
+  if (storyIndex < storyMessages.length) {
+    storyText.animate(
+      [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "translateY(0)" }],
+      { duration: 600, easing: "ease-out" }
+    );
+    storyText.textContent = storyMessages[storyIndex];
+    if (storyIndex === storyMessages.length - 1) storyNext.textContent = "One last question...";
+    return;
+  }
+  showPage(7);
+});
+
+/* ---------- PROPOSAL ---------- */
+const yesButton = document.getElementById("yes-button");
+const momentButton = document.getElementById("moment-button");
+const proposalFeedback = document.getElementById("proposal-feedback");
+const proposalActions = document.getElementById("proposal-actions");
+
+function resetProposal() {
+  proposalAnswer = "";
+  proposalFeedback.textContent = "";
+  proposalActions.hidden = false;
+  yesButton.disabled = false;
+  momentButton.disabled = false;
+  yesButton.textContent = "YES ♥";
+  momentButton.textContent = "I need a moment";
+}
+
+function celebrate() {
+  const symbols = ["♥", "♡", "❦", "✧", "✦"];
+  for (let i = 0; i < 45; i++) {
+    const particle = document.createElement("span");
+    particle.className = "celebration";
+    particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    particle.style.left = `${Math.random() * 100}%`;
+    particle.style.bottom = `${-10 - Math.random() * 20}px`;
+    particle.style.animationDelay = `${Math.random() * 1.4}s`;
+    particle.style.fontSize = `${16 + Math.random() * 20}px`;
+    particle.style.color = ["#e8b4b8", "#d4a574", "#f4c8cc"][Math.floor(Math.random() * 3)];
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 4000);
+  }
+}
+
+yesButton.addEventListener("click", () => {
+  if (proposalAnswer) return;
+  proposalAnswer = "yes";
+  yesButton.disabled = true;
+  momentButton.disabled = true;
+  proposalFeedback.textContent = "A little moment worth celebrating!";
+  celebrate();
+  setTimeout(() => showPage(8), 2200);
+});
+
+momentButton.addEventListener("click", () => {
+  if (proposalAnswer) return;
+  proposalAnswer = "moment";
+  proposalFeedback.textContent = "That's completely okay. Take all the time you need. Your feelings and your answer deserve respect.";
+  momentButton.textContent = "Thank you for understanding";
+  yesButton.disabled = true;
+  const continueButton = document.createElement("button");
+  continueButton.className = "soft-btn";
+  continueButton.textContent = "Continue to the ending";
+  continueButton.addEventListener("click", () => showPage(8));
+  proposalActions.appendChild(continueButton);
+});
+
+/* ---------- MUSIC ---------- */
+let backgroundAudio = null;
+function startBackgroundMusic() {
+  if (!giftData.musicUrl || backgroundAudio) return;
+  backgroundAudio = new Audio(giftData.musicUrl);
+  backgroundAudio.loop = true;
+  backgroundAudio.volume = 0.35;
+  backgroundAudio.play().catch(() => {});
+}
+document.querySelectorAll("[data-next]").forEach(b => b.addEventListener("click", startBackgroundMusic));
+yesButton.addEventListener("click", startBackgroundMusic, { once: true });
+
+/* ---- PREVIEW BRIDGE — DO NOT REMOVE ---- */
+(function initPreviewBridge() {
+  if (window.parent === window) return;
+
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin) return;
+    if (event.data?.type !== "NIVA_PREVIEW_UPDATE") return;
+
+    const incoming = event.data.data || {};
+    Object.assign(giftData, incoming);
+    applyGiftData();
+
+    document.querySelectorAll(".memory-card").forEach((card, index) => {
+      const photoUrl = giftData.photos?.[index];
+      if (typeof photoUrl === "string" && photoUrl.trim()) {
+        let img = card.querySelector("img");
+        if (!img) {
+          img = document.createElement("img");
+          img.alt = giftData.captions?.[index] || `Memory ${index + 1}`;
+          img.loading = "lazy";
+          const ph = card.querySelector(".photo-placeholder");
+          if (ph) ph.replaceWith(img); else card.prepend(img);
+        }
+        if (img.src !== photoUrl) img.src = photoUrl;
+      }
+    });
+  });
+
+  window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "currency": "INR",
+  "plans": [
+    {
+      "id": "basic",
+      "name": "Basic",
+      "price": 299,
+      "currency": "INR",
+      "description": "A beautiful digital gift for your special moments.",
+      "features": [
+        "Personalized digital gift website",
+        "Custom names and messages",
+        "Mobile-friendly design",
+        "Unique gift link",
+        "Lifetime access"
+      ],
+      "active": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "premium",
+      "name": "Premium",
+      "price": 499,
+      "currency": "INR",
+      "description": "A romantic, interactive gift filled with your memories.",
+      "features": [
+        "Everything in Basic",
+        "Personalized love letter",
+        "Photo memory gallery",
+        "Special date display",
+        "Interactive animations",
+        "Background music option",
+        "Lifetime access"
+      ],
+      "active": true,
+      "sortOrder": 2
+    },
+    {
+      "id": "ultimate",
+      "name": "Ultimate",
+      "price": 899,
+      "currency": "INR",
+      "description": "A premium digital gift experience for unforgettable memories.",
+      "features": [
+        "Everything in Premium",
+        "Advanced customization options",
+        "Multiple interactive pages",
+        "Extended memory gallery",
+        "Personalized story timeline",
+        "Premium animations",
+        "Lifetime access"
+      ],
+      "active": true,
+      "sortOrder": 3
+    }
+  ]
+}

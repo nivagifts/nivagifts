@@ -1,0 +1,44 @@
+{
+  "categories": [
+    {
+      "id": "love",
+      "name": "Love",
+      "emoji": "🌹",
+      "description": "Create a romantic digital gift filled with love letters, special dates, and meaningful memories.",
+      "active": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "birthday",
+      "name": "Birthday",
+      "emoji": "🎂",
+      "description": "Make someone's birthday unforgettable with a personalised digital surprise.",
+      "active": true,
+      "sortOrder": 2
+    },
+    {
+      "id": "anniversary",
+      "name": "Anniversary",
+      "emoji": "🥂",
+      "description": "Celebrate your journey together with memories and heartfelt messages.",
+      "active": true,
+      "sortOrder": 3
+    },
+    {
+      "id": "friendship",
+      "name": "Friendship",
+      "emoji": "🫶",
+      "description": "Celebrate friendship, inside jokes, and unforgettable adventures.",
+      "active": true,
+      "sortOrder": 4
+    },
+    {
+      "id": "memories",
+      "name": "Memories",
+      "emoji": "📸",
+      "description": "Preserve your favourite photos, stories, and special moments in one place.",
+      "active": true,
+      "sortOrder": 5
+    }
+  ]
+}

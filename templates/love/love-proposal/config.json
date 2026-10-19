@@ -1,0 +1,99 @@
+{
+  "id": "love-proposal",
+  "name": "Love Proposal",
+  "category": "love",
+  "description": "A multi-page romantic proposal experience with personal memories, an interactive heart-hunt game, and a special final question.",
+  "price": 499,
+  "currency": "INR",
+  "version": "1.0.0",
+  "active": true,
+  "templatePath": "/templates/love/love-proposal/template.html",
+  "previewImage": "/templates/love/love-proposal/preview.jpg",
+  "features": [
+    "Animated envelope opening",
+    "Personalized welcome message",
+    "Memory scrapbook and photo gallery",
+    "Interactive Heart Hunt game",
+    "Emotional story sequence",
+    "Interactive proposal",
+    "Floating hearts",
+    "Optional background music",
+    "Responsive design"
+  ],
+  "customization": {
+    "recipientName": {
+      "label": "Partner's Name",
+      "type": "text",
+      "default": "My Favourite Person",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "e.g. My Favourite Person"
+    },
+    "senderName": {
+      "label": "Your Name",
+      "type": "text",
+      "default": "Someone who cares about you",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "e.g. Someone who cares about you"
+    },
+    "welcomeMessage": {
+      "label": "Welcome Message",
+      "type": "textarea",
+      "default": "I made a little something just for you. A tiny world filled with memories, smiles, and a little bit of magic.",
+      "required": true,
+      "maxLength": 1000
+    },
+    "letter": {
+      "label": "Personal Love Letter",
+      "type": "textarea",
+      "default": "Sometimes, the smallest things become the most beautiful memories. I hope you always remember how special you are.",
+      "required": true,
+      "maxLength": 2000
+    },
+    "photos": {
+      "label": "Our Memories",
+      "type": "imageGallery",
+      "required": false,
+      "maxFiles": 20,
+      "maxSizeMB": 50,
+      "accept": "image/jpeg,image/png,image/webp,image/gif",
+      "help": "Photos up to 50 MB each."
+    },
+    "captions": {
+      "label": "Memory Captions",
+      "type": "textArray",
+      "default": [
+        "The beginning of something beautiful",
+        "One of my favourite moments",
+        "That smile I never get tired of",
+        "A memory worth keeping forever"
+      ],
+      "required": false,
+      "maxItems": 20,
+      "help": "One caption per line. Pairs with each photo in order."
+    },
+    "musicUrl": {
+      "label": "Background Music",
+      "type": "audio",
+      "required": false,
+      "maxSizeMB": 20,
+      "accept": "audio/mpeg,audio/mp3,audio/wav,audio/ogg",
+      "help": "Optional romantic soundtrack."
+    }
+  },
+  "sections": [
+    { "title": "The names", "subtitle": "Who is this little world for?", "fields": ["recipientName", "senderName"] },
+    { "title": "Welcome message", "subtitle": "Set the mood for the surprise.", "fields": ["welcomeMessage"] },
+    { "title": "Your love letter", "subtitle": "Put the feelings into words.", "fields": ["letter"] },
+    { "title": "Your memories", "subtitle": "Add photos and captions.", "fields": ["photos", "captions"] },
+    { "title": "Background music", "subtitle": "Add a romantic soundtrack.", "fields": ["musicUrl"] }
+  ],
+  "preview": {
+    "nameField": "recipientName",
+    "senderField": "senderName",
+    "messageField": "letter",
+    "photosField": "photos",
+    "themeField": null
+  }
+}
