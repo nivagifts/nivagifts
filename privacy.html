@@ -535,7 +535,8 @@
   <!-- HEADER -->
   <header>
     <div class="wrap nav">
-      <a class="brand" href="./index.html" aria-label="NIVA home">
+      <!-- FIXED: href changed from "./index.html" to "index.html" -->
+      <a class="brand" href="index.html" aria-label="NIVA home">
         <span class="brand-logo">
           <img src="./public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo">
         </span>
@@ -544,7 +545,8 @@
           <span class="brand-caption">MAKE MOMENTS ETERNAL</span>
         </span>
       </a>
-      <a class="back" href="./index.html">
+      <!-- FIXED: href changed from "./index.html" to "index.html" and added JS fallback -->
+      <a class="back" href="index.html" id="backBtn">
         <span aria-hidden="true">←</span>
         <span>Back</span>
       </a>
@@ -638,12 +640,22 @@
   <!-- FOOTER -->
   <footer>
     <div class="wrap">
-      © <span id="year"></span> NIVA · Make Moments Eternal · <a href="./index.html">Home</a>
+      <!-- FIXED: href changed from "./index.html" to "index.html" -->
+      © <span id="year"></span> NIVA · Make Moments Eternal · <a href="index.html">Home</a>
     </div>
   </footer>
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // FIXED: Back button fallback — if there's no history, go to home
+    document.getElementById("backBtn").addEventListener("click", function (e) {
+      if (window.history.length > 1) {
+        e.preventDefault();
+        window.history.back();
+      }
+      // else: let the default href="index.html" navigation happen
+    });
   </script>
 </body>
 </html>
