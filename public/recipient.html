@@ -5,47 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0a0508">
+<meta name="theme-color" content="#fdf8f3">
 <title>Open Your NIVA Gift</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
-  /* ── NIVA Midnight Rose — Recipient Gate ── */
   :root {
-    color-scheme: dark;
-
-    --bg-deep:     #0a0508;
-    --bg-soft:     #14080f;
-    --panel:       #1c0f18;
-    --panel-2:     #241421;
-
-    --wine:        #8b1e3f;
-    --rose:        #e8b4b8;
-    --rose-soft:   #c47a8a;
-    --gold:        #d4a574;
-
-    --text:        #f5e6d3;
-    --text-2:      #c9b3b8;
-    --text-muted:  #8a6f78;
-
-    --line:        #3d2433;
-    --line-gold:   rgba(212, 165, 116, 0.35);
-    --danger:      #e8919e;
-
-    --serif:       'Fraunces', Georgia, serif;
-    --sans:        'Manrope', system-ui, sans-serif;
-
-    --ease:        cubic-bezier(0.2, 0.8, 0.2, 1);
+    color-scheme: light;
+    --bg-cream: #fdf8f3;
+    --bg-blush: #faf0ea;
+    --bg-rose: #f9e8e4;
+    --bg-white: #ffffff;
+    --panel: #fffaf6;
+    --panel-2: #fff5ef;
+    --rose: #d4878e;
+    --rose-deep: #b76e79;
+    --rose-light: #f0c4c8;
+    --champagne: #d4b896;
+    --gold: #c9a961;
+    --text: #3d2c2e;
+    --text-2: #6b5557;
+    --text-muted: #9e8588;
+    --text-soft: #b8a5a7;
+    --line: #f0dfd8;
+    --line-soft: #f7ebe5;
+    --line-rose: #e8c4c8;
+    --danger: #c75b65;
+    --display: 'Playfair Display', Georgia, serif;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --shadow-lg: 0 24px 70px rgba(183, 110, 121, 0.18);
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  *, *::before, *::after {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-  }
-
+  *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { -webkit-text-size-adjust: 100%; }
 
   body {
@@ -58,10 +54,10 @@
     padding: calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
     font-family: var(--sans);
     color: var(--text);
-    background: var(--bg-deep);
+    background: var(--bg-cream);
     background-image:
-      radial-gradient(ellipse at 15% 0%, rgba(139, 30, 63, 0.35) 0%, transparent 40%),
-      radial-gradient(ellipse at 85% 100%, rgba(139, 30, 63, 0.25) 0%, transparent 40%);
+      radial-gradient(ellipse at 15% 0%, rgba(212, 135, 142, 0.12) 0%, transparent 40%),
+      radial-gradient(ellipse at 85% 100%, rgba(212, 184, 150, 0.08) 0%, transparent 40%);
     background-attachment: fixed;
     overscroll-behavior-y: contain;
     -webkit-font-smoothing: antialiased;
@@ -69,65 +65,59 @@
 
   main {
     width: min(100%, 460px);
-    padding: 32px 26px;
-    border: 1px solid var(--line-gold);
-    border-radius: 22px;
-    background: linear-gradient(155deg, var(--panel), var(--bg-soft));
-    box-shadow:
-      0 24px 70px rgba(0, 0, 0, 0.65),
-      0 0 40px rgba(139, 30, 63, 0.2);
+    padding: 36px 28px;
+    border: 1px solid var(--line-rose);
+    border-radius: 24px;
+    background: var(--panel);
+    box-shadow: var(--shadow-lg);
     animation: fade-up 0.5s var(--ease) both;
   }
 
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .brand-mark {
-    width: 56px;
-    height: 56px;
-    margin: 0 auto 20px;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 22px;
     display: grid;
     place-items: center;
-    border: 1px dashed var(--gold);
+    border: 1px solid var(--line-gold, #e8d9b8);
     border-radius: 50%;
-    background: linear-gradient(145deg, rgba(139, 30, 63, 0.6), rgba(20, 8, 15, 0.95));
-    color: var(--rose);
-    font: 500 26px/1 var(--serif);
-    box-shadow:
-      0 0 30px rgba(139, 30, 63, 0.4),
-      inset 0 0 20px rgba(232, 180, 184, 0.1);
+    background: linear-gradient(145deg, var(--bg-rose), var(--bg-white));
+    color: var(--rose-deep);
+    font: 500 28px/1 var(--display);
+    box-shadow: 0 8px 24px rgba(183, 110, 121, 0.15);
     animation: float 4s ease-in-out infinite;
   }
 
   @keyframes float {
     0%, 100% { transform: translateY(0) rotate(-2deg); }
-    50%      { transform: translateY(-6px) rotate(2deg); }
+    50% { transform: translateY(-6px) rotate(2deg); }
   }
 
   h1 {
     margin: 0 0 12px;
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: 1.75rem;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 1.8rem;
     line-height: 1.15;
     color: var(--text);
     text-align: center;
     letter-spacing: -0.01em;
   }
 
-  h1 em {
-    color: var(--rose);
-    font-style: italic;
-  }
+  h1 em { color: var(--rose-deep); font-style: italic; }
 
   p.intro {
-    margin: 0 0 22px;
-    line-height: 1.6;
+    margin: 0 0 24px;
+    line-height: 1.7;
     color: var(--text-2);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     text-align: center;
+    font-family: var(--serif);
   }
 
   form { margin: 0; }
@@ -136,9 +126,8 @@
     display: block;
     margin: 0 0 8px;
     color: var(--text);
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 500;
-    letter-spacing: 0.02em;
   }
 
   input[type=password] {
@@ -146,7 +135,7 @@
     padding: 14px 16px;
     border: 1px solid var(--line);
     border-radius: 12px;
-    background: var(--bg-deep);
+    background: var(--bg-white);
     color: var(--text);
     font-family: var(--sans);
     font-size: 16px;
@@ -154,91 +143,59 @@
     transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
   }
 
-  input[type=password]::placeholder {
-    color: var(--text-muted);
-  }
-
-  input[type=password]:focus {
-    border-color: var(--rose-soft);
-    box-shadow: 0 0 0 3px rgba(232, 180, 184, 0.12);
-  }
+  input[type=password]::placeholder { color: var(--text-soft); }
+  input[type=password]:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(212, 135, 142, 0.12); }
 
   button[type=submit] {
     width: 100%;
-    margin-top: 16px;
-    padding: 15px 20px;
-    border: 1px solid rgba(232, 180, 184, 0.35);
+    margin-top: 18px;
+    padding: 15px 22px;
+    border: 1px solid var(--rose);
     border-radius: 999px;
-    background: linear-gradient(110deg, var(--wine), #a82851);
-    color: var(--text);
+    background: linear-gradient(110deg, var(--rose-deep), var(--rose));
+    color: #fff;
     font-family: var(--sans);
-    font-size: 0.92rem;
-    font-weight: 600;
+    font-size: 0.94rem;
+    font-weight: 500;
     letter-spacing: 0.02em;
     cursor: pointer;
     transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
-    box-shadow:
-      0 10px 30px rgba(139, 30, 63, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(183, 110, 121, 0.28);
     touch-action: manipulation;
   }
 
-  button[type=submit]:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow:
-      0 14px 38px rgba(139, 30, 63, 0.55),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  }
-
-  button[type=submit]:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
-  button[type=submit]:disabled {
-    opacity: 0.6;
-    cursor: wait;
-  }
+  button[type=submit]:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(183, 110, 121, 0.38); }
+  button[type=submit]:active:not(:disabled) { transform: scale(0.97); }
+  button[type=submit]:disabled { opacity: 0.6; cursor: wait; }
 
   #message {
     margin: 16px 0 0;
-    padding: 12px 14px;
+    padding: 12px 16px;
     border-radius: 10px;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     line-height: 1.55;
     text-align: center;
     overflow-wrap: anywhere;
-    min-height: 0;
     display: none;
   }
 
-  #message:not(:empty) {
-    display: block;
-  }
+  #message:not(:empty) { display: block; }
 
-  #message.info {
-    background: rgba(139, 30, 63, 0.15);
-    border: 1px solid var(--line-gold);
-    color: var(--text-2);
-  }
-
-  #message.error {
-    background: rgba(232, 145, 158, 0.1);
-    border: 1px solid rgba(232, 145, 158, 0.4);
-    color: var(--danger);
-  }
+  #message.info { background: var(--bg-rose); border: 1px solid var(--line-rose); color: var(--text-2); }
+  #message.error { background: rgba(199, 91, 101, 0.08); border: 1px solid rgba(199, 91, 101, 0.3); color: var(--danger); }
 
   .footer-note {
-    margin: 20px 0 0;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
+    margin: 22px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line-soft);
     color: var(--text-muted);
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     line-height: 1.55;
     text-align: center;
     font-style: italic;
+    font-family: var(--serif);
   }
 
-  /* Gift frame — full screen after unlock */
   #giftFrame {
     display: none;
     position: fixed;
@@ -246,14 +203,11 @@
     width: 100%;
     height: 100%;
     border: 0;
-    background: var(--bg-deep);
+    background: var(--bg-cream);
     z-index: 100;
   }
 
-  /* Password visibility toggle */
-  .input-wrap {
-    position: relative;
-  }
+  .input-wrap { position: relative; }
 
   .toggle-pw {
     position: absolute;
@@ -273,15 +227,10 @@
     transition: color 0.2s, background 0.2s;
   }
 
-  .toggle-pw:hover {
-    color: var(--rose);
-    background: rgba(139, 30, 63, 0.2);
-  }
+  .toggle-pw:hover { color: var(--rose-deep); background: var(--bg-rose); }
 
   .input-wrap input[type=password],
-  .input-wrap input[type=text] {
-    padding-right: 52px;
-  }
+  .input-wrap input[type=text] { padding-right: 52px; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -303,14 +252,7 @@
   <form id="unlockForm" novalidate>
     <label class="field-label" for="giftPassword">Gift password</label>
     <div class="input-wrap">
-      <input
-        id="giftPassword"
-        type="password"
-        autocomplete="current-password"
-        placeholder="Enter your password"
-        required
-        maxlength="128"
-        autofocus>
+      <input id="giftPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required maxlength="128" autofocus>
       <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">👁</button>
     </div>
     <button id="unlockButton" type="submit">Unlock my gift ♥</button>
@@ -321,39 +263,16 @@
   <p class="footer-note">This gift is private and encrypted. Only you and the sender can see it.</p>
 </main>
 
-<iframe
-  id="giftFrame"
-  title="Your private NIVA gift"
-  referrerpolicy="no-referrer"
-  sandbox="allow-scripts allow-same-origin allow-forms allow-popups">
-</iframe>
+<iframe id="giftFrame" title="Your private NIVA gift" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
 
 <script>
 (() => {
   "use strict";
 
-  /* ═══════════════════════════════════════════════════════
-     NIVA RECIPIENT PAGE
-     ─────────────────────────────────────────────────────
-     Universal — works for ALL templates (eternal-love,
-     love-proposal, birthday-magic, and future templates).
-
-     Flow:
-     1. Read publicId from URL
-     2. Fetch encrypted envelope from /api/gifts/:publicId
-     3. User enters password → decrypt with AES-GCM
-     4. Store decrypted data in sessionStorage (key = niva-preview-<templateId>)
-     5. Load correct template in iframe
-     6. Also send via postMessage for immediate display
-     ═══════════════════════════════════════════════════════ */
-
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-
-  /* Get public ID from URL */
   const publicId = location.pathname.split("/").pop();
 
-  /* DOM refs */
   const form = document.getElementById("unlockForm");
   const input = document.getElementById("giftPassword");
   const button = document.getElementById("unlockButton");
@@ -362,38 +281,24 @@
   const gate = document.getElementById("gate");
   const frame = document.getElementById("giftFrame");
 
-  /* Public ID validation */
   function isValidPublicId(id) {
     return typeof id === "string" && /^[A-Za-z0-9_-]{20,80}$/.test(id);
   }
 
-  /* Base64 → Uint8Array */
   function fromBase64(value) {
     try {
       const binary = atob(value);
       const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       return bytes;
-    } catch {
-      throw new Error("Invalid gift data.");
-    }
+    } catch { throw new Error("Invalid gift data."); }
   }
 
-  /* Show message (info or error) */
   function showMessage(text, type = "info") {
     message.textContent = text;
     message.className = type;
   }
 
-  /* Clear message */
-  function clearMessage() {
-    message.textContent = "";
-    message.className = "";
-  }
-
-  /* Password visibility toggle */
   togglePw?.addEventListener("click", () => {
     const isPassword = input.type === "password";
     input.type = isPassword ? "text" : "password";
@@ -401,15 +306,9 @@
     togglePw.textContent = isPassword ? "🙈" : "👁";
   });
 
-  /* Decrypt envelope with password */
   async function decryptGift(envelope, password) {
-    if (
-      !envelope ||
-      typeof envelope !== "object" ||
-      envelope.version !== 1 ||
-      envelope.kdf !== "PBKDF2-SHA-256" ||
-      envelope.iterations !== 310000
-    ) {
+    if (!envelope || typeof envelope !== "object" || envelope.version !== 1 ||
+        envelope.kdf !== "PBKDF2-SHA-256" || envelope.iterations !== 310000) {
       throw new Error("This gift cannot be unlocked.");
     }
 
@@ -421,7 +320,6 @@
       throw new Error("This gift cannot be unlocked.");
     }
 
-    /* Derive key from password */
     const material = await crypto.subtle.importKey(
       "raw", encoder.encode(password), "PBKDF2", false, ["deriveKey"]
     );
@@ -434,137 +332,67 @@
       ["decrypt"]
     );
 
-    /* Decrypt (will throw if password is wrong) */
-    const plaintext = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv },
-      key,
-      ciphertext
-    );
-
+    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
     return JSON.parse(decoder.decode(plaintext));
   }
 
-  /* Handle unlock form submit */
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-
     if (button.disabled) return;
 
     const password = input.value.trim();
 
-    if (!password) {
-      showMessage("Please enter the password.", "error");
-      input.focus();
-      return;
-    }
-
-    if (!isValidPublicId(publicId)) {
-      showMessage("This gift link is not valid.", "error");
-      return;
-    }
+    if (!password) { showMessage("Please enter the password.", "error"); input.focus(); return; }
+    if (!isValidPublicId(publicId)) { showMessage("This gift link is not valid.", "error"); return; }
 
     button.disabled = true;
     showMessage("Unlocking your gift…", "info");
 
     try {
-      /* Step 1 — Fetch encrypted envelope from server */
-      const response = await fetch(
-        `/api/gifts/${encodeURIComponent(publicId)}`,
-        { cache: "no-store", credentials: "omit" }
-      );
+      const response = await fetch(`/api/gifts/${encodeURIComponent(publicId)}`, { cache: "no-store", credentials: "omit" });
 
-      if (response.status === 404) {
-        throw new Error("This gift does not exist or has been removed.");
-      }
-
-      if (!response.ok) {
-        throw new Error("We could not reach the gift. Please try again.");
-      }
+      if (response.status === 404) throw new Error("This gift does not exist or has been removed.");
+      if (!response.ok) throw new Error("We could not reach the gift. Please try again.");
 
       const result = await response.json();
+      if (!result?.gift?.envelope) throw new Error("This gift is unavailable.");
 
-      if (!result?.gift?.envelope) {
-        throw new Error("This gift is unavailable.");
-      }
-
-      /* Step 2 — Decrypt with user's password */
       let gift;
-      try {
-        gift = await decryptGift(result.gift.envelope, password);
-      } catch (err) {
-        throw new Error("Incorrect password. Please try again.");
-      }
+      try { gift = await decryptGift(result.gift.envelope, password); }
+      catch { throw new Error("Incorrect password. Please try again."); }
 
-      /* Step 3 — Validate template ID */
       const templateId = gift.templateId || result.gift.templateId;
+      if (!templateId || typeof templateId !== "string") throw new Error("This gift is missing template information.");
+      if (!/^[a-z0-9-]+$/.test(templateId)) throw new Error("This gift uses an invalid template.");
 
-      if (!templateId || typeof templateId !== "string") {
-        throw new Error("This gift is missing template information.");
-      }
-
-      /* Validate template ID format (defense in depth) */
-      if (!/^[a-z0-9-]+$/.test(templateId)) {
-        throw new Error("This gift uses an invalid template.");
-      }
-
-      /* Step 4 — Store decrypted data for template to read */
       const previewKey = "niva-preview-" + templateId;
+      try { sessionStorage.setItem(previewKey, JSON.stringify(gift)); }
+      catch (err) { console.warn("[NIVA] sessionStorage unavailable:", err); }
 
-      try {
-        sessionStorage.setItem(previewKey, JSON.stringify(gift));
-      } catch (err) {
-        /* SessionStorage might be full with large videos — fall back to postMessage only */
-        console.warn("[NIVA] sessionStorage unavailable, using postMessage only:", err);
-      }
-
-      /* Step 5 — Load correct template */
       const templateUrl = `/templates/${getCategoryForTemplate(templateId)}/${templateId}/template.html`;
 
-      /* Step 6 — Hide gate, show iframe */
       gate.style.display = "none";
       frame.style.display = "block";
-
-      /* Step 7 — Load template */
       frame.src = templateUrl;
-
-      /* Step 8 — Also send via postMessage once template is ready */
-      let sentViaPost = false;
 
       const onTemplateMessage = (event) => {
         if (event.origin !== window.location.origin) return;
         if (event.source !== frame.contentWindow) return;
-
         if (event.data?.type === "NIVA_PREVIEW_READY") {
-          /* Send full gift data to template */
           try {
-            frame.contentWindow.postMessage(
-              { type: "NIVA_PREVIEW_UPDATE", data: gift },
-              window.location.origin
-            );
-            sentViaPost = true;
-          } catch (err) {
-            console.warn("[NIVA] Could not postMessage to template:", err);
-          }
+            frame.contentWindow.postMessage({ type: "NIVA_PREVIEW_UPDATE", data: gift }, window.location.origin);
+          } catch (err) { console.warn("[NIVA] postMessage failed:", err); }
 
-          /* Clean up sessionStorage after template has data */
-          setTimeout(() => {
-            try {
-              sessionStorage.removeItem(previewKey);
-            } catch {}
-          }, 2000);
-
+          setTimeout(() => { try { sessionStorage.removeItem(previewKey); } catch {} }, 2000);
           window.removeEventListener("message", onTemplateMessage);
         }
       };
 
       window.addEventListener("message", onTemplateMessage);
 
-      /* Safety timeout — clean up if no READY received */
       setTimeout(() => {
         window.removeEventListener("message", onTemplateMessage);
-        try {
-          sessionStorage.removeItem(previewKey);
-        } catch {}
+        try { sessionStorage.removeItem(previewKey); } catch {}
       }, 15000);
 
     } catch (err) {
@@ -575,24 +403,14 @@
     }
   });
 
-  /* Map template ID → category for URL construction */
   function getCategoryForTemplate(templateId) {
-    /* Known mappings */
     const map = {
-      "eternal-love":    "love",
-      "love-proposal":   "love",
-      "birthday-magic":  "birthday",
+      "eternal-love": "love",
+      "love-proposal": "love",
+      "birthday-magic": "birthday",
     };
-
-    if (map[templateId]) return map[templateId];
-
-    /* Fallback: templates are stored as /templates/<category>/<id>/
-       If we don't know the category, this will 404 — better to have
-       a clear error than silently fail. */
-    console.warn("[NIVA] Unknown category for template:", templateId);
-    return "love"; /* best guess */
+    return map[templateId] || "love";
   }
-
 })();
 </script>
 </body>

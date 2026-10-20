@@ -3,25 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0a0508">
+  <meta name="theme-color" content="#fdf8f3">
   <meta name="description" content="Personalize your NIVA digital gift.">
   <title>Craft Your Gift | NIVA</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="editor.css">
 </head>
 <body>
 
-  <!-- ═══ LOGIN GATE ═══ -->
+  <!-- LOGIN GATE -->
   <div class="login-gate" id="loginGate" hidden>
     <div class="login-card">
-      <!-- LOGO PLACEHOLDER: Replace this div with your actual logo image -->
       <img src="../public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="login-logo" style="object-fit:cover;">
 
-      <!-- LOGIN FORM -->
+      <!-- LOGIN -->
       <div id="loginPane">
         <h2>Welcome back</h2>
         <p>Sign in to create your gift.</p>
@@ -34,9 +33,10 @@
           <p class="login-error" id="loginError" role="alert"></p>
         </form>
         <button type="button" class="login-link" id="toRegister">New here? Create an account →</button>
+        <button type="button" class="login-link" id="toForgotPassword" style="margin-top:4px;font-size:0.8rem">Forgot password?</button>
       </div>
 
-      <!-- REGISTER FORM -->
+      <!-- REGISTER -->
       <div id="registerPane" hidden>
         <h2>Create your account</h2>
         <p>Your gift needs an account to be saved.</p>
@@ -52,15 +52,57 @@
         </form>
         <button type="button" class="login-link" id="toLogin">Already have an account? Sign in →</button>
       </div>
+
+      <!-- VERIFY EMAIL -->
+      <div id="verifyPane" hidden>
+        <h2>Verify your email</h2>
+        <p>We sent a 6-digit code to <strong id="verifyEmailDisplay"></strong>.</p>
+        <form id="verifyForm" novalidate>
+          <label for="verifyCode">Verification code</label>
+          <input id="verifyCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" required autocomplete="one-time-code" style="text-align:center;font-size:1.4rem;letter-spacing:0.5em;">
+          <button type="submit" class="login-submit" id="verifySubmit">Verify email</button>
+          <p class="login-error" id="verifyError" role="alert"></p>
+        </form>
+        <button type="button" class="login-link" id="resendCode">Didn't receive it? Resend code</button>
+      </div>
+
+      <!-- FORGOT PASSWORD -->
+      <div id="forgotPane" hidden>
+        <h2>Reset password</h2>
+        <p>Enter your email and we'll send you a reset code.</p>
+        <form id="forgotForm" novalidate>
+          <label for="forgotEmail">Email</label>
+          <input id="forgotEmail" type="email" placeholder="you@example.com" required autocomplete="email">
+          <button type="submit" class="login-submit" id="forgotSubmit">Send reset code</button>
+          <p class="login-error" id="forgotError" role="alert"></p>
+        </form>
+        <button type="button" class="login-link" id="backToLogin">← Back to sign in</button>
+      </div>
+
+      <!-- RESET PASSWORD -->
+      <div id="resetPane" hidden>
+        <h2>New password</h2>
+        <p>Enter the code we sent you and choose a new password.</p>
+        <form id="resetForm" novalidate>
+          <label for="resetCode">Reset code</label>
+          <input id="resetCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" required style="text-align:center;font-size:1.4rem;letter-spacing:0.5em;">
+          <label for="resetPassword">New password <span class="login-hint">(12+ chars)</span></label>
+          <input id="resetPassword" type="password" placeholder="At least 12 characters" required minlength="12" autocomplete="new-password">
+          <label for="resetPasswordConfirm">Confirm new password</label>
+          <input id="resetPasswordConfirm" type="password" placeholder="Type it again" required minlength="12" autocomplete="new-password">
+          <button type="submit" class="login-submit" id="resetSubmit">Reset password</button>
+          <p class="login-error" id="resetError" role="alert"></p>
+        </form>
+        <button type="button" class="login-link" id="backToLogin2">← Back to sign in</button>
+      </div>
     </div>
   </div>
 
-  <!-- ═══ MAIN EDITOR ═══ -->
+  <!-- MAIN EDITOR -->
   <div id="editorRoot" hidden>
 
     <header class="topbar">
       <a href="../index.html" class="brand" aria-label="NIVA home">
-        <!-- LOGO PLACEHOLDER: Replace this span with your actual logo image -->
         <img src="../public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
         <span class="brand-copy">
           <span class="brand-name">NIVA</span>
@@ -104,7 +146,7 @@
             <div class="section-title">
               <span class="step-number" data-step-no>—</span>
               <div>
-                <h2>Create your gift</h2>
+                <h2>Publish your gift</h2>
                 <p>Protect your memories with a private password.</p>
               </div>
             </div>
@@ -112,7 +154,13 @@
             <input id="giftPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="At least 8 characters">
             <label for="giftPasswordConfirm">Confirm gift password</label>
             <input id="giftPasswordConfirm" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="Enter the same password">
-            <button class="button button-primary" type="button" id="publishGiftButton" style="width:100%;margin-top:17px">Create My Gift</button>
+            <label for="paymentPlan">Choose your plan</label>
+            <select id="paymentPlan" style="width:100%;min-height:48px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg-white);color:var(--text);font-family:var(--sans);font-size:15px;">
+              <option value="99">Essential — ₹99</option>
+              <option value="299" selected>Signature — ₹299</option>
+              <option value="599">Evermore — ₹599</option>
+            </select>
+            <button class="button button-primary" type="button" id="publishGiftButton" style="width:100%;margin-top:17px">Pay & Create My Gift</button>
             <p id="publishStatus" role="status" aria-live="polite"></p>
             <div id="publishedGiftResult" hidden>
               <strong>Your gift is published!</strong>
@@ -123,7 +171,7 @@
           </section>
 
           <p class="notice">
-            Save Draft stores your current draft in this browser. Publishing requires the backend to be running.
+            Save Draft stores your current draft in this browser. Publishing requires payment and the backend to be running.
           </p>
         </form>
       </section>
@@ -138,17 +186,10 @@
         </div>
 
         <div class="preview-frame" id="previewFrameWrap">
-          <iframe
-            id="previewIframe"
-            title="Live gift preview"
-            sandbox="allow-scripts allow-same-origin allow-forms"
-            loading="lazy">
-          </iframe>
+          <iframe id="previewIframe" title="Live gift preview" sandbox="allow-scripts allow-same-origin allow-forms" loading="lazy"></iframe>
         </div>
 
-        <p class="preview-caption">
-          Your edits appear here as you work. This is the real gift website, rendered live.
-        </p>
+        <p class="preview-caption">Your edits appear here as you work. This is the real gift website, rendered live.</p>
       </section>
     </main>
 

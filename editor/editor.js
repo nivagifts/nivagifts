@@ -1,10 +1,11 @@
 ﻿/* =========================================================
-   NIVA UNIVERSAL GIFT EDITOR
+   NIVA UNIVERSAL GIFT EDITOR — Light Theme + Payment Gate
    ========================================================= */
 "use strict";
 
 const MAX_PREVIEW_IMAGE_SIZE = 1400;
 const MAX_ENVELOPE_BYTES = 512 * 1024 * 1024;
+const MAX_TOTAL_MEDIA_BYTES = 20 * 1024 * 1024;
 const DRAFT_KEY_PREFIX = "niva-draft-";
 const PREVIEW_KEY_PREFIX = "niva-preview-";
 
@@ -52,18 +53,11 @@ function formatBytes(bytes) {
 /* ---------- 3. AUTH GATE ---------- */
 async function checkAuth() {
   try {
-    const res = await fetch("/api/auth/me", {
-      credentials: "same-origin",
-      cache: "no-store",
-    });
+    const res = await fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" });
     const data = await res.json().catch(() => ({}));
-    if (data?.authenticated === true && data.user) {
-      return data.user;
-    }
+    if (data?.authenticated === true && data.user) return data.user;
     return null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function showLoginGate() {
@@ -83,121 +77,193 @@ function showEditor() {
   document.body.style.overflow = "";
 }
 
+/* ---------- 4. LOGIN UI ---------- */
 function initLoginUI(onSuccess) {
-  const loginForm = $("#loginForm");
-  const registerForm = $("#registerForm");
-  const loginPane = $("#loginPane");
-  const registerPane = $("#registerPane");
-  const toRegister = $("#toRegister");
-  const toLogin = $("#toLogin");
-  const loginError = $("#loginError");
-  const registerError = $("#registerError");
+  const showPane = (id) => {
+    ["loginPane", "registerPane", "verifyPane", "forgotPane", "resetPane"].forEach(p => {
+      const el = $("#" + p);
+      if (el) el.hidden = true;
+    });
+    const target = $("#" + id);
+    if (target) target.hidden = false;
+    $$(".login-error").forEach(el => el.textContent = "");
+    setTimeout(() => target?.querySelector("input")?.focus(), 100);
+  };
 
-  toRegister?.addEventListener("click", () => {
-    loginPane.hidden = true;
-    registerPane.hidden = false;
-    loginError.textContent = "";
-    setTimeout(() => $("#registerEmail")?.focus(), 100);
-  });
+  $("#toRegister")?.addEventListener("click", () => showPane("registerPane"));
+  $("#toLogin")?.addEventListener("click", () => showPane("loginPane"));
+  $("#toForgotPassword")?.addEventListener("click", () => showPane("forgotPane"));
+  $("#backToLogin")?.addEventListener("click", () => showPane("loginPane"));
+  $("#backToLogin2")?.addEventListener("click", () => showPane("loginPane"));
 
-  toLogin?.addEventListener("click", () => {
-    loginPane.hidden = false;
-    registerPane.hidden = true;
-    registerError.textContent = "";
-    setTimeout(() => $("#loginEmail")?.focus(), 100);
-  });
-
-  loginForm?.addEventListener("submit", async (e) => {
+  // Login
+  $("#loginForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#loginEmail").value.trim();
     const password = $("#loginPassword").value;
-    const submitBtn = $("#loginSubmit");
-
-    loginError.textContent = "";
-
-    if (!email || !password) {
-      loginError.textContent = "Please enter your email and password.";
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Signing in…";
-
+    const btn = $("#loginSubmit");
+    const err = $("#loginError");
+    err.textContent = "";
+    if (!email || !password) { err.textContent = "Please enter your email and password."; return; }
+    btn.disabled = true; btn.textContent = "Signing in…";
     try {
       const res = await fetch("/api/auth/login", {
-        method: "POST",
-        credentials: "same-origin",
+        method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Sign in failed.");
+      if (res.status === 403 && data.requiresVerification) {
+        context._verifyEmail = data.email || email;
+        $("#verifyEmailDisplay").textContent = context._verifyEmail;
+        showPane("verifyPane");
+        err.textContent = "";
+        return;
       }
-
+      if (!res.ok || !data.success) throw new Error(data.message || "Sign in failed.");
       context.user = data.user;
       onSuccess();
     } catch (err) {
-      loginError.textContent = err.message || "Could not sign in.";
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Sign in";
+      err.textContent = err.message || "Could not sign in.";
+    } finally {
+      btn.disabled = false; btn.textContent = "Sign in";
     }
   });
 
-  registerForm?.addEventListener("submit", async (e) => {
+  // Register
+  $("#registerForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#registerEmail").value.trim();
     const pw = $("#registerPassword").value;
     const pwConfirm = $("#registerPasswordConfirm").value;
-    const submitBtn = $("#registerSubmit");
-
-    registerError.textContent = "";
-
-    if (!email) {
-      registerError.textContent = "Please enter your email.";
-      return;
-    }
-
-    if (pw.length < 12) {
-      registerError.textContent = "Password must be at least 12 characters.";
-      return;
-    }
-
-    if (pw !== pwConfirm) {
-      registerError.textContent = "Passwords do not match.";
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Creating account…";
-
+    const btn = $("#registerSubmit");
+    const err = $("#registerError");
+    err.textContent = "";
+    if (!email) { err.textContent = "Please enter your email."; return; }
+    if (pw.length < 12) { err.textContent = "Password must be at least 12 characters."; return; }
+    if (pw !== pwConfirm) { err.textContent = "Passwords do not match."; return; }
+    btn.disabled = true; btn.textContent = "Creating account…";
     try {
       const res = await fetch("/api/auth/register", {
-        method: "POST",
-        credentials: "same-origin",
+        method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: pw }),
       });
-
       const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Sign up failed.");
+      if (!res.ok || !data.success) throw new Error(data.message || "Sign up failed.");
+      if (data.requiresVerification) {
+        context._verifyEmail = email;
+        $("#verifyEmailDisplay").textContent = email;
+        showPane("verifyPane");
+        showToast("Check your email for the verification code.");
+      } else {
+        context.user = data.user;
+        onSuccess();
       }
+    } catch (err) {
+      err.textContent = err.message || "Could not create account.";
+    } finally {
+      btn.disabled = false; btn.textContent = "Create account";
+    }
+  });
 
+  // Verify
+  $("#verifyForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = $("#verifyCode").value.trim();
+    const btn = $("#verifySubmit");
+    const err = $("#verifyError");
+    err.textContent = "";
+    if (!/^\d{6}$/.test(code)) { err.textContent = "Enter the 6-digit code."; return; }
+    btn.disabled = true; btn.textContent = "Verifying…";
+    try {
+      const res = await fetch("/api/auth/verify-email", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: context._verifyEmail, code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.message || "Verification failed.");
       context.user = data.user;
       onSuccess();
     } catch (err) {
-      registerError.textContent = err.message || "Could not create account.";
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Create account";
+      err.textContent = err.message || "Could not verify.";
+    } finally {
+      btn.disabled = false; btn.textContent = "Verify email";
+    }
+  });
+
+  $("#resendCode")?.addEventListener("click", async () => {
+    try {
+      await fetch("/api/auth/resend-code", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: context._verifyEmail }),
+      });
+      showToast("New code sent. Check your inbox.");
+    } catch { showToast("Could not resend code."); }
+  });
+
+  // Forgot password
+  $("#forgotForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("#forgotEmail").value.trim();
+    const btn = $("#forgotSubmit");
+    const err = $("#forgotError");
+    err.textContent = "";
+    if (!email) { err.textContent = "Please enter your email."; return; }
+    btn.disabled = true; btn.textContent = "Sending…";
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.message || "Could not send reset code.");
+      context._resetEmail = email;
+      showPane("resetPane");
+      showToast("Reset code sent to your email.");
+    } catch (err) {
+      err.textContent = err.message || "Could not send reset code.";
+    } finally {
+      btn.disabled = false; btn.textContent = "Send reset code";
+    }
+  });
+
+  // Reset password
+  $("#resetForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = $("#resetCode").value.trim();
+    const pw = $("#resetPassword").value;
+    const pwConfirm = $("#resetPasswordConfirm").value;
+    const btn = $("#resetSubmit");
+    const err = $("#resetError");
+    err.textContent = "";
+    if (!/^\d{6}$/.test(code)) { err.textContent = "Enter the 6-digit code."; return; }
+    if (pw.length < 12) { err.textContent = "Password must be at least 12 characters."; return; }
+    if (pw !== pwConfirm) { err.textContent = "Passwords do not match."; return; }
+    btn.disabled = true; btn.textContent = "Resetting…";
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: context._resetEmail, code, password: pw }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.message || "Could not reset password.");
+      err.textContent = "Password reset! You can now sign in.";
+      err.style.color = "var(--success)";
+      setTimeout(() => showPane("loginPane"), 1500);
+    } catch (err) {
+      err.textContent = err.message || "Could not reset password.";
+    } finally {
+      btn.disabled = false; btn.textContent = "Reset password";
     }
   });
 }
 
-/* ---------- 4. CONFIG ---------- */
+/* ---------- 5. CONFIG ---------- */
 async function loadConfig() {
   const path = `/templates/${context.category}/${context.templateId}/config.json`;
   const res = await fetch(path, { cache: "no-cache" });
@@ -209,14 +275,14 @@ async function loadConfig() {
   return config;
 }
 
-/* ---------- 5. FIELD ACCESS ---------- */
+/* ---------- 6. FIELD ACCESS ---------- */
 function getFieldValue(key) { return context.fields[key]?.value ?? ""; }
 function setFieldValue(key, value) {
   const field = context.fields[key];
   if (field) field.value = value;
 }
 
-/* ---------- 6. FORM RENDERING ---------- */
+/* ---------- 7. FORM RENDERING ---------- */
 function renderForm() {
   const container = $("#dynamicSections");
   const sections = context.config.sections || [];
@@ -371,7 +437,7 @@ function renderField(key, spec) {
   return wrap;
 }
 
-/* ---------- 7. EVENT BINDING ---------- */
+/* ---------- 8. EVENT BINDING ---------- */
 function bindFieldEvents() {
   $$("[data-field-key]").forEach(input => {
     const key = input.dataset.fieldKey;
@@ -412,7 +478,7 @@ function updateCounter(key) {
   el.textContent = `${String(field.value).length} / ${max}`;
 }
 
-/* ---------- 8. FILE INPUT ---------- */
+/* ---------- 9. FILE INPUT ---------- */
 function handleFileInput(key, event) {
   const field = context.fields[key];
   if (!field) return;
@@ -492,7 +558,7 @@ function renderFileGrid(key) {
     const isAudio = field.spec.type === "audio";
 
     const card = document.createElement("div");
-    card.style.cssText = "position:relative;aspect-ratio:1;overflow:hidden;border:1px solid #49334f;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#0c0812;";
+    card.style.cssText = "position:relative;aspect-ratio:1;overflow:hidden;border:1px solid var(--line-rose);border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--bg-rose);";
 
     if (isVideo) {
       const vid = document.createElement("video");
@@ -503,7 +569,7 @@ function renderFileGrid(key) {
     } else if (isAudio) {
       const icon = document.createElement("div");
       icon.textContent = "♪";
-      icon.style.cssText = "font-size:32px;color:#ff9ab8;";
+      icon.style.cssText = "font-size:32px;color:var(--rose-deep);";
       card.appendChild(icon);
     } else {
       const img = document.createElement("img");
@@ -517,7 +583,7 @@ function renderFileGrid(key) {
     remove.type = "button";
     remove.textContent = "×";
     remove.setAttribute("aria-label", `Remove ${i + 1}`);
-    remove.style.cssText = "position:absolute;top:4px;right:4px;width:24px;height:24px;border:0;border-radius:50%;background:rgba(9,8,14,.9);color:#fff;cursor:pointer;";
+    remove.style.cssText = "position:absolute;top:4px;right:4px;width:24px;height:24px;border:0;border-radius:50%;background:rgba(61,44,46,0.8);color:#fff;cursor:pointer;font-size:14px;";
     remove.addEventListener("click", () => {
       URL.revokeObjectURL(item.url);
       field.files.splice(i, 1);
@@ -530,7 +596,7 @@ function renderFileGrid(key) {
   });
 }
 
-/* ---------- 9. LIVE PREVIEW ---------- */
+/* ---------- 10. LIVE PREVIEW ---------- */
 let previewIframe = null;
 let previewReady = false;
 let lastPreviewData = null;
@@ -602,7 +668,7 @@ function updatePreview() {
   pushDataToPreview(data);
 }
 
-/* ---------- 10. GIFT DATA ---------- */
+/* ---------- 11. GIFT DATA ---------- */
 function getGiftData() {
   const data = {};
   Object.keys(context.fields).forEach(key => {
@@ -627,9 +693,7 @@ function getPhotos() {
   Object.keys(context.fields).forEach(key => {
     const field = context.fields[key];
     if (field.spec.type !== "imageGallery") return;
-    field.files.forEach(item => photos.push({
-      name: item.file.name, file: item.file, url: item.url,
-    }));
+    field.files.forEach(item => photos.push({ name: item.file.name, file: item.file, url: item.url }));
   });
   return photos;
 }
@@ -674,7 +738,7 @@ window.NIVAEditor = {
   getGiftData, getPhotos, getMediaFiles, getFieldRaw, compressPhoto,
 };
 
-/* ---------- 11. DRAFT ---------- */
+/* ---------- 12. DRAFT ---------- */
 let autosaveTimer;
 
 function saveDraft(showMessage = true) {
@@ -725,7 +789,7 @@ function loadDraft() {
   }
 }
 
-/* ---------- 12. RESET ---------- */
+/* ---------- 13. RESET ---------- */
 function resetEditor() {
   if (!confirm("Reset all fields to template defaults? Selected media will be removed.")) return;
 
@@ -744,9 +808,7 @@ function resetEditor() {
       else if (input.type === "file") input.value = "";
       else input.value = field.value;
     }
-    if (spec.type === "imageGallery" || spec.type === "video" || spec.type === "audio") {
-      renderFileGrid(key);
-    }
+    if (spec.type === "imageGallery" || spec.type === "video" || spec.type === "audio") renderFileGrid(key);
     updateCounter(key);
   });
 
@@ -760,7 +822,7 @@ function resetEditor() {
   showToast("Editor reset to defaults.");
 }
 
-/* ---------- 13. STATIC EVENTS ---------- */
+/* ---------- 14. STATIC EVENTS ---------- */
 function bindStaticEvents() {
   $("#saveButton")?.addEventListener("click", () => saveDraft(true));
   $("#resetButton")?.addEventListener("click", resetEditor);
@@ -770,13 +832,14 @@ function bindStaticEvents() {
   });
 }
 
-/* ---------- 14. PUBLISH ---------- */
+/* ---------- 15. PUBLISH WITH PAYMENT GATE ---------- */
 (() => {
   const button = document.getElementById("publishGiftButton");
   if (!button) return;
 
   const passwordInput = document.getElementById("giftPassword");
   const confirmInput = document.getElementById("giftPasswordConfirm");
+  const planSelect = document.getElementById("paymentPlan");
   const status = document.getElementById("publishStatus");
   const result = document.getElementById("publishedGiftResult");
   const urlInput = document.getElementById("publishedGiftUrl");
@@ -790,7 +853,7 @@ function bindStaticEvents() {
 
   function setStatus(msg, isError = false) {
     status.textContent = msg;
-    status.style.color = isError ? "#e8919e" : "inherit";
+    status.style.color = isError ? "var(--danger)" : "inherit";
   }
 
   function setProgress(msg, pct) {
@@ -876,7 +939,7 @@ function bindStaticEvents() {
 
     const size = encoder.encode(JSON.stringify(envelope)).length;
     if (size > MAX_ENVELOPE_BYTES) {
-      throw new Error(`Gift is ${(size / 1048576).toFixed(1)} MB — exceeds 300 MB limit.`);
+      throw new Error(`Gift is ${(size / 1048576).toFixed(1)} MB — exceeds limit.`);
     }
     return envelope;
   }
@@ -892,6 +955,7 @@ function bindStaticEvents() {
 
     const password = passwordInput.value;
     const confirmation = confirmInput.value;
+    const amountInr = Number(planSelect.value) || 299;
 
     if (password.length < 8 || password.length > 128) {
       setStatus("Password must be 8–128 characters.", true);
@@ -911,22 +975,18 @@ function bindStaticEvents() {
       const gift = window.NIVAEditor.getGiftData();
       const photos = window.NIVAEditor.getPhotos();
       const media = window.NIVAEditor.getMediaFiles();
-      // Prevent oversized gifts from exhausting browser and Render memory.
+
       const totalMediaBytes =
         photos.reduce((sum, photo) => sum + (photo.file?.size || 0), 0) +
         media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
 
-      const MAX_TOTAL_MEDIA_BYTES = 20 * 1024 * 1024;
-
       if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
         throw new Error(
-          `Your selected media totals ${(totalMediaBytes / 1048576).toFixed(1)} MB. ` +
-          `The current hosting setup supports gifts with up to 20 MB of source media. ` +
-          `Please reduce the media size. Larger gifts need separate media storage.`
+          `Your media totals ${(totalMediaBytes / 1048576).toFixed(1)} MB. Max is ${MAX_TOTAL_MEDIA_BYTES / 1048576} MB.`
         );
       }
 
-      const totalSteps = photos.length + media.length + 2;
+      const totalSteps = photos.length + media.length + 3;
       let step = 0;
 
       const photoPayload = [];
@@ -943,28 +1003,53 @@ function bindStaticEvents() {
       for (const item of media) {
         setProgress(`Reading ${item.type}…`, (step / totalSteps) * 100);
         try { mediaPayload[item.key] = await fileAsDataUrl(item.file); }
-        catch (err) { mediaPayload[item.key] = ""; }
+        catch { mediaPayload[item.key] = ""; }
         step++;
       }
 
-      setProgress("Encrypting gift…", 90);
+      // Payment step
+      setProgress("Creating payment order…", 88);
+      const orderRes = await fetch("/api/payments/create-order", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateId: window.NIVAEditor.templateId }),
+      });
+      const orderData = await orderRes.json().catch(() => ({}));
+      if (!orderRes.ok || !orderData.success) {
+        throw new Error(orderData.message || "Could not create payment order.");
+      }
+
+      // Simulated payment confirmation (in production: Razorpay Checkout)
+      setProgress("Confirming payment…", 92);
+      const confirmRes = await fetch("/api/payments/confirm", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderData.orderId, paymentId: "mock_" + Date.now() }),
+      });
+      const confirmData = await confirmRes.json().catch(() => ({}));
+      if (!confirmRes.ok || !confirmData.success) {
+        throw new Error(confirmData.message || "Payment failed.");
+      }
+
+      setProgress("Encrypting gift…", 95);
       const payload = { ...gift, ...mediaPayload, photos: photoPayload };
       const envelope = await encryptGift(payload, password);
 
-      setProgress("Uploading…", 95);
+      setProgress("Publishing…", 98);
       const response = await fetch("/api/gifts", {
-        method: "POST",
-        credentials: "same-origin",
+        method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateId: window.NIVAEditor.templateId,
           envelope,
+          amountInr,
         }),
         cache: "no-store",
       });
 
       const data = await response.json().catch(() => ({}));
       if (response.status === 401) throw new Error("Please log in before publishing.");
+      if (response.status === 402) throw new Error(data.message || "Payment required.");
       if (response.status === 413) throw new Error("Gift too large. Use smaller files.");
       if (!response.ok || !data.success || !data.gift?.url) {
         throw new Error(data.message || "Publishing failed.");
@@ -996,7 +1081,7 @@ function bindStaticEvents() {
   });
 })();
 
-/* ---------- 15. EDITOR INIT ---------- */
+/* ---------- 16. INIT ---------- */
 async function initEditor() {
   try {
     context.config = await loadConfig();
@@ -1025,9 +1110,9 @@ async function initEditor() {
   }
 }
 
-/* ---------- 16. BOOT WITH AUTH GATE ---------- */
+/* ---------- 17. BOOT ---------- */
 async function bootApp() {
-  showEditor(); // briefly show so DOM is ready
+  showEditor();
   showLoginGate();
 
   const user = await checkAuth();
