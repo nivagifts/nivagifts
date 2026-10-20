@@ -1,13 +1,30 @@
 ﻿/* =========================================================
    NIVA UNIVERSAL GIFT EDITOR — Light Theme + Payment Gate
+   - Fixed price from template
+   - ~1 GB upload limit
+   - Cloud drafts (text only) + local draft
    ========================================================= */
 "use strict";
 
-const MAX_PREVIEW_IMAGE_SIZE = 1400;
-const MAX_ENVELOPE_BYTES = 512 * 1024 * 1024;
-const MAX_TOTAL_MEDIA_BYTES = 20 * 1024 * 1024;
+const MAX_PREVIEW_IMAGE_SIZE = 1600;
+const MAX_ENVELOPE_BYTES = 1024 * 1024 * 1024;          // ~1 GB encrypted gift
+const MAX_TOTAL_MEDIA_BYTES = 1000 * 1024 * 1024;       // ~1000 MB raw media
+const MAX_DRAFT_BYTES = 5 * 1024 * 1024;                // 5 MB cloud draft
 const DRAFT_KEY_PREFIX = "niva-draft-";
 const PREVIEW_KEY_PREFIX = "niva-preview-";
+
+// Fixed prices per template — chosen on the marketing site.
+const TEMPLATE_PRICES = {
+  "eternal-love": 299,
+  "love-proposal": 599,
+  "birthday-magic": 299,
+};
+
+const TEMPLATE_PLAN_NAMES = {
+  99: "Essential",
+  299: "Signature",
+  599: "Evermore",
+};
 
 const $ = (sel, ctx = document) => ctx.querySelector(sel);
 const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
@@ -20,9 +37,12 @@ const context = {
   config: null,
   fields: {},
   user: null,
+  cloudDraftId: null,
 };
 const DRAFT_KEY = DRAFT_KEY_PREFIX + context.templateId;
 const PREVIEW_KEY = PREVIEW_KEY_PREFIX + context.templateId;
+
+const TEMPLATE_PRICE = TEMPLATE_PRICES[context.templateId] || 299;
 
 /* ---------- 2. UTILITIES ---------- */
 function showToast(message, ms = 3000) {
@@ -47,7 +67,8 @@ function escapeHtml(str) {
 
 function formatBytes(bytes) {
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
 }
 
 /* ---------- 3. AUTH GATE ---------- */
@@ -80,13 +101,13 @@ function showEditor() {
 /* ---------- 4. LOGIN UI ---------- */
 function initLoginUI(onSuccess) {
   const showPane = (id) => {
-    ["loginPane", "registerPane", "verifyPane", "forgotPane", "resetPane"].forEach(p => {
+    ["loginPane", "registerPane", "verifyPane", "setPasswordPane", "forgotPane", "verifyResetPane", "resetPane"].forEach(p => {
       const el = $("#" + p);
       if (el) el.hidden = true;
     });
     const target = $("#" + id);
     if (target) target.hidden = false;
-    $$(".login-error").forEach(el => el.textContent = "");
+    $$(".login-error").forEach(el => { el.textContent = ""; el.style.color = ""; });
     setTimeout(() => target?.querySelector("input")?.focus(), 100);
   };
 
@@ -95,8 +116,9 @@ function initLoginUI(onSuccess) {
   $("#toForgotPassword")?.addEventListener("click", () => showPane("forgotPane"));
   $("#backToLogin")?.addEventListener("click", () => showPane("loginPane"));
   $("#backToLogin2")?.addEventListener("click", () => showPane("loginPane"));
+  $("#backToLogin3")?.addEventListener("click", () => showPane("loginPane"));
 
-  // Login
+  // LOGIN
   $("#loginForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#loginEmail").value.trim();
@@ -113,61 +135,62 @@ function initLoginUI(onSuccess) {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.status === 403 && data.requiresVerification) {
+      if (res.status === 403 && data.needsVerification) {
         context._verifyEmail = data.email || email;
         $("#verifyEmailDisplay").textContent = context._verifyEmail;
         showPane("verifyPane");
-        err.textContent = "";
+        return;
+      }
+      if (res.status === 403 && data.needsPasswordSetup) {
+        context._verifyEmail = data.email || email;
+        showPane(data.needsVerification ? "verifyPane" : "setPasswordPane");
         return;
       }
       if (!res.ok || !data.success) throw new Error(data.message || "Sign in failed.");
       context.user = data.user;
       onSuccess();
-    } catch (err) {
-      err.textContent = err.message || "Could not sign in.";
+    } catch (err2) {
+      err.textContent = err2.message || "Could not sign in.";
     } finally {
       btn.disabled = false; btn.textContent = "Sign in";
     }
   });
 
-  // Register
+  // REGISTER (email only)
   $("#registerForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#registerEmail").value.trim();
-    const pw = $("#registerPassword").value;
-    const pwConfirm = $("#registerPasswordConfirm").value;
     const btn = $("#registerSubmit");
     const err = $("#registerError");
     err.textContent = "";
     if (!email) { err.textContent = "Please enter your email."; return; }
-    if (pw.length < 12) { err.textContent = "Password must be at least 12 characters."; return; }
-    if (pw !== pwConfirm) { err.textContent = "Passwords do not match."; return; }
-    btn.disabled = true; btn.textContent = "Creating account…";
+    btn.disabled = true; btn.textContent = "Sending…";
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: pw }),
+        body: JSON.stringify({ email }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.success) throw new Error(data.message || "Sign up failed.");
-      if (data.requiresVerification) {
-        context._verifyEmail = email;
-        $("#verifyEmailDisplay").textContent = email;
-        showPane("verifyPane");
-        showToast("Check your email for the verification code.");
-      } else {
-        context.user = data.user;
-        onSuccess();
+      if (!res.ok || !data.success) {
+        if (data.alreadyRegistered) {
+          err.textContent = data.message || "Account exists. Please sign in.";
+          return;
+        }
+        throw new Error(data.message || "Sign up failed.");
       }
-    } catch (err) {
-      err.textContent = err.message || "Could not create account.";
+      context._verifyEmail = email;
+      $("#verifyEmailDisplay").textContent = email;
+      showPane("verifyPane");
+      showToast("Check your email for the verification code.");
+    } catch (err2) {
+      err.textContent = err2.message || "Could not create account.";
     } finally {
-      btn.disabled = false; btn.textContent = "Create account";
+      btn.disabled = false; btn.textContent = "Send verification code";
     }
   });
 
-  // Verify
+  // VERIFY
   $("#verifyForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const code = $("#verifyCode").value.trim();
@@ -184,10 +207,14 @@ function initLoginUI(onSuccess) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.message || "Verification failed.");
-      context.user = data.user;
-      onSuccess();
-    } catch (err) {
-      err.textContent = err.message || "Could not verify.";
+      if (data.hasPassword && data.authenticated) {
+        context.user = data.user;
+        onSuccess();
+      } else {
+        showPane("setPasswordPane");
+      }
+    } catch (err2) {
+      err.textContent = err2.message || "Could not verify.";
     } finally {
       btn.disabled = false; btn.textContent = "Verify email";
     }
@@ -198,13 +225,42 @@ function initLoginUI(onSuccess) {
       await fetch("/api/auth/resend-code", {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: context._verifyEmail }),
+        body: JSON.stringify({ email: context._verifyEmail, purpose: "verify" }),
       });
       showToast("New code sent. Check your inbox.");
     } catch { showToast("Could not resend code."); }
   });
 
-  // Forgot password
+  // SET PASSWORD
+  $("#setPasswordForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pw = $("#setPassword").value;
+    const pwConfirm = $("#setPasswordConfirm").value;
+    const btn = $("#setPasswordSubmit");
+    const err = $("#setPasswordError");
+    err.textContent = "";
+    if (pw.length < 8) { err.textContent = "Password must be at least 8 characters."; return; }
+    if (pw.length > 128) { err.textContent = "Password must be at most 128 characters."; return; }
+    if (pw !== pwConfirm) { err.textContent = "Passwords do not match."; return; }
+    btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      const res = await fetch("/api/auth/set-password", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: context._verifyEmail, password: pw }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.message || "Could not set password.");
+      context.user = data.user;
+      onSuccess();
+    } catch (err2) {
+      err.textContent = err2.message || "Could not set password.";
+    } finally {
+      btn.disabled = false; btn.textContent = "Save password";
+    }
+  });
+
+  // FORGOT — Step 1
   $("#forgotForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#forgotEmail").value.trim();
@@ -222,43 +278,82 @@ function initLoginUI(onSuccess) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.message || "Could not send reset code.");
       context._resetEmail = email;
-      showPane("resetPane");
+      $("#resetEmailDisplay").textContent = email;
+      showPane("verifyResetPane");
       showToast("Reset code sent to your email.");
-    } catch (err) {
-      err.textContent = err.message || "Could not send reset code.";
+    } catch (err2) {
+      err.textContent = err2.message || "Could not send reset code.";
     } finally {
       btn.disabled = false; btn.textContent = "Send reset code";
     }
   });
 
-  // Reset password
-  $("#resetForm")?.addEventListener("submit", async (e) => {
+  // FORGOT — Step 2: verify reset code
+  $("#verifyResetForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const code = $("#resetCode").value.trim();
+    const btn = $("#verifyResetSubmit");
+    const err = $("#verifyResetError");
+    err.textContent = "";
+    if (!/^\d{6}$/.test(code)) { err.textContent = "Enter the 6-digit code."; return; }
+    btn.disabled = true; btn.textContent = "Verifying…";
+    try {
+      const res = await fetch("/api/auth/verify-reset-code", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: context._resetEmail, code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.message || "Verification failed.");
+      showPane("resetPane");
+    } catch (err2) {
+      err.textContent = err2.message || "Could not verify.";
+    } finally {
+      btn.disabled = false; btn.textContent = "Verify code";
+    }
+  });
+
+  $("#resendResetCode")?.addEventListener("click", async () => {
+    try {
+      await fetch("/api/auth/resend-code", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: context._resetEmail, purpose: "reset" }),
+      });
+      showToast("New reset code sent. Check your inbox.");
+    } catch { showToast("Could not resend code."); }
+  });
+
+  // FORGOT — Step 3: new password
+  $("#resetForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
     const pw = $("#resetPassword").value;
     const pwConfirm = $("#resetPasswordConfirm").value;
     const btn = $("#resetSubmit");
     const err = $("#resetError");
     err.textContent = "";
-    if (!/^\d{6}$/.test(code)) { err.textContent = "Enter the 6-digit code."; return; }
-    if (pw.length < 12) { err.textContent = "Password must be at least 12 characters."; return; }
+    if (pw.length < 8) { err.textContent = "Password must be at least 8 characters."; return; }
+    if (pw.length > 128) { err.textContent = "Password must be at most 128 characters."; return; }
     if (pw !== pwConfirm) { err.textContent = "Passwords do not match."; return; }
-    btn.disabled = true; btn.textContent = "Resetting…";
+    btn.disabled = true; btn.textContent = "Saving…";
     try {
       const res = await fetch("/api/auth/reset-password", {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: context._resetEmail, code, password: pw }),
+        body: JSON.stringify({ email: context._resetEmail, password: pw }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) throw new Error(data.message || "Could not reset password.");
       err.textContent = "Password reset! You can now sign in.";
       err.style.color = "var(--success)";
-      setTimeout(() => showPane("loginPane"), 1500);
-    } catch (err) {
-      err.textContent = err.message || "Could not reset password.";
+      setTimeout(() => {
+        showPane("loginPane");
+        $("#loginEmail").value = context._resetEmail || "";
+      }, 1500);
+    } catch (err2) {
+      err.textContent = err2.message || "Could not reset password.";
     } finally {
-      btn.disabled = false; btn.textContent = "Reset password";
+      btn.disabled = false; btn.textContent = "Save new password";
     }
   });
 }
@@ -362,12 +457,12 @@ function renderField(key, spec) {
       break;
 
     case "imageGallery": {
-      const mb = spec.maxSizeMB || 50;
+      const mb = spec.maxSizeMB || 800;
       wrap.innerHTML = `
         <label for="${id}" class="upload-box">
           <span class="upload-icon" aria-hidden="true">＋</span>
           <strong>${escapeHtml(spec.label || "Choose photos")}</strong>
-          <span>Up to ${spec.maxFiles || 20} images · ${mb} MB each</span>
+          <span>Up to ${spec.maxFiles || 40} images · ${mb} MB each</span>
           <input id="${id}" data-field-key="${key}" type="file"
                  accept="${escapeHtml(spec.accept || "image/*")}" multiple ${required}>
         </label>
@@ -386,7 +481,7 @@ function renderField(key, spec) {
     }
 
     case "audio": {
-      const mb = spec.maxSizeMB || 20;
+      const mb = spec.maxSizeMB || 200;
       wrap.innerHTML = `
         <label for="${id}" class="upload-box">
           <span class="upload-icon" aria-hidden="true">♪</span>
@@ -401,7 +496,7 @@ function renderField(key, spec) {
     }
 
     case "video": {
-      const mb = spec.maxSizeMB || 100;
+      const mb = spec.maxSizeMB || 800;
       wrap.innerHTML = `
         <label for="${id}" class="upload-box">
           <span class="upload-icon" aria-hidden="true">🎬</span>
@@ -478,25 +573,40 @@ function updateCounter(key) {
   el.textContent = `${String(field.value).length} / ${max}`;
 }
 
-/* ---------- 9. FILE INPUT ---------- */
+/* ---------- 9. FILE INPUT (with ~1 GB total cap) ---------- */
+function currentTotalBytes() {
+  let total = 0;
+  Object.values(context.fields).forEach(f => {
+    f.files?.forEach(item => { total += item.file?.size || 0; });
+  });
+  return total;
+}
+
 function handleFileInput(key, event) {
   const field = context.fields[key];
   if (!field) return;
 
   const spec = field.spec;
   const accept = (spec.accept || "").split(",").map(s => s.trim()).filter(Boolean);
+  const remainingTotal = MAX_TOTAL_MEDIA_BYTES - currentTotalBytes();
 
   if (spec.type === "imageGallery") {
-    const maxFiles = spec.maxFiles || 20;
-    const maxSize = (spec.maxSizeMB || 50) * 1024 * 1024;
+    const maxFiles = spec.maxFiles || 40;
+    const maxSize = (spec.maxSizeMB || 800) * 1024 * 1024;
     const selected = Array.from(event.target.files || []);
     let added = 0;
+    let runningTotal = currentTotalBytes();
 
     for (const file of selected) {
       if (field.files.length >= maxFiles) { showToast(`Max ${maxFiles} photos.`); break; }
       if (accept.length && !accept.includes(file.type)) { showToast(`${file.name}: unsupported type.`); continue; }
-      if (file.size > maxSize) { showToast(`${file.name}: ${formatBytes(file.size)} exceeds ${spec.maxSizeMB || 50} MB.`); continue; }
+      if (file.size > maxSize) { showToast(`${file.name}: ${formatBytes(file.size)} exceeds ${formatBytes(maxSize)}.`); continue; }
+      if (runningTotal + file.size > MAX_TOTAL_MEDIA_BYTES) {
+        showToast(`Total upload limit reached (${formatBytes(MAX_TOTAL_MEDIA_BYTES)}).`);
+        break;
+      }
       field.files.push({ file, url: URL.createObjectURL(file) });
+      runningTotal += file.size;
       added++;
     }
 
@@ -508,38 +618,26 @@ function handleFileInput(key, event) {
     return;
   }
 
-  if (spec.type === "video") {
+  if (spec.type === "video" || spec.type === "audio") {
     const file = event.target.files?.[0];
     if (!file) return;
-    const maxSize = (spec.maxSizeMB || 100) * 1024 * 1024;
+    const maxSize = (spec.maxSizeMB || (spec.type === "video" ? 800 : 200)) * 1024 * 1024;
     if (accept.length && !accept.includes(file.type)) {
-      showToast("Choose an MP4 or WebM video."); event.target.value = ""; return;
+      showToast(spec.type === "video" ? "Choose an MP4 or WebM video." : "Choose MP3, WAV or OGG.");
+      event.target.value = ""; return;
     }
     if (file.size > maxSize) {
-      showToast(`Video is ${formatBytes(file.size)}, max ${spec.maxSizeMB || 100} MB.`); event.target.value = ""; return;
+      showToast(`File is ${formatBytes(file.size)}, max ${formatBytes(maxSize)}.`);
+      event.target.value = ""; return;
+    }
+    const oldSize = field.files.reduce((s, f) => s + (f.file?.size || 0), 0);
+    if (remainingTotal + oldSize < file.size) {
+      showToast(`Total upload limit reached (${formatBytes(MAX_TOTAL_MEDIA_BYTES)}).`);
+      event.target.value = ""; return;
     }
     field.files.forEach(f => URL.revokeObjectURL(f.url));
     field.files = [{ file, url: URL.createObjectURL(file) }];
-    showToast(`Video added: ${file.name}`);
-    renderFileGrid(key);
-    scheduleAutosave();
-    updatePreview();
-    return;
-  }
-
-  if (spec.type === "audio") {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const maxSize = (spec.maxSizeMB || 20) * 1024 * 1024;
-    if (accept.length && !accept.includes(file.type)) {
-      showToast("Choose MP3, WAV or OGG."); event.target.value = ""; return;
-    }
-    if (file.size > maxSize) {
-      showToast(`Audio is ${formatBytes(file.size)}, max ${spec.maxSizeMB || 20} MB.`); event.target.value = ""; return;
-    }
-    field.files.forEach(f => URL.revokeObjectURL(f.url));
-    field.files = [{ file, url: URL.createObjectURL(file) }];
-    showToast(`Audio added: ${file.name}`);
+    showToast(`${spec.type === "video" ? "Video" : "Audio"} added: ${file.name}`);
     renderFileGrid(key);
     scheduleAutosave();
     updatePreview();
@@ -735,23 +833,58 @@ function compressPhoto(file) {
 
 window.NIVAEditor = {
   get templateId() { return context.templateId; },
+  get price() { return TEMPLATE_PRICE; },
   getGiftData, getPhotos, getMediaFiles, getFieldRaw, compressPhoto,
 };
 
-/* ---------- 12. DRAFT ---------- */
+/* ---------- 12. DRAFT (local + cloud) ---------- */
 let autosaveTimer;
+let cloudSaveTimer;
 
-function saveDraft(showMessage = true) {
+function saveLocalDraft() {
   try {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({
       templateId: context.templateId, values: getGiftData(),
     }));
-    setSaveStatus("Draft saved in this browser");
-    if (showMessage) showToast("Draft saved. Media files are not saved.");
-  } catch (err) {
-    console.error("Save failed:", err);
-    setSaveStatus("Could not save draft");
-    showToast("Could not save. Browser storage may be unavailable.");
+  } catch {}
+}
+
+async function saveCloudDraft({ silent = true } = {}) {
+  if (!context.user) return;
+  try {
+    const data = getGiftData();
+    const json = JSON.stringify(data);
+    if (json.length > MAX_DRAFT_BYTES) {
+      if (!silent) showToast("Draft is too large for cloud save (max 5 MB). Saved locally only.");
+      return;
+    }
+    const res = await fetch("/api/drafts", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ templateId: context.templateId, data }),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (res.ok && result.success) {
+      context.cloudDraftId = result.draft?.id || null;
+      if (!silent) showToast("Draft saved to your account ✓");
+      setSaveStatus("Draft saved to your account");
+    } else if (!silent) {
+      showToast(result.message || "Could not save draft to account.");
+    }
+  } catch {
+    if (!silent) showToast("Could not save draft to account.");
+  }
+}
+
+function saveDraft(showMessage = true) {
+  saveLocalDraft();
+  setSaveStatus("Draft saved in this browser");
+  if (showMessage) {
+    showToast("Draft saved locally. Media files are not saved in drafts.");
+    saveCloudDraft({ silent: false });
+  } else {
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => saveCloudDraft({ silent: true }), 2500);
   }
 }
 
@@ -761,32 +894,52 @@ function scheduleAutosave() {
   autosaveTimer = setTimeout(() => saveDraft(false), 650);
 }
 
-function loadDraft() {
+async function loadDraft() {
+  // 1) try cloud draft
+  if (context.user) {
+    try {
+      const res = await fetch(`/api/drafts/${encodeURIComponent(context.templateId)}`, {
+        credentials: "same-origin", cache: "no-store",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success && data.draft?.data) {
+        applyDraftValues(data.draft.data);
+        context.cloudDraftId = data.draft.id || null;
+        setSaveStatus("Draft restored from your account");
+        return;
+      }
+    } catch {}
+  }
+  // 2) local fallback
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
     if (!data?.values) return;
-
-    Object.entries(data.values).forEach(([key, val]) => {
-      const field = context.fields[key];
-      if (!field) return;
-      if (field.spec.type === "imageGallery" || field.spec.type === "audio" || field.spec.type === "video") return;
-
-      field.value = val;
-      const input = $(`[data-field-key="${key}"]`);
-      if (!input) return;
-
-      if (input.type === "radio") input.checked = input.value === val;
-      else if (field.spec.type === "textArray" && Array.isArray(val)) input.value = val.join("\n");
-      else input.value = val;
-    });
-
+    applyDraftValues(data.values);
     setSaveStatus("Draft restored from this browser");
   } catch (err) {
     console.error("Load failed:", err);
     setSaveStatus("Could not restore draft");
   }
+}
+
+function applyDraftValues(values) {
+  Object.entries(values).forEach(([key, val]) => {
+    const field = context.fields[key];
+    if (!field) return;
+    if (field.spec.type === "imageGallery" || field.spec.type === "audio" || field.spec.type === "video") return;
+
+    field.value = val;
+    const input = $(`[data-field-key="${key}"]`);
+    if (!input) return;
+
+    if (input.type === "radio") input.checked = input.value === val;
+    else if (field.spec.type === "textArray" && Array.isArray(val)) input.value = val.join("\n");
+    else input.value = val;
+    updateCounter(key);
+  });
+  updatePreview();
 }
 
 /* ---------- 13. RESET ---------- */
@@ -817,6 +970,13 @@ function resetEditor() {
     sessionStorage.removeItem(PREVIEW_KEY);
   } catch {}
 
+  // Delete cloud draft too
+  if (context.user) {
+    fetch(`/api/drafts/${encodeURIComponent(context.templateId)}`, {
+      method: "DELETE", credentials: "same-origin",
+    }).catch(() => {});
+  }
+
   updatePreview();
   setSaveStatus("Template defaults restored");
   showToast("Editor reset to defaults.");
@@ -832,14 +992,22 @@ function bindStaticEvents() {
   });
 }
 
-/* ---------- 15. PUBLISH WITH PAYMENT GATE ---------- */
+function updatePlanSummary() {
+  const nameEl = $("#planSummaryName");
+  const priceEl = $("#planSummaryPrice");
+  const badge = $("#priceBadge");
+  if (nameEl) nameEl.textContent = TEMPLATE_PLAN_NAMES[TEMPLATE_PRICE] || "Signature";
+  if (priceEl) priceEl.textContent = `₹${TEMPLATE_PRICE}`;
+  if (badge) badge.textContent = `₹${TEMPLATE_PRICE}`;
+}
+
+/* ---------- 15. PUBLISH WITH FIXED PRICE + PAYMENT ---------- */
 (() => {
   const button = document.getElementById("publishGiftButton");
   if (!button) return;
 
   const passwordInput = document.getElementById("giftPassword");
   const confirmInput = document.getElementById("giftPasswordConfirm");
-  const planSelect = document.getElementById("paymentPlan");
   const status = document.getElementById("publishStatus");
   const result = document.getElementById("publishedGiftResult");
   const urlInput = document.getElementById("publishedGiftUrl");
@@ -888,7 +1056,7 @@ function bindStaticEvents() {
           const ctx = canvas.getContext("2d");
           if (!ctx) throw new Error("Unable to process image.");
           ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL("image/jpeg", 0.78));
+          resolve(canvas.toDataURL("image/jpeg", 0.8));
         } catch (err) { reject(err); }
         finally { URL.revokeObjectURL(objectUrl); }
       };
@@ -939,7 +1107,7 @@ function bindStaticEvents() {
 
     const size = encoder.encode(JSON.stringify(envelope)).length;
     if (size > MAX_ENVELOPE_BYTES) {
-      throw new Error(`Gift is ${(size / 1048576).toFixed(1)} MB — exceeds limit.`);
+      throw new Error(`Gift is ${formatBytes(size)} — exceeds ${formatBytes(MAX_ENVELOPE_BYTES)} limit.`);
     }
     return envelope;
   }
@@ -955,7 +1123,6 @@ function bindStaticEvents() {
 
     const password = passwordInput.value;
     const confirmation = confirmInput.value;
-    const amountInr = Number(planSelect.value) || 299;
 
     if (password.length < 8 || password.length > 128) {
       setStatus("Password must be 8–128 characters.", true);
@@ -982,11 +1149,11 @@ function bindStaticEvents() {
 
       if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
         throw new Error(
-          `Your media totals ${(totalMediaBytes / 1048576).toFixed(1)} MB. Max is ${MAX_TOTAL_MEDIA_BYTES / 1048576} MB.`
+          `Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`
         );
       }
 
-      const totalSteps = photos.length + media.length + 3;
+      const totalSteps = photos.length + media.length + 4;
       let step = 0;
 
       const photoPayload = [];
@@ -1007,8 +1174,8 @@ function bindStaticEvents() {
         step++;
       }
 
-      // Payment step
-      setProgress("Creating payment order…", 88);
+      // Payment — fixed template price
+      setProgress("Creating payment order…", 86);
       const orderRes = await fetch("/api/payments/create-order", {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -1019,8 +1186,7 @@ function bindStaticEvents() {
         throw new Error(orderData.message || "Could not create payment order.");
       }
 
-      // Simulated payment confirmation (in production: Razorpay Checkout)
-      setProgress("Confirming payment…", 92);
+      setProgress("Confirming payment…", 90);
       const confirmRes = await fetch("/api/payments/confirm", {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -1031,7 +1197,7 @@ function bindStaticEvents() {
         throw new Error(confirmData.message || "Payment failed.");
       }
 
-      setProgress("Encrypting gift…", 95);
+      setProgress("Encrypting gift…", 94);
       const payload = { ...gift, ...mediaPayload, photos: photoPayload };
       const envelope = await encryptGift(payload, password);
 
@@ -1042,7 +1208,7 @@ function bindStaticEvents() {
         body: JSON.stringify({
           templateId: window.NIVAEditor.templateId,
           envelope,
-          amountInr,
+          orderId: orderData.orderId,
         }),
         cache: "no-store",
       });
@@ -1089,9 +1255,10 @@ async function initEditor() {
     $("#templateName").textContent = context.config.name;
     $("#templateMeta").textContent =
       `${(context.config.category || "").toUpperCase()} Collection · Customizable gift`;
+    updatePlanSummary();
 
     renderForm();
-    loadDraft();
+    await loadDraft();
     bindStaticEvents();
     initPreviewIframe();
 
@@ -1138,6 +1305,7 @@ if (document.readyState === "loading") {
 
 window.addEventListener("beforeunload", () => {
   clearTimeout(autosaveTimer);
+  clearTimeout(cloudSaveTimer);
   Object.values(context.fields).forEach(field => {
     field.files?.forEach(f => URL.revokeObjectURL(f.url));
   });

@@ -39,15 +39,11 @@
       <!-- REGISTER -->
       <div id="registerPane" hidden>
         <h2>Create your account</h2>
-        <p>Your gift needs an account to be saved.</p>
+        <p>Enter your email — we'll send a verification code.</p>
         <form id="registerForm" novalidate>
           <label for="registerEmail">Email</label>
           <input id="registerEmail" type="email" placeholder="you@example.com" required autocomplete="email">
-          <label for="registerPassword">Password <span class="login-hint">(12+ characters)</span></label>
-          <input id="registerPassword" type="password" placeholder="At least 12 characters" required minlength="12" autocomplete="new-password">
-          <label for="registerPasswordConfirm">Confirm password</label>
-          <input id="registerPasswordConfirm" type="password" placeholder="Type it again" required minlength="12" autocomplete="new-password">
-          <button type="submit" class="login-submit" id="registerSubmit">Create account</button>
+          <button type="submit" class="login-submit" id="registerSubmit">Send verification code</button>
           <p class="login-error" id="registerError" role="alert"></p>
         </form>
         <button type="button" class="login-link" id="toLogin">Already have an account? Sign in →</button>
@@ -66,6 +62,20 @@
         <button type="button" class="login-link" id="resendCode">Didn't receive it? Resend code</button>
       </div>
 
+      <!-- SET PASSWORD -->
+      <div id="setPasswordPane" hidden>
+        <h2>Set your password</h2>
+        <p>Choose a password between 8 and 128 characters.</p>
+        <form id="setPasswordForm" novalidate>
+          <label for="setPassword">Password <span class="login-hint">(8+ chars)</span></label>
+          <input id="setPassword" type="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
+          <label for="setPasswordConfirm">Confirm password</label>
+          <input id="setPasswordConfirm" type="password" placeholder="Type it again" required minlength="8" autocomplete="new-password">
+          <button type="submit" class="login-submit" id="setPasswordSubmit">Save password</button>
+          <p class="login-error" id="setPasswordError" role="alert"></p>
+        </form>
+      </div>
+
       <!-- FORGOT PASSWORD -->
       <div id="forgotPane" hidden>
         <h2>Reset password</h2>
@@ -79,21 +89,33 @@
         <button type="button" class="login-link" id="backToLogin">← Back to sign in</button>
       </div>
 
-      <!-- RESET PASSWORD -->
-      <div id="resetPane" hidden>
-        <h2>New password</h2>
-        <p>Enter the code we sent you and choose a new password.</p>
-        <form id="resetForm" novalidate>
+      <!-- VERIFY RESET CODE -->
+      <div id="verifyResetPane" hidden>
+        <h2>Enter reset code</h2>
+        <p>Enter the 6-digit code sent to <strong id="resetEmailDisplay"></strong>.</p>
+        <form id="verifyResetForm" novalidate>
           <label for="resetCode">Reset code</label>
           <input id="resetCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" required style="text-align:center;font-size:1.4rem;letter-spacing:0.5em;">
-          <label for="resetPassword">New password <span class="login-hint">(12+ chars)</span></label>
-          <input id="resetPassword" type="password" placeholder="At least 12 characters" required minlength="12" autocomplete="new-password">
+          <button type="submit" class="login-submit" id="verifyResetSubmit">Verify code</button>
+          <p class="login-error" id="verifyResetError" role="alert"></p>
+        </form>
+        <button type="button" class="login-link" id="resendResetCode">Didn't receive it? Resend code</button>
+        <button type="button" class="login-link" id="backToLogin2">← Back to sign in</button>
+      </div>
+
+      <!-- SET NEW PASSWORD -->
+      <div id="resetPane" hidden>
+        <h2>New password</h2>
+        <p>Choose a password between 8 and 128 characters.</p>
+        <form id="resetForm" novalidate>
+          <label for="resetPassword">New password <span class="login-hint">(8+ chars)</span></label>
+          <input id="resetPassword" type="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
           <label for="resetPasswordConfirm">Confirm new password</label>
-          <input id="resetPasswordConfirm" type="password" placeholder="Type it again" required minlength="12" autocomplete="new-password">
-          <button type="submit" class="login-submit" id="resetSubmit">Reset password</button>
+          <input id="resetPasswordConfirm" type="password" placeholder="Type it again" required minlength="8" autocomplete="new-password">
+          <button type="submit" class="login-submit" id="resetSubmit">Save new password</button>
           <p class="login-error" id="resetError" role="alert"></p>
         </form>
-        <button type="button" class="login-link" id="backToLogin2">← Back to sign in</button>
+        <button type="button" class="login-link" id="backToLogin3">← Back to sign in</button>
       </div>
     </div>
   </div>
@@ -129,7 +151,7 @@
             <h2 id="templateName">Loading…</h2>
             <p id="templateMeta">—</p>
           </div>
-          <span class="draft-badge">DRAFT</span>
+          <span class="draft-badge" id="priceBadge">DRAFT</span>
         </div>
 
         <form id="giftForm" novalidate>
@@ -150,16 +172,19 @@
                 <p>Protect your memories with a private password.</p>
               </div>
             </div>
+
+            <div class="plan-summary" id="planSummary" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid var(--line-rose);border-radius:12px;background:var(--bg-rose);margin:6px 0 16px;">
+              <div>
+                <div style="font-size:0.72rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;">Your selected plan</div>
+                <div id="planSummaryName" style="font-family:var(--display);font-size:1.15rem;color:var(--text);margin-top:2px;">—</div>
+              </div>
+              <div id="planSummaryPrice" style="font-family:var(--display);font-size:1.6rem;color:var(--rose-deep);font-weight:500;">₹—</div>
+            </div>
+
             <label for="giftPassword">Gift password</label>
             <input id="giftPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="At least 8 characters">
             <label for="giftPasswordConfirm">Confirm gift password</label>
             <input id="giftPasswordConfirm" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="Enter the same password">
-            <label for="paymentPlan">Choose your plan</label>
-            <select id="paymentPlan" style="width:100%;min-height:48px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg-white);color:var(--text);font-family:var(--sans);font-size:15px;">
-              <option value="99">Essential — ₹99</option>
-              <option value="299" selected>Signature — ₹299</option>
-              <option value="599">Evermore — ₹599</option>
-            </select>
             <button class="button button-primary" type="button" id="publishGiftButton" style="width:100%;margin-top:17px">Pay & Create My Gift</button>
             <p id="publishStatus" role="status" aria-live="polite"></p>
             <div id="publishedGiftResult" hidden>
@@ -171,7 +196,7 @@
           </section>
 
           <p class="notice">
-            Save Draft stores your current draft in this browser. Publishing requires payment and the backend to be running.
+            Save Draft stores your draft in this browser <em>and</em> in your account (text only). Uploads up to ~1 GB are supported when publishing.
           </p>
         </form>
       </section>

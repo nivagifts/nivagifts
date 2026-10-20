@@ -2,12 +2,13 @@
    NIVA SERVER — Complete Production-Ready Version
    Light Theme · Email Verification · Password Reset
    Reviews · Stats · Payment Gating · Contact
-   
+   Drafts · Wishlist · 1GB uploads
+
    AUTH FLOW:
    - Register: email only → OTP sent → verify OTP → set password
    - Login: email + password (only after password set)
    - Reset: email → OTP sent → verify OTP → set new password
-   
+
    EMAIL: Resend API (RESEND_API_KEY + RESEND_FROM_EMAIL)
    ========================================================= */
 
@@ -103,7 +104,8 @@ app.use(helmet({
 }));
 
 /* ---------- 6. BODY PARSING ---------- */
-app.use(express.json({ limit: "700mb" }));
+// 1 GB uploads need a big limit. Gifts are JSON envelopes (base64).
+app.use(express.json({ limit: "1024mb" }));
 
 /* ---------- 7. SESSIONS ---------- */
 const PgSession = connectPgSimple(session);
@@ -218,9 +220,7 @@ async function sendEmail({ to, subject, html }) {
   const from = process.env.RESEND_FROM_EMAIL;
 
   if (!apiKey || !from) {
-    console.error(
-      "❌ Email unavailable: Resend configuration is missing."
-    );
+    console.error("❌ Email unavailable: Resend configuration is missing.");
     return false;
   }
 
@@ -231,12 +231,7 @@ async function sendEmail({ to, subject, html }) {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        subject,
-        html,
-      }),
+      body: JSON.stringify({ from, to: [to], subject, html }),
       signal: AbortSignal.timeout(10000),
     });
 
@@ -294,7 +289,6 @@ async function runMigrations() {
   try {
     await pool.query(`CREATE SCHEMA IF NOT EXISTS app;`);
 
-    // Users — password_hash NULLABLE so account can be created before password is set
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.users (
         id BIGSERIAL PRIMARY KEY,
@@ -305,7 +299,6 @@ async function runMigrations() {
       );
     `);
 
-    // Make password_hash nullable if it was NOT NULL from an older schema
     await pool.query(`
       DO $$
       BEGIN
@@ -319,7 +312,6 @@ async function runMigrations() {
       END $$;
     `);
 
-    // Sessions
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.sessions (
         sid VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
@@ -329,7 +321,6 @@ async function runMigrations() {
     `);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_sessions_expire ON app.sessions (expire);`);
 
-    // Gifts
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.gifts (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -348,7 +339,6 @@ async function runMigrations() {
       );
     `);
 
-    // Email codes (verify + reset)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.email_codes (
         id BIGSERIAL PRIMARY KEY,
@@ -360,7 +350,6 @@ async function runMigrations() {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `);
-    // Drop old restricted constraint if present
     await pool.query(`
       DO $$
       BEGIN
@@ -381,7 +370,6 @@ async function runMigrations() {
 
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_email_codes_lookup ON app.email_codes (email, type, used);`);
 
-    // Reviews
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.reviews (
         id BIGSERIAL PRIMARY KEY,
@@ -395,7 +383,6 @@ async function runMigrations() {
       );
     `);
 
-    // Payments
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.payments (
         id BIGSERIAL PRIMARY KEY,
@@ -409,6 +396,32 @@ async function runMigrations() {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `);
+
+    /* ---------- NEW: drafts ---------- */
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app.drafts (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id BIGINT REFERENCES app.users(id) ON DELETE CASCADE,
+        template_id TEXT NOT NULL,
+        data JSONB NOT NULL DEFAULT '{}'::jsonb,
+        updated_at TIMESTAMPTZ DEFAULT NOW(),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE (user_id, template_id)
+      );
+    `);
+    await pool.query(`CREATE INDEX IF NOT EXISTS IDX_drafts_user ON app.drafts (user_id, updated_at DESC);`);
+
+    /* ---------- NEW: wishlist ---------- */
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app.wishlist (
+        id BIGSERIAL PRIMARY KEY,
+        user_id BIGINT REFERENCES app.users(id) ON DELETE CASCADE,
+        template_id TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE (user_id, template_id)
+      );
+    `);
+    await pool.query(`CREATE INDEX IF NOT EXISTS IDX_wishlist_user ON app.wishlist (user_id, created_at DESC);`);
 
     console.log("✅ Database migrations complete.");
   } catch (err) {
@@ -432,21 +445,12 @@ app.get("/api/health", async (req, res) => {
    13. AUTH ROUTES
    ========================================================= */
 
-/**
- * STEP 1 — REGISTER (email only)
- * - Email exists + has password → 409 "already exists, sign in"
- * - Email exists + no password   → resend verification code
- * - Email is new                 → create user, send OTP
- */
 app.post("/api/auth/register", authLimiter, async (req, res, next) => {
   try {
     const { email } = req.body || {};
 
     if (typeof email !== "string" || !isValidEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Please enter a valid email address.",
-      });
+      return res.status(400).json({ success: false, message: "Please enter a valid email address." });
     }
 
     const normalized = normalizeEmail(email);
@@ -549,9 +553,6 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
   }
 });
 
-/**
- * STEP 2 — VERIFY EMAIL
- */
 app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
   try {
     const { email, code } = req.body || {};
@@ -623,9 +624,6 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/**
- * STEP 3 — SET PASSWORD (after email verified, no password yet)
- */
 app.post("/api/auth/set-password", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
@@ -654,25 +652,16 @@ app.post("/api/auth/set-password", authLimiter, async (req, res, next) => {
     const user = result.rows[0];
 
     if (!user.email_verified) {
-      return res.status(400).json({
-        success: false,
-        message: "Please verify your email first.",
-      });
+      return res.status(400).json({ success: false, message: "Please verify your email first." });
     }
 
     if (user.password_hash) {
-      return res.status(400).json({
-        success: false,
-        message: "Password is already set. Please sign in.",
-      });
+      return res.status(400).json({ success: false, message: "Password is already set. Please sign in." });
     }
 
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
 
-    await pool.query(
-      `UPDATE app.users SET password_hash = $1 WHERE id = $2`,
-      [passwordHash, user.id]
-    );
+    await pool.query(`UPDATE app.users SET password_hash = $1 WHERE id = $2`, [passwordHash, user.id]);
 
     await regenerateSession(req);
     req.session.userId = String(user.id);
@@ -687,9 +676,6 @@ app.post("/api/auth/set-password", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/**
- * RESEND CODE
- */
 app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
   try {
     const { email, purpose } = req.body || {};
@@ -741,9 +727,6 @@ app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/**
- * LOGIN
- */
 app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
@@ -763,13 +746,9 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
     const user = result.rows[0];
 
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Incorrect email or password.",
-      });
+      return res.status(401).json({ success: false, message: "Incorrect email or password." });
     }
 
-    // Account exists but no password yet → incomplete registration
     if (!user.password_hash) {
       return res.status(403).json({
         success: false,
@@ -787,10 +766,7 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
     catch { match = false; }
 
     if (!match) {
-      return res.status(401).json({
-        success: false,
-        message: "Incorrect email or password.",
-      });
+      return res.status(401).json({ success: false, message: "Incorrect email or password." });
     }
 
     if (!user.email_verified) {
@@ -840,9 +816,6 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/**
- * ME
- */
 app.get("/api/auth/me", (req, res) => {
   if (!req.session?.userId) {
     return res.json({ success: true, authenticated: false, user: null });
@@ -854,9 +827,6 @@ app.get("/api/auth/me", (req, res) => {
   });
 });
 
-/**
- * LOGOUT
- */
 app.post("/api/auth/logout", async (req, res, next) => {
   try {
     if (req.session) await destroySession(req);
@@ -865,9 +835,6 @@ app.post("/api/auth/logout", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/**
- * FORGOT PASSWORD — Step 1: send reset OTP
- */
 app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
   try {
     const { email } = req.body || {};
@@ -878,7 +845,6 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
 
     const userCheck = await pool.query(`SELECT id FROM app.users WHERE email = $1`, [normalized]);
     if (!userCheck.rows.length) {
-      // Don't reveal whether email exists
       return res.json({ success: true, message: "If an account exists, a reset code has been sent." });
     }
 
@@ -908,16 +874,10 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
       });
     }
 
-    return res.json({
-      success: true,
-      message: "If an account exists, a reset code has been sent.",
-    });
+    return res.json({ success: true, message: "If an account exists, a reset code has been sent." });
   } catch (err) { next(err); }
 });
 
-/**
- * FORGOT PASSWORD — Step 2: verify reset OTP only
- */
 app.post("/api/auth/verify-reset-code", authLimiter, async (req, res, next) => {
   try {
     const { email, code } = req.body || {};
@@ -962,9 +922,6 @@ app.post("/api/auth/verify-reset-code", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/**
- * RESET PASSWORD — Step 3: set new password (session-verified)
- */
 app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
@@ -1011,9 +968,6 @@ app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/**
- * ACCOUNT
- */
 app.get("/api/account", requireAuthenticated, async (req, res, next) => {
   try {
     const result = await pool.query(
@@ -1049,7 +1003,8 @@ const TEMPLATE_PRICES = {
   "birthday-magic": 299,
 };
 
-const MAX_ENVELOPE_BYTES = 512 * 1024 * 1024;
+// ~1 GB encrypted envelope cap.
+const MAX_ENVELOPE_BYTES = 1024 * 1024 * 1024;
 
 function isValidPublicId(value) {
   return typeof value === "string" && /^[A-Za-z0-9_-]{20,80}$/.test(value);
@@ -1087,10 +1042,10 @@ function validateEncryptedEnvelope(envelope) {
   } catch { return false; }
 }
 
-// Create gift
+// Create gift (payment already verified via /api/payments/confirm or /verify)
 app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
   try {
-    const { templateId, envelope, amountInr } = req.body || {};
+    const { templateId, envelope, orderId } = req.body || {};
 
     if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
       return res.status(400).json({ success: false, message: "Unsupported gift template." });
@@ -1101,12 +1056,26 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
     }
 
     const expectedPrice = TEMPLATE_PRICES[templateId] || 299;
-    if (Number(amountInr) !== expectedPrice) {
-      return res.status(402).json({
-        success: false,
-        message: `Payment required. This template costs ₹${expectedPrice}.`,
-        amountInr: expectedPrice,
-      });
+
+    // Verify a paid order exists for this user + amount
+    if (orderId) {
+      const payCheck = await pool.query(
+        `SELECT id, amount_inr FROM app.payments
+         WHERE provider_order_id = $1 AND user_id = $2 AND status = 'paid' LIMIT 1`,
+        [orderId, req.session.userId]
+      );
+      if (!payCheck.rows.length) {
+        return res.status(402).json({
+          success: false,
+          message: "Payment not confirmed for this order.",
+        });
+      }
+      if (Number(payCheck.rows[0].amount_inr) !== expectedPrice) {
+        return res.status(402).json({
+          success: false,
+          message: `Paid amount does not match template price ₹${expectedPrice}.`,
+        });
+      }
     }
 
     const encryptedPayload = Buffer.from(JSON.stringify(envelope), "utf8");
@@ -1129,6 +1098,13 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
     );
 
     const gift = result.rows[0];
+
+    // Clean up any saved draft for this template once published
+    await pool.query(
+      `DELETE FROM app.drafts WHERE user_id = $1 AND template_id = $2`,
+      [req.session.userId, templateId]
+    );
+
     res.status(201).json({
       success: true,
       gift: {
@@ -1142,7 +1118,6 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Fetch gift
 app.get("/api/gifts/:publicId", giftFetchLimiter, async (req, res, next) => {
   try {
     const { publicId } = req.params;
@@ -1178,7 +1153,6 @@ app.get("/api/gifts/:publicId", giftFetchLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Delete gift
 app.delete("/api/gifts/:publicId", requireAuthenticated, async (req, res, next) => {
   try {
     const { publicId } = req.params;
@@ -1199,7 +1173,6 @@ app.delete("/api/gifts/:publicId", requireAuthenticated, async (req, res, next) 
   } catch (err) { next(err); }
 });
 
-// List my gifts
 app.get("/api/gifts", requireAuthenticated, async (req, res, next) => {
   try {
     const result = await pool.query(
@@ -1225,7 +1198,139 @@ app.get("/api/gifts", requireAuthenticated, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* ---------- 15. STATS ---------- */
+/* ---------- 15. DRAFTS ---------- */
+app.get("/api/drafts", requireAuthenticated, async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, template_id, data, updated_at, created_at
+       FROM app.drafts WHERE user_id = $1
+       ORDER BY updated_at DESC LIMIT 100`,
+      [req.session.userId]
+    );
+
+    res.json({
+      success: true,
+      drafts: result.rows.map(d => ({
+        id: d.id,
+        templateId: d.template_id,
+        data: d.data,
+        updatedAt: d.updated_at,
+        createdAt: d.created_at,
+      })),
+    });
+  } catch (err) { next(err); }
+});
+
+app.get("/api/drafts/:templateId", requireAuthenticated, async (req, res, next) => {
+  try {
+    const { templateId } = req.params;
+    if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
+      return res.status(400).json({ success: false, message: "Invalid template." });
+    }
+    const result = await pool.query(
+      `SELECT id, template_id, data, updated_at FROM app.drafts
+       WHERE user_id = $1 AND template_id = $2 LIMIT 1`,
+      [req.session.userId, templateId]
+    );
+    if (!result.rows.length) {
+      return res.json({ success: true, draft: null });
+    }
+    const d = result.rows[0];
+    res.json({
+      success: true,
+      draft: { id: d.id, templateId: d.template_id, data: d.data, updatedAt: d.updated_at },
+    });
+  } catch (err) { next(err); }
+});
+
+app.post("/api/drafts", requireAuthenticated, async (req, res, next) => {
+  try {
+    const { templateId, data } = req.body || {};
+    if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
+      return res.status(400).json({ success: false, message: "Invalid template." });
+    }
+    if (!data || typeof data !== "object") {
+      return res.status(400).json({ success: false, message: "Draft data must be an object." });
+    }
+
+    const json = JSON.stringify(data);
+    if (Buffer.byteLength(json, "utf8") > 5 * 1024 * 1024) {
+      return res.status(413).json({ success: false, message: "Draft is too large (max 5 MB)." });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO app.drafts (user_id, template_id, data, updated_at)
+       VALUES ($1, $2, $3::jsonb, NOW())
+       ON CONFLICT (user_id, template_id)
+       DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
+       RETURNING id, template_id, data, updated_at`,
+      [req.session.userId, templateId, json]
+    );
+
+    const d = result.rows[0];
+    res.json({
+      success: true,
+      draft: { id: d.id, templateId: d.template_id, data: d.data, updatedAt: d.updated_at },
+    });
+  } catch (err) { next(err); }
+});
+
+app.delete("/api/drafts/:templateId", requireAuthenticated, async (req, res, next) => {
+  try {
+    const { templateId } = req.params;
+    const result = await pool.query(
+      `DELETE FROM app.drafts WHERE user_id = $1 AND template_id = $2 RETURNING id`,
+      [req.session.userId, templateId]
+    );
+    res.json({ success: true, deleted: result.rows.length > 0 });
+  } catch (err) { next(err); }
+});
+
+/* ---------- 16. WISHLIST ---------- */
+app.get("/api/wishlist", requireAuthenticated, async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT template_id, created_at FROM app.wishlist
+       WHERE user_id = $1 ORDER BY created_at DESC`,
+      [req.session.userId]
+    );
+    res.json({
+      success: true,
+      wishlist: result.rows.map(w => ({
+        templateId: w.template_id,
+        createdAt: w.created_at,
+      })),
+    });
+  } catch (err) { next(err); }
+});
+
+app.post("/api/wishlist", requireAuthenticated, async (req, res, next) => {
+  try {
+    const { templateId } = req.body || {};
+    if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
+      return res.status(400).json({ success: false, message: "Invalid template." });
+    }
+    await pool.query(
+      `INSERT INTO app.wishlist (user_id, template_id) VALUES ($1, $2)
+       ON CONFLICT (user_id, template_id) DO NOTHING`,
+      [req.session.userId, templateId]
+    );
+    res.json({ success: true, message: "Added to wishlist." });
+  } catch (err) { next(err); }
+});
+
+app.delete("/api/wishlist/:templateId", requireAuthenticated, async (req, res, next) => {
+  try {
+    const { templateId } = req.params;
+    await pool.query(
+      `DELETE FROM app.wishlist WHERE user_id = $1 AND template_id = $2`,
+      [req.session.userId, templateId]
+    );
+    res.json({ success: true, message: "Removed from wishlist." });
+  } catch (err) { next(err); }
+});
+
+/* ---------- 17. STATS ---------- */
 app.get("/api/stats", async (req, res) => {
   try {
     const [giftsResult, usersResult] = await Promise.all([
@@ -1251,14 +1356,12 @@ app.get("/api/stats", async (req, res) => {
   }
 });
 
-/* ---------- 16. REVIEWS ---------- */
+/* ---------- 18. REVIEWS ---------- */
 app.get("/api/reviews", async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, name, role, stars, text, tag, created_at
-       FROM app.reviews
-       ORDER BY created_at DESC
-       LIMIT 30`
+       FROM app.reviews ORDER BY created_at DESC LIMIT 30`
     );
 
     res.json({
@@ -1315,7 +1418,7 @@ app.post("/api/reviews", requireAuthenticated, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* ---------- 17. PAYMENTS ---------- */
+/* ---------- 19. PAYMENTS ---------- */
 let razorpay = null;
 try {
   if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
@@ -1349,12 +1452,7 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
         [req.session.userId, amount, orderId]
       );
       return res.json({
-        success: true,
-        orderId,
-        amount,
-        currency: "INR",
-        templateId,
-        mock: true,
+        success: true, orderId, amount, currency: "INR", templateId, mock: true,
       });
     }
 
@@ -1372,12 +1470,8 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
     );
 
     res.json({
-      success: true,
-      orderId: order.id,
-      amount,
-      currency: "INR",
-      templateId,
-      keyId: process.env.RAZORPAY_KEY_ID,
+      success: true, orderId: order.id, amount, currency: "INR",
+      templateId, keyId: process.env.RAZORPAY_KEY_ID,
     });
   } catch (err) { next(err); }
 });
@@ -1437,7 +1531,7 @@ app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) =>
   } catch (err) { next(err); }
 });
 
-/* ---------- 18. STATIC FILES ---------- */
+/* ---------- 20. STATIC FILES ---------- */
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(ROOT, "index.html"));
@@ -1483,7 +1577,7 @@ app.use("/src", express.static(path.join(ROOT, "src"), {
   index: false,
 }));
 
-/* ---------- 19. 404 + ERROR ---------- */
+/* ---------- 21. 404 + ERROR ---------- */
 app.use("/api", (req, res) => {
   res.status(404).json({ success: false, message: "API endpoint not found." });
 });
@@ -1498,7 +1592,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: "An unexpected server error occurred." });
 });
 
-/* ---------- 20. STARTUP ---------- */
+/* ---------- 22. STARTUP ---------- */
 const server = app.listen(PORT, async () => {
   await runMigrations();
   console.log("");
