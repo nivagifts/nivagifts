@@ -2,6 +2,11 @@
    NIVA SERVER — Complete Production-Ready Version
    Light Theme · Email Verification · Password Reset
    Reviews · Stats · Payment Gating · Contact
+   
+   AUTH FLOW (fixed):
+   - Register: email only → OTP sent → verify OTP → set password
+   - Login: email + password (only after password set)
+   - Reset: email → OTP sent → verify OTP → set new password
    ========================================================= */
 
 require("dotenv").config();
@@ -117,7 +122,7 @@ app.use(session({
 /* ---------- 8. RATE LIMITERS ---------- */
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  limit: 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many attempts. Please try again later." },
@@ -158,8 +163,9 @@ function isValidEmail(email) {
   return typeof email === "string" && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// Password: 8–128 characters (per requirements)
 function isValidPassword(pw) {
-  return typeof pw === "string" && pw.length >= 12 && pw.length <= 128;
+  return typeof pw === "string" && pw.length >= 8 && pw.length <= 128;
 }
 
 function requireAuthenticated(req, res, next) {
@@ -279,18 +285,31 @@ function resetEmailHTML(code) {
 /* ---------- 11. DATABASE MIGRATIONS ---------- */
 async function runMigrations() {
   try {
-    // Ensure schema exists
     await pool.query(`CREATE SCHEMA IF NOT EXISTS app;`);
 
-    // Users
+    // Users — password_hash is NULLABLE so account can be created before password is set
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.users (
         id BIGSERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
+        password_hash TEXT,
         email_verified BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
+    `);
+
+    // Migration: make password_hash nullable if it already existed NOT NULL
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_schema = 'app' AND table_name = 'users'
+            AND column_name = 'password_hash' AND is_nullable = 'NO'
+        ) THEN
+          ALTER TABLE app.users ALTER COLUMN password_hash DROP NOT NULL;
+        END IF;
+      END $$;
     `);
 
     // Sessions
@@ -322,18 +341,38 @@ async function runMigrations() {
       );
     `);
 
-    // Email codes
+    // Email codes (verify + reset + set_password)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.email_codes (
         id BIGSERIAL PRIMARY KEY,
         email TEXT NOT NULL,
         code_hash TEXT NOT NULL,
-        type TEXT NOT NULL CHECK (type IN ('verify', 'reset')),
+        type TEXT NOT NULL,
         expires_at TIMESTAMPTZ NOT NULL,
         used BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `);
+    // Drop old constraint if it existed with restricted types
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'email_codes_type_check'
+        ) THEN
+          ALTER TABLE app.email_codes DROP CONSTRAINT email_codes_type_check;
+        END IF;
+      END $$;
+    `);
+    // Re-add permissive constraint
+    try {
+      await pool.query(`
+        ALTER TABLE app.email_codes
+        ADD CONSTRAINT email_codes_type_check
+        CHECK (type IN ('verify', 'reset'));
+      `);
+    } catch (_) { /* ignore if already exists */ }
+
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_email_codes_lookup ON app.email_codes (email, type, used);`);
 
     // Reviews
@@ -383,48 +422,87 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-/* ---------- 13. AUTH ROUTES ---------- */
+/* =========================================================
+   13. AUTH ROUTES (FIXED FLOW)
+   ========================================================= */
 
-// Register
+/**
+ * STEP 1 — REGISTER (email only)
+ * - If email already exists AND has a password → "Account already exists. Please sign in."
+ * - If email already exists BUT no password set → resend verification code
+ * - If email doesn't exist → create user (password_hash = NULL), send OTP
+ */
 app.post("/api/auth/register", authLimiter, async (req, res, next) => {
   try {
-    const { email, password } = req.body || {};
+    const { email } = req.body || {};
 
-    if (typeof email !== "string" || !isValidEmail(email) ||
-        typeof password !== "string" || !isValidPassword(password)) {
+    if (typeof email !== "string" || !isValidEmail(email)) {
       return res.status(400).json({
         success: false,
-        message: "Enter a valid email and a password between 12 and 128 characters.",
+        message: "Please enter a valid email address.",
       });
     }
 
     const normalized = normalizeEmail(email);
-    const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
-    let user;
 
-    try {
-      const result = await pool.query(
-        `INSERT INTO app.users (email, password_hash, email_verified)
-         VALUES ($1, $2, FALSE)
-         RETURNING id, email, created_at`,
-        [normalized, passwordHash]
-      );
-      user = result.rows[0];
-    } catch (err) {
-      if (err.code === "23505") {
-        return res.status(409).json({ success: false, message: "An account with this email already exists." });
+    // Check if user exists
+    const existing = await pool.query(
+      `SELECT id, email, password_hash, email_verified FROM app.users WHERE email = $1 LIMIT 1`,
+      [normalized]
+    );
+
+    if (existing.rows.length) {
+      const user = existing.rows[0];
+
+      // User exists AND has a password → account fully set up
+      if (user.password_hash) {
+        return res.status(409).json({
+          success: false,
+          alreadyRegistered: true,
+          message: "An account with this email already exists. Please sign in instead.",
+        });
       }
-      throw err;
+
+      // User exists but no password yet → just resend verification code
+      const code = generateCode();
+      const codeHash = await hashCode(code);
+
+      await pool.query(
+        `UPDATE app.email_codes SET used = TRUE WHERE email = $1 AND type = 'verify' AND used = FALSE`,
+        [normalized]
+      );
+      await pool.query(
+        `INSERT INTO app.email_codes (email, code_hash, type, expires_at)
+         VALUES ($1, $2, 'verify', NOW() + INTERVAL '10 minutes')`,
+        [normalized, codeHash]
+      );
+
+      await sendEmail({
+        to: normalized,
+        subject: "Your NIVA verification code",
+        html: verificationEmailHTML(code),
+        fallbackCode: code,
+      });
+
+      return res.status(200).json({
+        success: true,
+        requiresVerification: true,
+        email: normalized,
+        message: "A verification code has been sent to your email.",
+      });
     }
+
+    // New user — create with NULL password
+    const result = await pool.query(
+      `INSERT INTO app.users (email, password_hash, email_verified)
+       VALUES ($1, NULL, FALSE)
+       RETURNING id, email`,
+      [normalized]
+    );
 
     // Generate + store verification code
     const code = generateCode();
     const codeHash = await hashCode(code);
-
-    await pool.query(
-      `UPDATE app.email_codes SET used = TRUE WHERE email = $1 AND type = 'verify' AND used = FALSE`,
-      [normalized]
-    );
 
     await pool.query(
       `INSERT INTO app.email_codes (email, code_hash, type, expires_at)
@@ -432,7 +510,6 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
       [normalized, codeHash]
     );
 
-    // Send email
     await sendEmail({
       to: normalized,
       subject: "Your NIVA verification code",
@@ -442,14 +519,28 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "Account created. Please check your email for the verification code.",
+      message: "Verification code sent. Check your email.",
       requiresVerification: true,
-      user: { id: String(user.id), email: user.email },
+      email: normalized,
+      userId: String(result.rows[0].id),
     });
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({
+        success: false,
+        alreadyRegistered: true,
+        message: "An account with this email already exists. Please sign in instead.",
+      });
+    }
+    next(err);
+  }
 });
 
-// Verify email
+/**
+ * STEP 2 — VERIFY EMAIL
+ * Verifies OTP, marks email verified. Returns hasPassword flag so client
+ * knows whether to show "set password" screen.
+ */
 app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
   try {
     const { email, code } = req.body || {};
@@ -476,14 +567,14 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
 
     const match = await verifyCode(record.code_hash, String(code));
     if (!match) {
-      return res.status(400).json({ success: false, message: "Incorrect code." });
+      return res.status(400).json({ success: false, message: "Incorrect code. Please check and try again." });
     }
 
     await pool.query(`UPDATE app.email_codes SET used = TRUE WHERE id = $1`, [record.id]);
 
     const userResult = await pool.query(
       `UPDATE app.users SET email_verified = TRUE WHERE email = $1
-       RETURNING id, email, created_at`,
+       RETURNING id, email, password_hash, created_at`,
       [normalized]
     );
 
@@ -492,7 +583,91 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
     }
 
     const user = userResult.rows[0];
+    const hasPassword = Boolean(user.password_hash);
 
+    // If user already has a password → log them in
+    if (hasPassword) {
+      await regenerateSession(req);
+      req.session.userId = String(user.id);
+      req.session.userEmail = user.email;
+      await saveSession(req);
+
+      return res.json({
+        success: true,
+        verified: true,
+        hasPassword: true,
+        authenticated: true,
+        message: "Email verified. Welcome to NIVA.",
+        user: { id: String(user.id), email: user.email, createdAt: user.created_at },
+      });
+    }
+
+    // No password yet → tell client to show "set password" step
+    res.json({
+      success: true,
+      verified: true,
+      hasPassword: false,
+      authenticated: false,
+      email: user.email,
+      message: "Email verified. Now set your password.",
+    });
+  } catch (err) { next(err); }
+});
+
+/**
+ * STEP 3 — SET PASSWORD (after email verified, no password yet)
+ * Requires: email + password (8–128 chars)
+ * Only allowed if user exists, is email_verified, and password_hash IS NULL
+ */
+app.post("/api/auth/set-password", authLimiter, async (req, res, next) => {
+  try {
+    const { email, password } = req.body || {};
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email." });
+    }
+    if (!isValidPassword(password)) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be between 8 and 128 characters.",
+      });
+    }
+
+    const normalized = normalizeEmail(email);
+
+    const result = await pool.query(
+      `SELECT id, email, password_hash, email_verified FROM app.users WHERE email = $1 LIMIT 1`,
+      [normalized]
+    );
+
+    if (!result.rows.length) {
+      return res.status(400).json({ success: false, message: "Account not found." });
+    }
+
+    const user = result.rows[0];
+
+    if (!user.email_verified) {
+      return res.status(400).json({
+        success: false,
+        message: "Please verify your email first.",
+      });
+    }
+
+    if (user.password_hash) {
+      return res.status(400).json({
+        success: false,
+        message: "Password is already set. Please sign in.",
+      });
+    }
+
+    const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
+
+    await pool.query(
+      `UPDATE app.users SET password_hash = $1 WHERE id = $2`,
+      [passwordHash, user.id]
+    );
+
+    // Log the user in
     await regenerateSession(req);
     req.session.userId = String(user.id);
     req.session.userEmail = user.email;
@@ -500,29 +675,34 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
 
     res.json({
       success: true,
-      message: "Email verified. Welcome to NIVA.",
+      message: "Password set. Welcome to NIVA.",
       user: { id: String(user.id), email: user.email, createdAt: user.created_at },
     });
   } catch (err) { next(err); }
 });
 
-// Resend code
+/**
+ * RESEND CODE
+ */
 app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
   try {
-    const { email } = req.body || {};
+    const { email, purpose } = req.body || {};
     if (!isValidEmail(email)) {
       return res.status(400).json({ success: false, message: "Invalid email." });
     }
     const normalized = normalizeEmail(email);
+    const codeType = purpose === "reset" ? "reset" : "verify";
 
     const userCheck = await pool.query(
-      `SELECT id, email_verified FROM app.users WHERE email = $1`,
+      `SELECT id, email_verified, password_hash FROM app.users WHERE email = $1`,
       [normalized]
     );
     if (!userCheck.rows.length) {
       return res.status(404).json({ success: false, message: "No account with this email." });
     }
-    if (userCheck.rows[0].email_verified) {
+
+    // For verify type: only if not verified
+    if (codeType === "verify" && userCheck.rows[0].email_verified) {
       return res.status(400).json({ success: false, message: "This email is already verified." });
     }
 
@@ -530,20 +710,19 @@ app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
     const codeHash = await hashCode(code);
 
     await pool.query(
-      `UPDATE app.email_codes SET used = TRUE WHERE email = $1 AND type = 'verify' AND used = FALSE`,
-      [normalized]
+      `UPDATE app.email_codes SET used = TRUE WHERE email = $1 AND type = $2 AND used = FALSE`,
+      [normalized, codeType]
     );
-
     await pool.query(
       `INSERT INTO app.email_codes (email, code_hash, type, expires_at)
-       VALUES ($1, $2, 'verify', NOW() + INTERVAL '10 minutes')`,
-      [normalized, codeHash]
+       VALUES ($1, $2, $3, NOW() + INTERVAL '15 minutes')`,
+      [normalized, codeHash, codeType]
     );
 
     await sendEmail({
       to: normalized,
-      subject: "Your new NIVA verification code",
-      html: verificationEmailHTML(code),
+      subject: codeType === "reset" ? "Reset your NIVA password" : "Your new NIVA verification code",
+      html: codeType === "reset" ? resetEmailHTML(code) : verificationEmailHTML(code),
       fallbackCode: code,
     });
 
@@ -551,14 +730,18 @@ app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Login
+/**
+ * LOGIN
+ */
 app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
 
-    if (typeof email !== "string" || !isValidEmail(email) ||
-        typeof password !== "string" || password.length === 0 || password.length > 128) {
-      return res.status(400).json({ success: false, message: "Invalid email or password." });
+    if (typeof email !== "string" || !isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email." });
+    }
+    if (typeof password !== "string" || password.length === 0 || password.length > 128) {
+      return res.status(400).json({ success: false, message: "Please enter your password." });
     }
 
     const result = await pool.query(
@@ -568,17 +751,39 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
     );
     const user = result.rows[0];
 
-    let match = false;
-    if (user) {
-      try { match = await argon2.verify(user.password_hash, password); }
-      catch { match = false; }
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect email or password.",
+      });
     }
 
-    if (!user || !match) {
-      return res.status(401).json({ success: false, message: "Invalid email or password." });
+    // Account exists but no password set yet → must complete registration
+    if (!user.password_hash) {
+      return res.status(403).json({
+        success: false,
+        needsPasswordSetup: true,
+        needsVerification: !user.email_verified,
+        email: user.email,
+        message: user.email_verified
+          ? "Your account has no password yet. Please set a password."
+          : "Please verify your email first.",
+      });
+    }
+
+    let match = false;
+    try { match = await argon2.verify(user.password_hash, password); }
+    catch { match = false; }
+
+    if (!match) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect email or password.",
+      });
     }
 
     if (!user.email_verified) {
+      // Send a fresh verification code
       const code = generateCode();
       const codeHash = await hashCode(code);
       await pool.query(
@@ -600,9 +805,9 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
 
       return res.status(403).json({
         success: false,
-        message: "Please verify your email first. A new code has been sent.",
-        requiresVerification: true,
+        needsVerification: true,
         email: user.email,
+        message: "Please verify your email first. A new code has been sent.",
       });
     }
 
@@ -619,7 +824,9 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Me
+/**
+ * ME
+ */
 app.get("/api/auth/me", (req, res) => {
   if (!req.session?.userId) {
     return res.json({ success: true, authenticated: false, user: null });
@@ -631,7 +838,9 @@ app.get("/api/auth/me", (req, res) => {
   });
 });
 
-// Logout
+/**
+ * LOGOUT
+ */
 app.post("/api/auth/logout", async (req, res, next) => {
   try {
     if (req.session) await destroySession(req);
@@ -640,7 +849,9 @@ app.post("/api/auth/logout", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Forgot password
+/**
+ * FORGOT PASSWORD — Step 1: send reset OTP
+ */
 app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
   try {
     const { email } = req.body || {};
@@ -651,6 +862,7 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
 
     const userCheck = await pool.query(`SELECT id FROM app.users WHERE email = $1`, [normalized]);
     if (!userCheck.rows.length) {
+      // Don't reveal whether email exists
       return res.json({ success: true, message: "If an account exists, a reset code has been sent." });
     }
 
@@ -661,7 +873,6 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
       `UPDATE app.email_codes SET used = TRUE WHERE email = $1 AND type = 'reset' AND used = FALSE`,
       [normalized]
     );
-
     await pool.query(
       `INSERT INTO app.email_codes (email, code_hash, type, expires_at)
        VALUES ($1, $2, 'reset', NOW() + INTERVAL '15 minutes')`,
@@ -679,12 +890,15 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Reset password
-app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
+/**
+ * FORGOT PASSWORD — Step 2: verify reset OTP only
+ * Returns a short-lived reset token stored in session.
+ */
+app.post("/api/auth/verify-reset-code", authLimiter, async (req, res, next) => {
   try {
-    const { email, code, password } = req.body || {};
-    if (!isValidEmail(email) || !/^\d{6}$/.test(String(code || "")) || !isValidPassword(password)) {
-      return res.status(400).json({ success: false, message: "Invalid input. Password must be 12+ characters." });
+    const { email, code } = req.body || {};
+    if (!isValidEmail(email) || !/^\d{6}$/.test(String(code || ""))) {
+      return res.status(400).json({ success: false, message: "Invalid email or code." });
     }
     const normalized = normalizeEmail(email);
 
@@ -706,19 +920,79 @@ app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
 
     const match = await verifyCode(record.code_hash, String(code));
     if (!match) {
-      return res.status(400).json({ success: false, message: "Incorrect code." });
+      return res.status(400).json({ success: false, message: "Incorrect code. Please check and try again." });
     }
 
-    const newHash = await argon2.hash(password, { type: argon2.argon2id });
-
-    await pool.query(`UPDATE app.users SET password_hash = $1 WHERE email = $2`, [newHash, normalized]);
+    // Mark code as used & store verified reset permission in session
     await pool.query(`UPDATE app.email_codes SET used = TRUE WHERE id = $1`, [record.id]);
+
+    req.session.resetEmail = normalized;
+    req.session.resetVerifiedAt = Date.now();
+    await saveSession(req);
+
+    res.json({
+      success: true,
+      verified: true,
+      email: normalized,
+      message: "Code verified. Now set your new password.",
+    });
+  } catch (err) { next(err); }
+});
+
+/**
+ * RESET PASSWORD — Step 3: set new password (after code verified in session)
+ */
+app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
+  try {
+    const { email, password } = req.body || {};
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email." });
+    }
+    if (!isValidPassword(password)) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be between 8 and 128 characters.",
+      });
+    }
+
+    const normalized = normalizeEmail(email);
+
+    // Must have verified reset code in this session, within last 15 minutes
+    if (
+      req.session?.resetEmail !== normalized ||
+      !req.session?.resetVerifiedAt ||
+      Date.now() - req.session.resetVerifiedAt > 15 * 60 * 1000
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Reset session expired. Please verify the code again.",
+      });
+    }
+
+    const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
+
+    const result = await pool.query(
+      `UPDATE app.users SET password_hash = $1 WHERE email = $2 RETURNING id, email`,
+      [passwordHash, normalized]
+    );
+
+    if (!result.rows.length) {
+      return res.status(400).json({ success: false, message: "Account not found." });
+    }
+
+    // Clear reset session flag
+    delete req.session.resetEmail;
+    delete req.session.resetVerifiedAt;
+    await saveSession(req);
 
     res.json({ success: true, message: "Password reset successful. You can now sign in." });
   } catch (err) { next(err); }
 });
 
-// Account
+/**
+ * ACCOUNT
+ */
 app.get("/api/account", requireAuthenticated, async (req, res, next) => {
   try {
     const result = await pool.query(
@@ -1046,7 +1320,6 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
 
     const amount = TEMPLATE_PRICES[templateId] || 299;
 
-    // Mock mode
     if (!razorpay) {
       const orderId = "order_mock_" + crypto.randomBytes(8).toString("hex");
       await pool.query(
@@ -1064,7 +1337,6 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
       });
     }
 
-    // Real Razorpay
     const order = await razorpay.orders.create({
       amount: amount * 100,
       currency: "INR",
@@ -1089,7 +1361,6 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
   } catch (err) { next(err); }
 });
 
-// Mock payment confirmation (for testing without Razorpay)
 app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) => {
   try {
     const { orderId, paymentId } = req.body || {};
@@ -1113,7 +1384,6 @@ app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) =
   } catch (err) { next(err); }
 });
 
-// Real Razorpay verification
 app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) => {
   try {
     const { orderId, paymentId, signature } = req.body || {};

@@ -615,6 +615,12 @@
       color: var(--success);
     }
 
+    .modal-error.info {
+      border-color: var(--line-rose);
+      background: var(--bg-rose);
+      color: var(--text-2);
+    }
+
     .modal-link {
       display: block;
       width: 100%;
@@ -1774,18 +1780,14 @@
         <button type="button" class="modal-link" id="toForgotPassword" style="margin-top:4px;font-size:0.78rem">Forgot password?</button>
       </div>
 
-      <!-- REGISTER -->
+      <!-- REGISTER — email only, no password -->
       <div id="registerPane" hidden>
         <h2>Create your account</h2>
-        <p>One account. Infinite gifts.</p>
+        <p>Enter your email — we'll send you a verification code.</p>
         <form id="registerForm" novalidate>
           <label for="registerEmail">Email</label>
           <input id="registerEmail" type="email" placeholder="you@example.com" required autocomplete="email">
-          <label for="registerPassword">Password <span style="color:var(--text-muted);font-weight:400;font-size:0.72rem">(12+ chars)</span></label>
-          <input id="registerPassword" type="password" placeholder="At least 12 characters" required minlength="12" autocomplete="new-password">
-          <label for="registerPasswordConfirm">Confirm password</label>
-          <input id="registerPasswordConfirm" type="password" placeholder="Type it again" required minlength="12" autocomplete="new-password">
-          <button type="submit" class="modal-submit" id="registerSubmit">Create account</button>
+          <button type="submit" class="modal-submit" id="registerSubmit">Send verification code</button>
           <p class="modal-error" id="registerError" role="alert"></p>
         </form>
         <button type="button" class="modal-link" id="toLogin">Already have an account? Sign in →</button>
@@ -1804,7 +1806,21 @@
         <button type="button" class="modal-link" id="resendCode">Didn't receive it? Resend code</button>
       </div>
 
-      <!-- FORGOT PASSWORD -->
+      <!-- SET PASSWORD (after verify, before login exists) -->
+      <div id="setPasswordPane" hidden>
+        <h2>Set your password</h2>
+        <p>Choose a password between 8 and 128 characters.</p>
+        <form id="setPasswordForm" novalidate>
+          <label for="setPassword">Password <span style="color:var(--text-muted);font-weight:400;font-size:0.72rem">(8+ chars)</span></label>
+          <input id="setPassword" type="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
+          <label for="setPasswordConfirm">Confirm password</label>
+          <input id="setPasswordConfirm" type="password" placeholder="Type it again" required minlength="8" autocomplete="new-password">
+          <button type="submit" class="modal-submit" id="setPasswordSubmit">Save password</button>
+          <p class="modal-error" id="setPasswordError" role="alert"></p>
+        </form>
+      </div>
+
+      <!-- FORGOT PASSWORD — Step 1: enter email -->
       <div id="forgotPane" hidden>
         <h2>Reset password</h2>
         <p>Enter your email and we'll send you a reset code.</p>
@@ -1817,21 +1833,33 @@
         <button type="button" class="modal-link" id="backToLogin">← Back to sign in</button>
       </div>
 
-      <!-- RESET PASSWORD -->
-      <div id="resetPane" hidden>
-        <h2>New password</h2>
-        <p>Enter the code we sent you and choose a new password.</p>
-        <form id="resetForm" novalidate>
+      <!-- FORGOT PASSWORD — Step 2: verify reset code -->
+      <div id="verifyResetPane" hidden>
+        <h2>Enter reset code</h2>
+        <p>Enter the 6-digit code sent to <strong id="resetEmailDisplay"></strong>.</p>
+        <form id="verifyResetForm" novalidate>
           <label for="resetCode">Reset code</label>
           <input id="resetCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" required style="text-align:center;font-size:1.4rem;letter-spacing:0.5em;">
-          <label for="resetPassword">New password <span style="color:var(--text-muted);font-weight:400;font-size:0.72rem">(12+ chars)</span></label>
-          <input id="resetPassword" type="password" placeholder="At least 12 characters" required minlength="12" autocomplete="new-password">
+          <button type="submit" class="modal-submit" id="verifyResetSubmit">Verify code</button>
+          <p class="modal-error" id="verifyResetError" role="alert"></p>
+        </form>
+        <button type="button" class="modal-link" id="resendResetCode">Didn't receive it? Resend code</button>
+        <button type="button" class="modal-link" id="backToLogin2">← Back to sign in</button>
+      </div>
+
+      <!-- FORGOT PASSWORD — Step 3: set new password -->
+      <div id="resetPane" hidden>
+        <h2>Set new password</h2>
+        <p>Choose a password between 8 and 128 characters.</p>
+        <form id="resetForm" novalidate>
+          <label for="resetPassword">New password <span style="color:var(--text-muted);font-weight:400;font-size:0.72rem">(8+ chars)</span></label>
+          <input id="resetPassword" type="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
           <label for="resetPasswordConfirm">Confirm new password</label>
-          <input id="resetPasswordConfirm" type="password" placeholder="Type it again" required minlength="12" autocomplete="new-password">
-          <button type="submit" class="modal-submit" id="resetSubmit">Reset password</button>
+          <input id="resetPasswordConfirm" type="password" placeholder="Type it again" required minlength="8" autocomplete="new-password">
+          <button type="submit" class="modal-submit" id="resetSubmit">Save new password</button>
           <p class="modal-error" id="resetError" role="alert"></p>
         </form>
-        <button type="button" class="modal-link" id="backToLogin2">← Back to sign in</button>
+        <button type="button" class="modal-link" id="backToLogin3">← Back to sign in</button>
       </div>
     </div>
   </div>
@@ -1916,7 +1944,6 @@
           <p>Browse our gift website designs by category or price. Preview the experience, then customise the one you love.</p>
         </div>
 
-        <!-- Filter bar -->
         <div class="filter-bar reveal" id="filterBar">
           <button class="filter-btn active" data-filter="all" data-type="category">All</button>
           <button class="filter-btn" data-filter="love" data-type="category">Love</button>
@@ -1926,7 +1953,6 @@
           <button class="filter-btn" data-filter="memories" data-type="category">Memories</button>
         </div>
 
-        <!-- Price filter -->
         <div class="filter-bar reveal" id="priceFilterBar" style="margin-top:-16px">
           <button class="filter-btn" data-filter="all" data-type="price">All prices</button>
           <button class="filter-btn" data-filter="99" data-type="price">₹99</button>
@@ -1956,7 +1982,6 @@
 
         <div class="reviews-grid" id="reviewsGrid"></div>
 
-        <!-- Write a review -->
         <div class="review-form reveal" id="reviewFormSection">
           <h3>Write a review</h3>
           <p>Share your experience to help others.</p>
@@ -2197,10 +2222,6 @@
     (() => {
       'use strict';
 
-      /* =========================================================
-         NIVA — Main JavaScript (Light Theme)
-         ========================================================= */
-
       const $ = (sel, ctx = document) => ctx.querySelector(sel);
       const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
@@ -2260,6 +2281,8 @@
         filter: { category: 'all', price: 'all' },
         selectedStar: 0,
         reviews: [],
+        _verifyEmail: "",
+        _resetEmail: "",
       };
 
       /* ---------- AUTH ---------- */
@@ -2297,27 +2320,24 @@
 
       /* ---------- AUTH MODAL ---------- */
       let pendingAction = null;
+      const ALL_PANES = ["loginPane", "registerPane", "verifyPane", "setPasswordPane", "forgotPane", "verifyResetPane", "resetPane"];
 
-      function openAuthModal(pane = "login", action = null) {
+      function showPane(id) {
+        ALL_PANES.forEach(p => {
+          const el = $("#" + p);
+          if (el) el.hidden = true;
+        });
+        const target = $("#" + id);
+        if (target) target.hidden = false;
+        $$(".modal-error").forEach(el => { el.textContent = ""; el.classList.remove("success", "info"); });
+        setTimeout(() => target?.querySelector("input")?.focus(), 100);
+      }
+
+      function openAuthModal(pane = "loginPane", action = null) {
         pendingAction = action;
         const modal = $("#authModal");
         if (modal) modal.classList.add("show");
-
-        ["loginPane", "registerPane", "verifyPane", "forgotPane", "resetPane"].forEach(id => {
-          const el = $("#" + id);
-          if (el) el.hidden = true;
-        });
-
-        const target = $("#" + pane + "Pane");
-        if (target) target.hidden = false;
-
-        // Clear errors
-        $$(".modal-error").forEach(el => { el.textContent = ""; el.classList.remove("success"); });
-
-        setTimeout(() => {
-          const firstInput = target?.querySelector("input");
-          if (firstInput) firstInput.focus();
-        }, 150);
+        showPane(pane);
       }
 
       function closeAuthModal() {
@@ -2338,6 +2358,14 @@
         }
       }
 
+      function setErr(id, msg, cls = "") {
+        const el = $("#" + id);
+        if (!el) return;
+        el.textContent = msg || "";
+        el.classList.remove("success", "info");
+        if (cls) el.classList.add(cls);
+      }
+
       /* ---------- AUTH EVENTS ---------- */
       function initAuth() {
         const modal = $("#authModal");
@@ -2347,32 +2375,22 @@
         modal?.addEventListener("click", e => { if (e.target === modal) closeAuthModal(); });
 
         // Pane switching
-        const showPane = (id) => {
-          ["loginPane", "registerPane", "verifyPane", "forgotPane", "resetPane"].forEach(p => {
-            const el = $("#" + p);
-            if (el) el.hidden = true;
-          });
-          const target = $("#" + id);
-          if (target) target.hidden = false;
-          $$(".modal-error").forEach(el => { el.textContent = ""; el.classList.remove("success"); });
-          setTimeout(() => target?.querySelector("input")?.focus(), 100);
-        };
-
         $("#toRegister")?.addEventListener("click", () => showPane("registerPane"));
         $("#toLogin")?.addEventListener("click", () => showPane("loginPane"));
         $("#toForgotPassword")?.addEventListener("click", () => showPane("forgotPane"));
         $("#backToLogin")?.addEventListener("click", () => showPane("loginPane"));
         $("#backToLogin2")?.addEventListener("click", () => showPane("loginPane"));
+        $("#backToLogin3")?.addEventListener("click", () => showPane("loginPane"));
 
-        // Login
+        // LOGIN
         $("#loginForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const email = $("#loginEmail").value.trim();
           const password = $("#loginPassword").value;
           const btn = $("#loginSubmit");
-          const err = $("#loginError");
-          err.textContent = "";
-          if (!email || !password) { err.textContent = "Please enter your email and password."; return; }
+          setErr("loginError", "");
+          if (!email) { setErr("loginError", "Please enter your email."); return; }
+          if (!password) { setErr("loginError", "Please enter your password."); return; }
           btn.disabled = true; btn.textContent = "Signing in…";
           try {
             const res = await fetch("/api/auth/login", {
@@ -2381,60 +2399,73 @@
               body: JSON.stringify({ email, password }),
             });
             const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.success) throw new Error(data.message || "Sign in failed.");
+            if (!res.ok || !data.success) {
+              // Special handling for accounts that need verification / password setup
+              if (data.needsVerification) {
+                state._verifyEmail = data.email || email;
+                $("#verifyEmailDisplay").textContent = state._verifyEmail;
+                setErr("loginError", data.message || "Please verify your email.");
+                setTimeout(() => showPane("verifyPane"), 800);
+                return;
+              }
+              if (data.needsPasswordSetup) {
+                setErr("loginError", data.message || "Please complete your account setup.");
+                setTimeout(() => {
+                  state._verifyEmail = data.email || email;
+                  showPane("verifyPane");
+                }, 800);
+                return;
+              }
+              throw new Error(data.message || "Incorrect email or password.");
+            }
             handleAuthSuccess(data.user);
           } catch (err) {
-            err.textContent = err.message || "Could not sign in.";
+            setErr("loginError", err.message || "Incorrect email or password.");
           } finally {
             btn.disabled = false; btn.textContent = "Sign in";
           }
         });
 
-        // Register
+        // REGISTER — email only
         $("#registerForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const email = $("#registerEmail").value.trim();
-          const pw = $("#registerPassword").value;
-          const pwConfirm = $("#registerPasswordConfirm").value;
           const btn = $("#registerSubmit");
-          const err = $("#registerError");
-          err.textContent = "";
-          if (!email) { err.textContent = "Please enter your email."; return; }
-          if (pw.length < 12) { err.textContent = "Password must be at least 12 characters."; return; }
-          if (pw !== pwConfirm) { err.textContent = "Passwords do not match."; return; }
-          btn.disabled = true; btn.textContent = "Creating account…";
+          setErr("registerError", "");
+          if (!email) { setErr("registerError", "Please enter your email."); return; }
+          btn.disabled = true; btn.textContent = "Sending…";
           try {
             const res = await fetch("/api/auth/register", {
               method: "POST", credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password: pw }),
+              body: JSON.stringify({ email }),
             });
             const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.success) throw new Error(data.message || "Sign up failed.");
-            // Registration requires verification
-            if (data.requiresVerification) {
-              state._verifyEmail = email;
-              $("#verifyEmailDisplay").textContent = email;
-              showPane("verifyPane");
-              showToast("Check your email for a verification code.");
-            } else {
-              handleAuthSuccess(data.user);
+            if (!res.ok || !data.success) {
+              if (data.alreadyRegistered) {
+                setErr("registerError", data.message || "An account with this email already exists. Please sign in instead.");
+                return;
+              }
+              throw new Error(data.message || "Could not start registration.");
             }
+            state._verifyEmail = data.email || email;
+            $("#verifyEmailDisplay").textContent = state._verifyEmail;
+            showPane("verifyPane");
+            showToast("Check your email for the verification code.");
           } catch (err) {
-            err.textContent = err.message || "Could not create account.";
+            setErr("registerError", err.message || "Could not start registration.");
           } finally {
-            btn.disabled = false; btn.textContent = "Create account";
+            btn.disabled = false; btn.textContent = "Send verification code";
           }
         });
 
-        // Verify
+        // VERIFY EMAIL
         $("#verifyForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const code = $("#verifyCode").value.trim();
           const btn = $("#verifySubmit");
-          const err = $("#verifyError");
-          err.textContent = "";
-          if (!/^\d{6}$/.test(code)) { err.textContent = "Enter the 6-digit code."; return; }
+          setErr("verifyError", "");
+          if (!/^\d{6}$/.test(code)) { setErr("verifyError", "Enter the 6-digit code."); return; }
           btn.disabled = true; btn.textContent = "Verifying…";
           try {
             const res = await fetch("/api/auth/verify-email", {
@@ -2444,33 +2475,69 @@
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.success) throw new Error(data.message || "Verification failed.");
-            handleAuthSuccess(data.user);
+
+            if (data.hasPassword && data.authenticated) {
+              handleAuthSuccess(data.user);
+            } else if (data.hasPassword === false) {
+              // Need to set password
+              showPane("setPasswordPane");
+              showToast("Email verified. Now set your password.");
+            } else {
+              showPane("setPasswordPane");
+            }
           } catch (err) {
-            err.textContent = err.message || "Could not verify.";
+            setErr("verifyError", err.message || "Could not verify.");
           } finally {
             btn.disabled = false; btn.textContent = "Verify email";
           }
         });
 
+        // RESEND VERIFY CODE
         $("#resendCode")?.addEventListener("click", async () => {
           try {
             await fetch("/api/auth/resend-code", {
               method: "POST", credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: state._verifyEmail }),
+              body: JSON.stringify({ email: state._verifyEmail, purpose: "verify" }),
             });
             showToast("New code sent. Check your inbox.");
           } catch { showToast("Could not resend code."); }
         });
 
-        // Forgot password
+        // SET PASSWORD (after email verify)
+        $("#setPasswordForm")?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const pw = $("#setPassword").value;
+          const pwConfirm = $("#setPasswordConfirm").value;
+          const btn = $("#setPasswordSubmit");
+          setErr("setPasswordError", "");
+          if (pw.length < 8) { setErr("setPasswordError", "Password must be at least 8 characters."); return; }
+          if (pw.length > 128) { setErr("setPasswordError", "Password must be at most 128 characters."); return; }
+          if (pw !== pwConfirm) { setErr("setPasswordError", "Passwords do not match."); return; }
+          btn.disabled = true; btn.textContent = "Saving…";
+          try {
+            const res = await fetch("/api/auth/set-password", {
+              method: "POST", credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: state._verifyEmail, password: pw }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.success) throw new Error(data.message || "Could not set password.");
+            handleAuthSuccess(data.user);
+          } catch (err) {
+            setErr("setPasswordError", err.message || "Could not set password.");
+          } finally {
+            btn.disabled = false; btn.textContent = "Save password";
+          }
+        });
+
+        // FORGOT — Step 1: send reset code
         $("#forgotForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const email = $("#forgotEmail").value.trim();
           const btn = $("#forgotSubmit");
-          const err = $("#forgotError");
-          err.textContent = "";
-          if (!email) { err.textContent = "Please enter your email."; return; }
+          setErr("forgotError", "");
+          if (!email) { setErr("forgotError", "Please enter your email."); return; }
           btn.disabled = true; btn.textContent = "Sending…";
           try {
             const res = await fetch("/api/auth/forgot-password", {
@@ -2481,48 +2548,86 @@
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.success) throw new Error(data.message || "Could not send reset code.");
             state._resetEmail = email;
-            showPane("resetPane");
+            $("#resetEmailDisplay").textContent = email;
+            showPane("verifyResetPane");
             showToast("Reset code sent to your email.");
           } catch (err) {
-            err.textContent = err.message || "Could not send reset code.";
+            setErr("forgotError", err.message || "Could not send reset code.");
           } finally {
             btn.disabled = false; btn.textContent = "Send reset code";
           }
         });
 
-        // Reset password
-        $("#resetForm")?.addEventListener("submit", async (e) => {
+        // FORGOT — Step 2: verify reset code
+        $("#verifyResetForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const code = $("#resetCode").value.trim();
+          const btn = $("#verifyResetSubmit");
+          setErr("verifyResetError", "");
+          if (!/^\d{6}$/.test(code)) { setErr("verifyResetError", "Enter the 6-digit code."); return; }
+          btn.disabled = true; btn.textContent = "Verifying…";
+          try {
+            const res = await fetch("/api/auth/verify-reset-code", {
+              method: "POST", credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: state._resetEmail, code }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.success) throw new Error(data.message || "Verification failed.");
+            showPane("resetPane");
+            showToast("Code verified. Set your new password.");
+          } catch (err) {
+            setErr("verifyResetError", err.message || "Could not verify.");
+          } finally {
+            btn.disabled = false; btn.textContent = "Verify code";
+          }
+        });
+
+        // Resend reset code
+        $("#resendResetCode")?.addEventListener("click", async () => {
+          try {
+            await fetch("/api/auth/resend-code", {
+              method: "POST", credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: state._resetEmail, purpose: "reset" }),
+            });
+            showToast("New reset code sent. Check your inbox.");
+          } catch { showToast("Could not resend code."); }
+        });
+
+        // FORGOT — Step 3: save new password
+        $("#resetForm")?.addEventListener("submit", async (e) => {
+          e.preventDefault();
           const pw = $("#resetPassword").value;
           const pwConfirm = $("#resetPasswordConfirm").value;
           const btn = $("#resetSubmit");
-          const err = $("#resetError");
-          err.textContent = "";
-          if (!/^\d{6}$/.test(code)) { err.textContent = "Enter the 6-digit code."; return; }
-          if (pw.length < 12) { err.textContent = "Password must be at least 12 characters."; return; }
-          if (pw !== pwConfirm) { err.textContent = "Passwords do not match."; return; }
-          btn.disabled = true; btn.textContent = "Resetting…";
+          setErr("resetError", "");
+          if (pw.length < 8) { setErr("resetError", "Password must be at least 8 characters."); return; }
+          if (pw.length > 128) { setErr("resetError", "Password must be at most 128 characters."); return; }
+          if (pw !== pwConfirm) { setErr("resetError", "Passwords do not match."); return; }
+          btn.disabled = true; btn.textContent = "Saving…";
           try {
             const res = await fetch("/api/auth/reset-password", {
               method: "POST", credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: state._resetEmail, code, password: pw }),
+              body: JSON.stringify({ email: state._resetEmail, password: pw }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.success) throw new Error(data.message || "Could not reset password.");
-            err.textContent = "Password reset! You can now sign in.";
-            err.classList.add("success");
-            setTimeout(() => showPane("loginPane"), 1500);
+            setErr("resetError", "Password reset! You can now sign in.", "success");
+            setTimeout(() => {
+              showPane("loginPane");
+              $("#loginEmail").value = state._resetEmail || "";
+            }, 1500);
           } catch (err) {
-            err.textContent = err.message || "Could not reset password.";
+            setErr("resetError", err.message || "Could not reset password.");
           } finally {
-            btn.disabled = false; btn.textContent = "Reset password";
+            btn.disabled = false; btn.textContent = "Save new password";
           }
         });
 
         // Sign in button
-        $("#navSignIn")?.addEventListener("click", () => openAuthModal("login"));
+        $("#navSignIn")?.addEventListener("click", () => openAuthModal("loginPane"));
       }
 
       /* ---------- USER MENU ---------- */
@@ -2551,7 +2656,7 @@
 
         myGifts?.addEventListener("click", () => {
           menu.classList.remove("show");
-          if (!state.user) { openAuthModal("login"); return; }
+          if (!state.user) { openAuthModal("loginPane"); return; }
           window.location.href = "./my-gifts.html";
         });
       }
@@ -2570,7 +2675,6 @@
           filtered = filtered.filter(t => t.price === Number(state.filter.price));
         }
 
-        // Sort by price (low → high)
         filtered.sort((a, b) => a.price - b.price);
 
         if (!filtered.length) {
@@ -2615,7 +2719,6 @@
             </article>`;
         }).join('');
 
-        // Bind preview buttons
         $$('.preview-template', grid).forEach(btn => {
           btn.addEventListener('click', () => {
             const tpl = TEMPLATES.find(t => t.id === btn.dataset.id);
@@ -2623,12 +2726,11 @@
           });
         });
 
-        // Bind customise buttons (require auth)
         $$('.customise-btn', grid).forEach(btn => {
           btn.addEventListener('click', (e) => {
             if (!state.user) {
               e.preventDefault();
-              openAuthModal('login', () => { window.location.href = btn.dataset.editorUrl; });
+              openAuthModal('loginPane', () => { window.location.href = btn.dataset.editorUrl; });
             }
           });
         });
@@ -2655,7 +2757,6 @@
 
         $$('.plan-btn').forEach(btn => {
           btn.addEventListener('click', () => {
-            // Filter by plan price
             const price = btn.dataset.price;
             $$('#priceFilterBar .filter-btn').forEach(b => {
               b.classList.toggle('active', b.dataset.filter === price);
@@ -2701,7 +2802,7 @@
           if (!state.user) {
             e.preventDefault();
             closePreview();
-            openAuthModal('login', () => { window.location.href = customizeBtn.dataset.editorUrl || customizeBtn.href; });
+            openAuthModal('loginPane', () => { window.location.href = customizeBtn.dataset.editorUrl || customizeBtn.href; });
           }
         });
       }
@@ -2739,7 +2840,6 @@
             </div>`).join('');
         }
 
-        // Update rating summary
         const count = state.reviews.length;
         const avg = count ? (state.reviews.reduce((s, r) => s + (r.stars || 5), 0) / count).toFixed(1) : 0;
         $("#avgRating").textContent = avg;
@@ -2758,7 +2858,6 @@
       }
 
       function initReviews() {
-        // Star input
         $$('#starInput button').forEach(btn => {
           btn.addEventListener('click', () => {
             state.selectedStar = Number(btn.dataset.star);
@@ -2768,23 +2867,21 @@
           });
         });
 
-        // Submit review
         $("#submitReview")?.addEventListener('click', async () => {
           const text = $("#reviewText").value.trim();
-          const err = $("#reviewError");
-          err.textContent = "";
+          setErr("reviewError", "");
 
           if (!state.user) {
-            err.textContent = "Please sign in to write a review.";
-            openAuthModal('login', () => {});
+            setErr("reviewError", "Please sign in to write a review.");
+            openAuthModal('loginPane', () => {});
             return;
           }
           if (!state.selectedStar) {
-            err.textContent = "Please select a star rating.";
+            setErr("reviewError", "Please select a star rating.");
             return;
           }
           if (text.length < 10) {
-            err.textContent = "Review must be at least 10 characters.";
+            setErr("reviewError", "Review must be at least 10 characters.");
             return;
           }
           try {
@@ -2798,11 +2895,10 @@
             $("#reviewText").value = "";
             state.selectedStar = 0;
             $$('#starInput button').forEach(b => b.classList.remove('active'));
-            err.textContent = "Thank you! Your review has been posted.";
-            err.classList.add('success');
+            setErr("reviewError", "Thank you! Your review has been posted.", "success");
             await loadReviews();
           } catch (err2) {
-            err.textContent = err2.message || "Could not submit review.";
+            setErr("reviewError", err2.message || "Could not submit review.");
           }
         });
       }
@@ -2909,10 +3005,8 @@
         initReviews();
         initReveal();
 
-        // Render templates immediately with local data
         renderTemplates();
 
-        // Load remote data
         const user = await fetchUser();
         if (user) state.user = user;
         updateAuthUI();
@@ -2921,10 +3015,9 @@
         await loadStats();
         setTimeout(animateStats, 500);
 
-        // Check URL params
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("login") === "required" && !user) {
-          openAuthModal("login");
+          openAuthModal("loginPane");
         }
       }
 
