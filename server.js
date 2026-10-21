@@ -1,4 +1,4 @@
-﻿/* =========================================================
+﻿﻿/* =========================================================
    NIVA SERVER — Complete Production-Ready Version
    Light Theme · Email Verification · Password Reset
    Reviews · Stats · Payment Gating · Contact
@@ -11,6 +11,7 @@
    - Reset: email → OTP sent → verify OTP → set new password
 
    EMAIL: Resend API (RESEND_API_KEY + RESEND_FROM_EMAIL)
+   PAYMENTS: Razorpay (auto-detected) or mock mode
    ========================================================= */
 
 require("dotenv").config();
@@ -18,6 +19,7 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const crypto = require("crypto");
+const fs = require("fs");
 const { Pool } = require("pg");
 const session = require("express-session");
 const connectPgSimple = require("connect-pg-simple");
@@ -186,7 +188,6 @@ function isValidEmail(email) {
   return typeof email === "string" && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// Password: 8–128 characters
 function isValidPassword(pw) {
   return typeof pw === "string" && pw.length >= 8 && pw.length <= 128;
 }
@@ -406,7 +407,6 @@ async function runMigrations() {
       );
     `);
 
-    /* ---------- drafts ---------- */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.drafts (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -420,7 +420,6 @@ async function runMigrations() {
     `);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_drafts_user ON app.drafts (user_id, updated_at DESC);`);
 
-    /* ---------- wishlist ---------- */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.wishlist (
         id BIGSERIAL PRIMARY KEY,
@@ -1007,15 +1006,13 @@ const ALLOWED_TEMPLATE_IDS = new Set([
   "loveletter",
 ]);
 
-// FIXED: prices now match each template's config.json "price"
 const TEMPLATE_PRICES = {
-  "eternal-love": 299,
+  "eternal-love": 599,
   "love-proposal": 599,
   "birthday-magic": 299,
   "loveletter": 39,
 };
 
-// ~1 GB encrypted envelope cap.
 const MAX_ENVELOPE_BYTES = 1024 * 1024 * 1024;
 
 function isValidPublicId(value) {
@@ -1054,7 +1051,6 @@ function validateEncryptedEnvelope(envelope) {
   } catch { return false; }
 }
 
-// Create gift (payment already verified via /api/payments/confirm or /verify)
 app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
   try {
     const { templateId, envelope, orderId } = req.body || {};
@@ -1069,7 +1065,6 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
 
     const expectedPrice = TEMPLATE_PRICES[templateId] ?? 299;
 
-    // Verify a paid order exists for this user + amount
     if (orderId) {
       const payCheck = await pool.query(
         `SELECT id, amount_inr FROM app.payments
@@ -1111,7 +1106,6 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
 
     const gift = result.rows[0];
 
-    // Clean up any saved draft for this template once published
     await pool.query(
       `DELETE FROM app.drafts WHERE user_id = $1 AND template_id = $2`,
       [req.session.userId, templateId]
@@ -1447,6 +1441,7 @@ try {
   console.log("💳 Payments: Mock mode (razorpay package not installed)");
 }
 
+/* 19a. CREATE ORDER */
 app.post("/api/payments/create-order", requireAuthenticated, async (req, res, next) => {
   try {
     const { templateId } = req.body || {};
@@ -1464,7 +1459,12 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
         [req.session.userId, amount, orderId]
       );
       return res.json({
-        success: true, orderId, amount, currency: "INR", templateId, mock: true,
+        success: true,
+        orderId,
+        amount,
+        currency: "INR",
+        templateId,
+        mock: true,
       });
     }
 
@@ -1482,17 +1482,38 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
     );
 
     res.json({
-      success: true, orderId: order.id, amount, currency: "INR",
-      templateId, keyId: process.env.RAZORPAY_KEY_ID,
+      success: true,
+      orderId: order.id,
+      amount,
+      currency: "INR",
+      templateId,
+      keyId: process.env.RAZORPAY_KEY_ID,
+      mock: false,
     });
   } catch (err) { next(err); }
 });
 
+/* 19b. CONFIRM (mock mode only — production uses /verify) */
 app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) => {
   try {
     const { orderId, paymentId } = req.body || {};
     if (!orderId) {
       return res.status(400).json({ success: false, message: "Missing order ID." });
+    }
+
+    const orderCheck = await pool.query(
+      `SELECT provider FROM app.payments
+       WHERE provider_order_id = $1 AND user_id = $2 LIMIT 1`,
+      [orderId, req.session.userId]
+    );
+    if (!orderCheck.rows.length) {
+      return res.status(404).json({ success: false, message: "Order not found." });
+    }
+    if (orderCheck.rows[0].provider !== "mock") {
+      return res.status(400).json({
+        success: false,
+        message: "Use /api/payments/verify for real payments.",
+      });
     }
 
     const result = await pool.query(
@@ -1511,6 +1532,7 @@ app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) =
   } catch (err) { next(err); }
 });
 
+/* 19c. VERIFY (Razorpay HMAC) */
 app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) => {
   try {
     const { orderId, paymentId, signature } = req.body || {};
@@ -1543,154 +1565,153 @@ app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) =>
   } catch (err) { next(err); }
 });
 
-/* =========================================================
-   19b. NIVA BOT — integrated, weighted, intent-aware
-   ========================================================= */
+/* 19d. PUBLISH (atomic: confirm payment + insert gift + return link) */
+app.post("/api/gifts/publish", requireAuthenticated, async (req, res, next) => {
+  const client = await pool.connect();
+  try {
+    const { templateId, envelope, orderId, paymentId, signature } = req.body || {};
 
+    if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
+      return res.status(400).json({ success: false, message: "Unsupported gift template." });
+    }
+    if (!validateEncryptedEnvelope(envelope)) {
+      return res.status(400).json({ success: false, message: "Invalid encrypted gift payload." });
+    }
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: "Missing payment order." });
+    }
+
+    const expectedPrice = TEMPLATE_PRICES[templateId] ?? 299;
+
+    await client.query("BEGIN");
+
+    const payResult = await client.query(
+      `SELECT id, amount_inr, status, provider
+       FROM app.payments
+       WHERE provider_order_id = $1 AND user_id = $2
+       FOR UPDATE`,
+      [orderId, req.session.userId]
+    );
+
+    if (!payResult.rows.length) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ success: false, message: "Payment order not found." });
+    }
+
+    const pay = payResult.rows[0];
+
+    if (pay.status !== "paid") {
+      if (pay.provider === "mock") {
+        await client.query(
+          `UPDATE app.payments
+           SET status = 'paid', provider_payment_id = $1
+           WHERE id = $2`,
+          [paymentId || "mock_" + Date.now(), pay.id]
+        );
+      } else {
+        if (!paymentId || !signature) {
+          await client.query("ROLLBACK");
+          return res.status(400).json({ success: false, message: "Missing payment details." });
+        }
+        const expectedSignature = crypto
+          .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+          .update(`${orderId}|${paymentId}`)
+          .digest("hex");
+        if (expectedSignature !== signature) {
+          await client.query("ROLLBACK");
+          return res.status(400).json({ success: false, message: "Invalid payment signature." });
+        }
+        await client.query(
+          `UPDATE app.payments
+           SET status = 'paid', provider_payment_id = $1
+           WHERE id = $2`,
+          [paymentId, pay.id]
+        );
+      }
+    }
+
+    if (Number(pay.amount_inr) !== expectedPrice) {
+      await client.query("ROLLBACK");
+      return res.status(402).json({
+        success: false,
+        message: `Paid amount ₹${pay.amount_inr} does not match template price ₹${expectedPrice}.`,
+      });
+    }
+
+    const encryptedPayload = Buffer.from(JSON.stringify(envelope), "utf8");
+    if (encryptedPayload.length > MAX_ENVELOPE_BYTES) {
+      await client.query("ROLLBACK");
+      return res.status(413).json({ success: false, message: "The encrypted gift is too large." });
+    }
+
+    const publicId = crypto.randomBytes(24).toString("base64url");
+
+    const giftResult = await client.query(
+      `INSERT INTO app.gifts
+        (owner_user_id, public_id, template_id, status,
+         encrypted_payload, gift_password_hash,
+         created_at, updated_at, published_at,
+         paid, amount_inr, published)
+       VALUES ($1, $2, $3, 'published', $4, NULL, NOW(), NOW(), NOW(),
+               TRUE, $5, TRUE)
+       RETURNING public_id, template_id, status, created_at`,
+      [req.session.userId, publicId, templateId, encryptedPayload, expectedPrice]
+    );
+
+    const gift = giftResult.rows[0];
+
+    await client.query(
+      `DELETE FROM app.drafts WHERE user_id = $1 AND template_id = $2`,
+      [req.session.userId, templateId]
+    );
+
+    await client.query("COMMIT");
+
+    res.status(201).json({
+      success: true,
+      gift: {
+        publicId: gift.public_id,
+        templateId: gift.template_id,
+        status: gift.status,
+        createdAt: gift.created_at,
+        url: "/g/" + gift.public_id,
+      },
+    });
+  } catch (err) {
+    try { await client.query("ROLLBACK"); } catch {}
+    next(err);
+  } finally {
+    client.release();
+  }
+});
+
+/* =========================================================
+   19e. NIVA BOT
+   ========================================================= */
 const BOT_KNOWLEDGE = [
-  {
-    id: "about",
-    tag: "About",
-    kw: ["what is niva","about niva","about","explain niva","what is this","what do you do"],
-    a: "NIVA is a place to create beautiful personalised digital gifts — love letters, proposals, birthday surprises and more. Pick a template, add your words, photos and music, then share a private password-protected link with someone special. ✦",
-    next: ["Pricing?","How to create a gift?","Is it private?"],
-  },
-  {
-    id: "pricing",
-    tag: "Pricing",
-    kw: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"],
-    a: "Our gifts:\n• Love Letter — ₹39\n• Eternal Love — ₹299\n• Birthday Magic — ₹299\n• Love Proposal — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
-    next: ["What is the Love Letter?","How to create a gift?","Templates"],
-  },
-  {
-    id: "special-letter",
-    tag: "Love Letter",
-    kw: ["special letter","love letter","loveletter","39","letter only","single letter","cheap","cheapest"],
-    a: "The Love Letter is our sweetest little gift at just ₹39 💌\n\nTwo handwritten-style love letter pages, sealed with a beautiful envelope-opening animation. You'll find it in the templates grid.",
-    next: ["Pricing?","How to create a gift?"],
-  },
-  {
-    id: "templates",
-    tag: "Templates",
-    kw: ["template","templates","design","designs","theme","options","what can i make","kinds","types"],
-    a: "We have 4 templates right now:\n✦ Eternal Love (₹299)\n✦ Love Proposal (₹599)\n✦ Birthday Magic (₹299)\n✦ Love Letter (₹39)\n\nNew templates are added regularly.",
-    next: ["Pricing?","How to create a gift?"],
-  },
-  {
-    id: "howto",
-    tag: "How to create",
-    kw: ["how to create","how do i make","make a gift","create gift","start","begin","steps","how does it work"],
-    a: "Making a gift is easy:\n\n1. Pick a template\n2. Sign in (I can help — say \"sign up\")\n3. Fill in your words & photos — live preview updates as you type\n4. Set a gift password and pay\n5. Share the private link ♥",
-    next: ["Sign up","Pricing?","Is it private?"],
-  },
-  {
-    id: "privacy",
-    tag: "Privacy",
-    kw: ["password","private","secure","encrypt","security","safe","is it private","data"],
-    a: "Your gift is encrypted in your browser with AES-256-GCM before it ever reaches our server. 🔒\n\n• PBKDF2 key derivation (310,000 iterations)\n• Only ciphertext + metadata is stored\n• Recipient needs the password you set\n• We never see your gift content",
-    next: ["How does the recipient open it?","Sign up"],
-  },
-  {
-    id: "payment",
-    tag: "Payment",
-    kw: ["payment","pay","razorpay","upi","card","how to pay","checkout","billing"],
-    a: "Payments are handled securely by Razorpay — UPI, cards, netbanking.\n\nYou only pay once, at the moment you publish a gift. Drafting & previewing is free.",
-    next: ["Refunds?","Sign up"],
-  },
-  {
-    id: "account",
-    tag: "Account",
-    kw: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password"],
-    a: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• sign up — to create a new account\n• sign in — to log in\n• forgot password — to reset",
-    next: ["Sign up","Sign in","Forgot password"],
-  },
-  {
-    id: "mygifts",
-    tag: "My Gifts",
-    kw: ["my gifts","my gifts page","drafts","wishlist","saved","saved gifts","account page"],
-    a: "Head to My Gifts from the home page. You'll find three tabs:\n• Drafts — works in progress\n• Published — finished gifts + shareable links\n• Wishlist — templates you've hearted ♥",
-    next: ["Delete a gift?","What is a draft?"],
-  },
-  {
-    id: "draft",
-    tag: "Drafts",
-    kw: ["draft","drafts","save","autosave","unsaved","work in progress"],
-    a: "Drafts autosave to your browser as you type, and to your account within a couple of seconds. Hit \"Save Draft\" any time to force a cloud save.",
-    next: ["My Gifts?","How to create a gift?"],
-  },
-  {
-    id: "delete",
-    tag: "Delete",
-    kw: ["delete","remove","unpublish","stop link","take down","erase"],
-    a: "Go to My Gifts → Published and tap Delete on any gift. The private link stops working immediately.",
-    next: ["Refunds?","My Gifts?"],
-  },
-  {
-    id: "upload",
-    tag: "Uploads",
-    kw: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"],
-    a: "You can upload photos, video and audio — up to 1 GB total per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB\n\n(Note: The Love Letter template is text-only — no photos.)",
-    next: ["How to create a gift?","Is it private?"],
-  },
-  {
-    id: "refund",
-    tag: "Refunds",
-    kw: ["refund","cancel","return","money back","chargeback"],
-    a: "Gifts are digital and shareable, so we don't offer refunds after publishing. If something fails before publishing, you won't be charged.",
-    next: ["Payment?","Contact support?"],
-  },
-  {
-    id: "contact",
-    tag: "Contact",
-    kw: ["contact","support","help","email you","reach you","talk to someone"],
-    a: "Reach us through the Privacy & Safety page. Until then, I (NIVI!) can answer most questions. Just ask! 💕",
-    next: ["Pricing?","Sign up"],
-  },
-  {
-    id: "recipient",
-    tag: "Recipient",
-    kw: ["recipient","open gift","receive","someone sent","unlock","unlock gift"],
-    a: "Your recipient opens the private link, enters the gift password you gave them, and the gift unlocks in their browser. ✦\n\nThe decryption happens locally — even we can't see it without the password.",
-    next: ["Is it private?","Password?"],
-  },
-  {
-    id: "editor",
-    tag: "Editor",
-    kw: ["editor","edit","live preview","preview","customise","customize","how does the editor"],
-    a: "The editor is where your gift comes alive.\n\n• Left side: your words, photos, music\n• Right side: live preview updating as you type\n• Top right: Save Draft\n• Bottom: set gift password & publish",
-    next: ["How to create a gift?","Save draft"],
-  },
+  { id: "about", tag: "About", kw: ["what is niva","about niva","about","explain niva","what is this","what do you do"], a: "NIVA is a place to create beautiful personalised digital gifts — love letters, proposals, birthday surprises and more. Pick a template, add your words, photos and music, then share a private password-protected link with someone special. ✦", next: ["Pricing?","How to create a gift?","Is it private?"] },
+  { id: "pricing", tag: "Pricing", kw: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"], a: "Our gifts:\n• Love Letter — ₹39\n• Eternal Love — ₹599\n• Birthday Magic — ₹299\n• Love Proposal — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕", next: ["What is the Love Letter?","How to create a gift?","Templates"] },
+  { id: "special-letter", tag: "Love Letter", kw: ["special letter","love letter","loveletter","39","letter only","single letter","cheap","cheapest"], a: "The Love Letter is our sweetest little gift at just ₹39 💌\n\nTwo handwritten-style love letter pages, sealed with a beautiful envelope-opening animation. You'll find it in the templates grid.", next: ["Pricing?","How to create a gift?"] },
+  { id: "templates", tag: "Templates", kw: ["template","templates","design","designs","theme","options","what can i make","kinds","types"], a: "We have 4 templates right now:\n✦ Eternal Love (₹599)\n✦ Love Proposal (₹599)\n✦ Birthday Magic (₹299)\n✦ Love Letter (₹39)\n\nNew templates are added regularly.", next: ["Pricing?","How to create a gift?"] },
+  { id: "howto", tag: "How to create", kw: ["how to create","how do i make","make a gift","create gift","start","begin","steps","how does it work"], a: "Making a gift is easy:\n\n1. Pick a template\n2. Sign in (I can help — say \"sign up\")\n3. Fill in your words & photos — live preview updates as you type\n4. Set a gift password and pay\n5. Share the private link ♥", next: ["Sign up","Pricing?","Is it private?"] },
+  { id: "privacy", tag: "Privacy", kw: ["password","private","secure","encrypt","security","safe","is it private","data"], a: "Your gift is encrypted in your browser with AES-256-GCM before it ever reaches our server. 🔒\n\n• PBKDF2 key derivation (310,000 iterations)\n• Only ciphertext + metadata is stored\n• Recipient needs the password you set\n• We never see your gift content", next: ["How does the recipient open it?","Sign up"] },
+  { id: "payment", tag: "Payment", kw: ["payment","pay","razorpay","upi","card","how to pay","checkout","billing"], a: "Payments are handled securely by Razorpay — UPI, cards, netbanking.\n\nYou only pay once, at the moment you publish a gift. Drafting & previewing is free.", next: ["Refunds?","Sign up"] },
+  { id: "account", tag: "Account", kw: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password"], a: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• sign up — to create a new account\n• sign in — to log in\n• forgot password — to reset", next: ["Sign up","Sign in","Forgot password"] },
+  { id: "mygifts", tag: "My Gifts", kw: ["my gifts","my gifts page","drafts","wishlist","saved","saved gifts","account page"], a: "Head to My Gifts from the home page. You'll find three tabs:\n• Drafts — works in progress\n• Published — finished gifts + shareable links\n• Wishlist — templates you've hearted ♥", next: ["Delete a gift?","What is a draft?"] },
+  { id: "draft", tag: "Drafts", kw: ["draft","drafts","save","autosave","unsaved","work in progress"], a: "Drafts autosave to your browser as you type, and to your account within a couple of seconds. Hit \"Save Draft\" any time to force a cloud save.", next: ["My Gifts?","How to create a gift?"] },
+  { id: "delete", tag: "Delete", kw: ["delete","remove","unpublish","stop link","take down","erase"], a: "Go to My Gifts → Published and tap Delete on any gift. The private link stops working immediately.", next: ["Refunds?","My Gifts?"] },
+  { id: "upload", tag: "Uploads", kw: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"], a: "You can upload photos, video and audio — up to 1 GB total per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB\n\n(Note: The Love Letter template is text-only — no photos.)", next: ["How to create a gift?","Is it private?"] },
+  { id: "refund", tag: "Refunds", kw: ["refund","cancel","return","money back","chargeback"], a: "Gifts are digital and shareable, so we don't offer refunds after publishing. If something fails before publishing, you won't be charged.", next: ["Payment?","Contact support?"] },
+  { id: "contact", tag: "Contact", kw: ["contact","support","help","email you","reach you","talk to someone"], a: "Reach us through the Privacy & Safety page. Until then, I (NIVI!) can answer most questions. Just ask! 💕", next: ["Pricing?","Sign up"] },
+  { id: "recipient", tag: "Recipient", kw: ["recipient","open gift","receive","someone sent","unlock","unlock gift"], a: "Your recipient opens the private link, enters the gift password you gave them, and the gift unlocks in their browser. ✦\n\nThe decryption happens locally — even we can't see it without the password.", next: ["Is it private?","Password?"] },
+  { id: "editor", tag: "Editor", kw: ["editor","edit","live preview","preview","customise","customize","how does the editor"], a: "The editor is where your gift comes alive.\n\n• Left side: your words, photos, music\n• Right side: live preview updating as you type\n• Top right: Save Draft\n• Bottom: set gift password & publish", next: ["How to create a gift?","Save draft"] },
 ];
 
 const BOT_INTENTS = [
-  {
-    id: "greeting",
-    kw: ["hello","hi","hey","namaste","vanakkam","sup","yo","hola"],
-    answers: [
-      "Hi there! ♥ I'm NIVI — NIVA's little robot guide.",
-      "Hello! ✦ Ask about gifts, pricing, or say \"sign up\" / \"sign in\".",
-      "Hey! 💗 I can help with templates, pricing, or signing in.",
-    ],
-    next: ["What is NIVA?","Pricing?","Sign up","Sign in"],
-  },
-  {
-    id: "thanks",
-    kw: ["thank","thanks","thx","ty","appreciate"],
-    answers: ["Anytime! ♥ ✦","You're welcome! ✦","Happy to help! 💕"],
-    next: ["How to create a gift?","Pricing?"],
-  },
-  {
-    id: "bye",
-    kw: ["bye","goodbye","see you","later","cya"],
-    answers: ["Goodbye! ♥ ✦","See you soon! 💕","Bye! ✦"],
-    next: ["What is NIVA?"],
-  },
-  {
-    id: "whoami",
-    kw: ["who are you","your name","whats your name","what is your name","are you real","nivi"],
-    answers: ["I'm NIVI — NIVA's little robot guide. ✦\n\nI can help you understand NIVA, or even sign you in / sign you up. Just ask! 💗"],
-    next: ["Sign up","Sign in","What is NIVA?"],
-  },
+  { id: "greeting", kw: ["hello","hi","hey","namaste","vanakkam","sup","yo","hola"], answers: ["Hi there! ♥ I'm NIVI — NIVA's little robot guide.","Hello! ✦ Ask about gifts, pricing, or say \"sign up\" / \"sign in\".","Hey! 💗 I can help with templates, pricing, or signing in."], next: ["What is NIVA?","Pricing?","Sign up","Sign in"] },
+  { id: "thanks", kw: ["thank","thanks","thx","ty","appreciate"], answers: ["Anytime! ♥ ✦","You're welcome! ✦","Happy to help! 💕"], next: ["How to create a gift?","Pricing?"] },
+  { id: "bye", kw: ["bye","goodbye","see you","later","cya"], answers: ["Goodbye! ♥ ✦","See you soon! 💕","Bye! ✦"], next: ["What is NIVA?"] },
+  { id: "whoami", kw: ["who are you","your name","whats your name","what is your name","are you real","nivi"], answers: ["I'm NIVI — NIVA's little robot guide. ✦\n\nI can help you understand NIVA, or even sign you in / sign you up. Just ask! 💗"], next: ["Sign up","Sign in","What is NIVA?"] },
 ];
 
 const BOT_FALLBACKS = [
@@ -1699,10 +1720,7 @@ const BOT_FALLBACKS = [
   "I'd love to help — what would you like to know?",
 ];
 
-function botNormalize(s) {
-  return String(s || "").toLowerCase().trim();
-}
-
+function botNormalize(s) { return String(s || "").toLowerCase().trim(); }
 function botScoreEntry(q, entry) {
   let best = 0;
   for (const kw of entry.kw) {
@@ -1712,191 +1730,93 @@ function botScoreEntry(q, entry) {
   }
   return best;
 }
-
 function botMatchIntent(q) {
   for (const intent of BOT_INTENTS) {
     for (const kw of intent.kw) {
-      if (q === kw || q.startsWith(kw + " ") || q.endsWith(" " + kw) || q.includes(kw)) {
-        return intent;
-      }
+      if (q === kw || q.startsWith(kw + " ") || q.endsWith(" " + kw) || q.includes(kw)) return intent;
     }
   }
   return null;
 }
-
 function botRankMatches(q) {
   if (!q) return [];
-  const scored = BOT_KNOWLEDGE
-    .map(e => ({ entry: e, score: botScoreEntry(q, e) }))
-    .filter(x => x.score > 0)
-    .sort((a, b) => b.score - a.score);
+  const scored = BOT_KNOWLEDGE.map(e => ({ entry: e, score: botScoreEntry(q, e) }))
+    .filter(x => x.score > 0).sort((a, b) => b.score - a.score);
   if (!scored.length) return [];
   const top = scored[0].score;
   return scored.filter(x => x.score >= top * 0.7).slice(0, 2);
 }
-
 function botAnswer(message) {
   const q = botNormalize(message);
   if (!q) return { reply: BOT_FALLBACKS[0], next: [] };
-
   const intent = botMatchIntent(q);
   if (intent) {
     const pick = intent.answers[Math.floor(Math.random() * intent.answers.length)];
     return { reply: pick, next: intent.next || [] };
   }
-
   const matches = botRankMatches(q);
   if (matches.length) {
-    if (matches.length === 1) {
-      return { reply: matches[0].entry.a, next: matches[0].entry.next || [] };
-    }
+    if (matches.length === 1) return { reply: matches[0].entry.a, next: matches[0].entry.next || [] };
     const parts = matches.map(m => m.entry.a);
-    return {
-      reply: parts.join("\n\n──\n\n"),
-      next: matches[0].entry.next || [],
-    };
+    return { reply: parts.join("\n\n──\n\n"), next: matches[0].entry.next || [] };
   }
-
-  return {
-    reply: BOT_FALLBACKS[Math.floor(Math.random() * BOT_FALLBACKS.length)],
-    next: ["What is NIVA?","Pricing?","Sign up","Sign in"],
-  };
+  return { reply: BOT_FALLBACKS[Math.floor(Math.random() * BOT_FALLBACKS.length)], next: ["What is NIVA?","Pricing?","Sign up","Sign in"] };
 }
 
 app.post("/api/niva-bot", botLimiter, (req, res) => {
   try {
     const message = req.body?.message;
-
-    if (typeof message !== "string") {
-      return res.status(400).json({ success: false, reply: "Please send a valid message." });
-    }
-    if (message.length > 500) {
-      return res.status(400).json({ success: false, reply: "Please send a shorter message (max 500 characters)." });
-    }
-
+    if (typeof message !== "string") return res.status(400).json({ success: false, reply: "Please send a valid message." });
+    if (message.length > 500) return res.status(400).json({ success: false, reply: "Please send a shorter message (max 500 characters)." });
     const { reply, next } = botAnswer(message);
-    res.json({
-      success: true,
-      reply,
-      next,
-      version: "3.3.0",
-    });
+    res.json({ success: true, reply, next, version: "3.3.0" });
   } catch (err) {
     console.error("Bot error:", err.message);
-    res.status(500).json({
-      success: false,
-      reply: "Oh no, my little brain glitched. Try again in a moment. 🥺",
-      next: [],
-    });
+    res.status(500).json({ success: false, reply: "Oh no, my little brain glitched. Try again in a moment. 🥺", next: [] });
   }
 });
 
 /* ---------- 20. STATIC FILES ---------- */
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(ROOT, "index.html"));
-});
-
-app.get("/privacy.html", (req, res) => {
-  res.sendFile(path.join(ROOT, "privacy.html"));
-});
-
-app.get("/my-gifts.html", requireAuthenticated, (req, res) => {
-  res.sendFile(path.join(ROOT, "my-gifts.html"));
-});
+app.get("/", (req, res) => res.sendFile(path.join(ROOT, "index.html")));
+app.get("/privacy.html", (req, res) => res.sendFile(path.join(ROOT, "privacy.html")));
+app.get("/my-gifts.html", requireAuthenticated, (req, res) => res.sendFile(path.join(ROOT, "my-gifts.html")));
 
 app.get("/g/:publicId", (req, res) => {
   res.set("Cache-Control", "no-store, private, max-age=0");
   res.set("Pragma", "no-cache");
   res.set("X-Content-Type-Options", "nosniff");
-
-  if (!isValidPublicId(req.params.publicId)) {
-    return res.status(404).send("Gift not found.");
-  }
-
+  if (!isValidPublicId(req.params.publicId)) return res.status(404).send("Gift not found.");
   res.sendFile(path.join(ROOT, "public", "recipient.html"));
 });
 
-/* Explicit /templates.js and /nivabot.js — ensures correct MIME type
-   even if a future middleware order changes. */
 app.get("/templates.js", (req, res) => {
   res.type("application/javascript");
   res.sendFile(path.join(ROOT, "templates.js"));
 });
 
-/* ---------- NIVI BOT JAVASCRIPT ---------- */
-
-const fs = require("fs");
-
 app.get("/nivabot.js", (req, res) => {
   const botPath = path.join(ROOT, "nivabot.js");
-
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-
-  console.log("[NIVI] JavaScript requested.");
-
   if (!fs.existsSync(botPath)) {
-    console.error("[NIVI] File missing:", botPath);
-
-    return res.status(404).type("text/plain").send(
-      "NIVI bot file is missing from the server deployment. " +
-      "Please check that nivabot.js exists in the project root."
-    );
+    return res.status(404).type("text/plain").send("NIVI bot file is missing from the server deployment.");
   }
-
   res.type("application/javascript");
-
   res.sendFile(botPath, (err) => {
-    if (err) {
-      console.error("[NIVI] Failed to serve JavaScript:", {
-        message: err.message,
-        code: err.code,
-        status: err.status
-      });
-
-      if (!res.headersSent) {
-        return res.status(500).type("text/plain").send(
-          "NIVI bot could not be loaded. Please check the server logs."
-        );
-      }
-
-      return;
+    if (err && !res.headersSent) {
+      return res.status(500).type("text/plain").send("NIVI bot could not be loaded.");
     }
-
-    console.log("[NIVI] JavaScript served successfully.");
   });
 });
 
-app.use("/editor", express.static(path.join(ROOT, "editor"), {
-  dotfiles: "deny",
-  index: "editor.html",
-}));
-
-app.use("/templates", express.static(path.join(ROOT, "templates"), {
-  dotfiles: "deny",
-  index: false,
-}));
-
-app.use("/public", express.static(path.join(ROOT, "public"), {
-  dotfiles: "deny",
-  index: false,
-}));
-
-app.use("/src", express.static(path.join(ROOT, "src"), {
-  dotfiles: "deny",
-  index: false,
-}));
+app.use("/editor", express.static(path.join(ROOT, "editor"), { dotfiles: "deny", index: "editor.html" }));
+app.use("/templates", express.static(path.join(ROOT, "templates"), { dotfiles: "deny", index: false }));
+app.use("/public", express.static(path.join(ROOT, "public"), { dotfiles: "deny", index: false }));
+app.use("/src", express.static(path.join(ROOT, "src"), { dotfiles: "deny", index: false }));
 
 /* ---------- 21. 404 + ERROR ---------- */
-app.use("/api", (req, res) => {
-  res.status(404).json({ success: false, message: "API endpoint not found." });
-});
-
-app.use((req, res) => {
-  res.status(404).send("Page not found.");
-});
-
+app.use("/api", (req, res) => res.status(404).json({ success: false, message: "API endpoint not found." }));
+app.use((req, res) => res.status(404).send("Page not found."));
 app.use((err, req, res, next) => {
   console.error("NIVA server error:", { message: err.message, code: err.code, stack: err.stack });
   if (res.headersSent) return next(err);
@@ -1919,24 +1839,15 @@ const server = app.listen(PORT, async () => {
 });
 
 let shuttingDown = false;
-
 async function shutdown() {
   if (shuttingDown) return;
   shuttingDown = true;
-
   console.log("\nShutting down…");
-
-  const timeout = setTimeout(() => {
-    console.error("Shutdown timed out.");
-    process.exit(1);
-  }, 10000);
+  const timeout = setTimeout(() => { console.error("Shutdown timed out."); process.exit(1); }, 10000);
   timeout.unref();
-
   server.close(async () => {
     try {
-      await new Promise((resolve, reject) => {
-        sessionStore.close(err => (err ? reject(err) : resolve()));
-      });
+      await new Promise((resolve, reject) => sessionStore.close(err => err ? reject(err) : resolve()));
       await pool.end();
       clearTimeout(timeout);
       console.log("Session store + DB closed.");
