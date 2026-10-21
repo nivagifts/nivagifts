@@ -1828,16 +1828,56 @@ app.get("/g/:publicId", (req, res) => {
   res.sendFile(path.join(ROOT, "public", "recipient.html"));
 });
 
-/* Explicit /templates.js and /niva-bot.js — ensures correct MIME type
+/* Explicit /templates.js and /nivabot.js — ensures correct MIME type
    even if a future middleware order changes. */
 app.get("/templates.js", (req, res) => {
   res.type("application/javascript");
   res.sendFile(path.join(ROOT, "templates.js"));
 });
 
-app.get("/niva-bot.js", (req, res) => {
+/* ---------- NIVI BOT JAVASCRIPT — FIXED ---------- */
+
+const fs = require("fs");
+
+app.get("/nivabot.js", (req, res) => {
+  const botPath = path.join(ROOT, "nivabot.js");
+
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
+  console.log("[NIVI] JavaScript requested.");
+
+  // Check whether the file exists in the deployed application.
+  if (!fs.existsSync(botPath)) {
+    console.error("[NIVI] File missing:", botPath);
+
+    return res.status(404).type("text/plain").send(
+      "NIVI bot file is missing from the server deployment. " +
+      "Please check that nivabot.js exists in the project root."
+    );
+  }
+
   res.type("application/javascript");
-  res.sendFile(path.join(ROOT, "niva-bot.js"));
+
+  res.sendFile(botPath, (err) => {
+    if (err) {
+      console.error("[NIVI] Failed to serve JavaScript:", {
+        message: err.message,
+        code: err.code,
+        status: err.status
+      });
+
+      if (!res.headersSent) {
+        return res.status(500).type("text/plain").send(
+          "NIVI bot could not be loaded. Please check the server logs."
+        );
+      }
+
+      return;
+    }
+
+    console.log("[NIVI] JavaScript served successfully.");
+  });
 });
 
 app.use("/editor", express.static(path.join(ROOT, "editor"), {
