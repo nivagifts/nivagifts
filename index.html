@@ -115,6 +115,7 @@
     .auth-user-menu button:hover { background: var(--panel-2); }
     .auth-user-menu .menu-divider { height: 1px; background: var(--line-soft); margin: 6px 4px; }
     .auth-user-menu .menu-email { padding: 8px 14px 4px; font-size: 0.7rem; color: var(--text-muted); overflow-wrap: anywhere; }
+    .auth-user-menu .menu-username { padding: 2px 14px 6px; font-size: 0.82rem; font-weight: 600; color: var(--text); }
 
     .modal-overlay { position: fixed; inset: 0; z-index: 150; background: rgba(61, 44, 46, 0.4); backdrop-filter: blur(8px); display: grid; place-items: center; padding: 20px; overflow-y: auto; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s var(--ease), visibility 0.3s var(--ease); }
     .modal-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
@@ -133,6 +134,11 @@
     .modal-error:empty { display: none; }
     .modal-error.success { border-color: rgba(107, 142, 107, 0.3); background: rgba(107, 142, 107, 0.06); color: var(--success); }
     .modal-link { display: block; width: 100%; margin-top: 16px; padding: 8px; color: var(--rose-deep); font-size: 0.82rem; font-weight: 500; text-align: center; }
+
+    .username-status { margin-top: 6px; font-size: 0.72rem; min-height: 16px; padding-left: 4px; }
+    .username-status.ok { color: var(--success); }
+    .username-status.bad { color: var(--danger); }
+    .username-status.checking { color: var(--text-muted); font-style: italic; }
 
     /* HERO */
     .hero { position: relative; padding: 60px 0 80px; overflow: hidden; }
@@ -336,7 +342,26 @@
     .preview-head strong { font: 500 1rem var(--display); display: block; }
     .preview-head small { font: 0.7rem var(--sans); color: var(--text-2); }
     .preview-close { width: 40px; height: 40px; border: 1px solid var(--line-rose); border-radius: 50%; background: var(--panel-2); font-size: 1.2rem; }
-    .preview-frame { border: 0; flex: 1; width: 100%; background: var(--bg-cream); min-height: 0; }
+    .preview-frame { border: 0; flex: 1; width: 100%; background: var(--bg-cream); min-height: 0; position: relative; }
+    .preview-frame-wrap { flex: 1; width: 100%; position: relative; min-height: 0; display: flex; }
+    .preview-error {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 32px 24px;
+      background: var(--bg-cream);
+      text-align: center;
+      color: var(--text-2);
+      z-index: 2;
+    }
+    .preview-error.show { display: flex; }
+    .preview-error-icon { font-size: 2.4rem; color: var(--rose); }
+    .preview-error h3 { font: 500 1.1rem var(--display); margin: 0; color: var(--text); }
+    .preview-error p { margin: 0; font-size: 0.8rem; max-width: 380px; font-family: var(--serif); }
+    .preview-error code { background: var(--panel-2); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-family: monospace; color: var(--rose-deep); }
     .preview-foot { display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--line-soft); background: var(--panel); }
     .preview-foot p { font-size: 0.74rem; color: var(--text-2); margin: 0; font-style: italic; font-family: var(--serif); }
     .preview-foot .btn { width: 100%; }
@@ -392,6 +417,7 @@
 
   <!-- USER MENU -->
   <div class="auth-user-menu" id="userMenu" role="menu">
+    <div class="menu-username" id="menuUsername">@user</div>
     <div class="menu-email" id="menuEmail">—</div>
     <div class="menu-divider"></div>
     <button type="button" id="menuMyGifts">My Gifts & Drafts</button>
@@ -407,10 +433,10 @@
 
       <div id="loginPane">
         <h2 id="authTitle">Welcome back</h2>
-        <p>Sign in to continue your gift.</p>
+        <p>Sign in with your email or username.</p>
         <form id="loginForm" novalidate>
-          <label for="loginEmail">Email</label>
-          <input id="loginEmail" type="email" placeholder="you@example.com" required autocomplete="email">
+          <label for="loginEmail">Email or username</label>
+          <input id="loginEmail" type="text" placeholder="you@example.com or username" required autocomplete="username">
           <label for="loginPassword">Password</label>
           <input id="loginPassword" type="password" placeholder="Your password" required autocomplete="current-password">
           <button type="submit" class="modal-submit" id="loginSubmit">Sign in</button>
@@ -422,8 +448,11 @@
 
       <div id="registerPane" hidden>
         <h2>Create your account</h2>
-        <p>Enter your email — we'll send you a verification code.</p>
+        <p>Choose a username and enter your email — we'll send a verification code.</p>
         <form id="registerForm" novalidate>
+          <label for="registerUsername">Username</label>
+          <input id="registerUsername" type="text" placeholder="e.g. aarav_love" required minlength="3" maxlength="30" pattern="[A-Za-z][A-Za-z0-9_.]{2,29}" autocomplete="username">
+          <p class="username-status" id="usernameStatus"></p>
           <label for="registerEmail">Email</label>
           <input id="registerEmail" type="email" placeholder="you@example.com" required autocomplete="email">
           <button type="submit" class="modal-submit" id="registerSubmit">Send verification code</button>
@@ -548,7 +577,7 @@
       <div class="wrap">
         <div class="stats-grid" id="statsGrid">
           <div class="stat-item">
-            <div class="stat-number" data-count="4">0</div>
+            <div class="stat-number" data-count="6">0</div>
             <div class="stat-label">Templates</div>
           </div>
           <div class="stat-item">
@@ -576,7 +605,6 @@
           <p>Browse our gift website designs by category or price. Preview the experience, then customise the one you love.</p>
         </div>
 
-        <!-- FIXED: Removed duplicate "Letters" button, added proper "letter" category -->
         <div class="filter-bar reveal" id="filterBar">
           <button class="filter-btn active" data-filter="all" data-type="category">All</button>
           <button class="filter-btn" data-filter="love" data-type="category">Love</button>
@@ -668,7 +696,7 @@
       </div>
     </section>
 
-    <!-- PRICING (4 cards including ₹39 Special Letter) -->
+    <!-- PRICING -->
     <section class="section" id="pricing">
       <div class="wrap">
         <div class="section-head reveal">
@@ -834,7 +862,14 @@
         </div>
         <button class="preview-close" id="closePreview" aria-label="Close preview">×</button>
       </div>
-      <iframe class="preview-frame" id="previewFrame" title="Gift template preview" loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      <div class="preview-frame-wrap">
+        <iframe class="preview-frame" id="previewFrame" title="Gift template preview" loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        <div class="preview-error" id="previewError">
+          <div class="preview-error-icon">✦</div>
+          <h3>Could not load this template</h3>
+          <p id="previewErrorMessage">The preview could not be loaded. Please try again or verify the template file exists.</p>
+        </div>
+      </div>
       <div class="preview-foot">
         <p>Preview uses sample content. Choose customise to add your own details.</p>
         <a class="btn btn-primary" id="previewCustomize" href="./editor/editor.html">Customise template ↗</a>
@@ -858,8 +893,18 @@
         showToast._t = setTimeout(() => toast.classList.remove("show"), ms);
       }
 
-      // FIXED: loveletter entry — path, category, and editor URL all corrected
       const TEMPLATES = [
+        {
+          id: 'eternal-anniversary',
+          name: 'Eternal Anniversary',
+          category: 'anniversary',
+          price: 599,
+          badge: '💍 ANNIVERSARY SPECIAL',
+          description: 'A romantic seven-chapter journey: hero cover, handwritten letter, story timeline, memory gallery, anniversary countdown, heart-catching game, and a forever finale.',
+          features: ['7-page experience', 'Handwritten letter', 'Story timeline', '10-photo gallery', 'Countdown', 'Heart game'],
+          preview: '/templates/anniversary/eternal-anniversary/template.html',
+          customize: './editor/editor.html?template=eternal-anniversary&category=anniversary',
+        },
         {
           id: 'eternal-love',
           name: 'Eternal Love',
@@ -905,15 +950,26 @@
           customize: './editor/editor.html?template=loveletter&category=letter',
         },
         {
-          id: 'eternal-anniversary',
-          name: 'Eternal Anniversary',
-          category: 'anniversary',
-          price: 599,
-          badge: '💍 ANNIVERSARY SPECIAL',
-          description: 'A romantic seven-chapter journey: hero cover, handwritten letter, story timeline, memory gallery, anniversary countdown, heart-catching game, and a forever finale.',
-          features: ['7-page experience', 'Handwritten letter', 'Story timeline', '10-photo gallery', 'Countdown', 'Heart game'],
-          preview: '/templates/anniversary/eternal-anniversary/template.html',
-          customize: './editor/editor.html?template=eternal-anniversary&category=anniversary',
+          id: 'besties',
+          name: 'Besties',
+          category: 'friendship',
+          price: 299,
+          badge: '💛 FRIENDSHIP SPECIAL',
+          description: 'A playful friendship site — best friend certificate, vibe check quiz, chaos log of memories, inside jokes wall, and a friendship meter. Made for your person.',
+          features: ['Best friend certificate', 'Vibe check quiz', 'Chaos log timeline', '5-photo wall', 'Inside jokes'],
+          preview: '/templates/friedship/besties/template.html',
+          customize: './editor/editor.html?template=besties&category=friendship',
+        },
+        {
+          id: 'memory-box',
+          name: 'Memory Box',
+          category: 'memories',
+          price: 99,
+          badge: '📷 MEMORIES SPECIAL',
+          description: 'A nostalgic 3-page site — floating keepsakes, 5-photo memory album, handwritten letter, and a warm finale. Fully customizable theme & floating items.',
+          features: ['3-page story', '5-photo album', 'Handwritten letter', 'Floating emojis', '8 theme presets'],
+          preview: '/templates/memories/memory-box/template.html',
+          customize: './editor/editor.html?template=memory-box&category=memories',
         },
       ];
 
@@ -925,6 +981,9 @@
         wishlist: new Set(),
         _verifyEmail: "",
         _resetEmail: "",
+        _registerUsername: "",
+        _usernameChecked: false,
+        _usernameAvailable: false,
         templates: TEMPLATES.slice(),
       };
 
@@ -948,26 +1007,34 @@
         } catch {}
       }
 
+      function getDisplayName(user) {
+        if (!user) return "friend";
+        return user.username || user.displayName || (user.email ? user.email.split("@")[0] : "friend");
+      }
+
       function updateAuthUI() {
         const signInBtn = $("#navSignIn");
         const userBtn = $("#navUser");
         const avatar = $("#navAvatar");
         const userName = $("#navUserName");
         const menuEmail = $("#menuEmail");
+        const menuUsername = $("#menuUsername");
 
         if (state.user) {
           const email = state.user.email || "you";
-          const initial = (email[0] || "U").toUpperCase();
-          const display = email.split("@")[0] || "user";
+          const display = getDisplayName(state.user);
+          const initial = (display[0] || "U").toUpperCase();
           if (signInBtn) signInBtn.style.display = "none";
           if (userBtn) userBtn.classList.add("show");
           if (avatar) avatar.textContent = initial;
           if (userName) userName.textContent = display;
           if (menuEmail) menuEmail.textContent = email;
+          if (menuUsername) menuUsername.textContent = "@" + display;
         } else {
           if (signInBtn) signInBtn.style.display = "";
           if (userBtn) userBtn.classList.remove("show");
           if (menuEmail) menuEmail.textContent = "—";
+          if (menuUsername) menuUsername.textContent = "@user";
         }
       }
 
@@ -979,6 +1046,8 @@
         const target = $("#" + id);
         if (target) target.hidden = false;
         $$(".modal-error").forEach(el => { el.textContent = ""; el.classList.remove("success","info"); });
+        const status = $("#usernameStatus");
+        if (status && id !== "registerPane") { status.textContent = ""; status.className = "username-status"; }
         setTimeout(() => target?.querySelector("input")?.focus(), 100);
       }
 
@@ -995,11 +1064,12 @@
         pendingAction = null;
       }
 
-      function handleAuthSuccess(user) {
+      function handleAuthSuccess(user, message) {
         state.user = user;
         updateAuthUI();
         closeAuthModal();
-        showToast("Welcome, " + (user.email?.split("@")[0] || "friend") + " ✦");
+        const display = getDisplayName(user);
+        showToast(message || ("Welcome, @" + display + " ✦"));
         fetchWishlist().then(() => renderTemplates());
         if (pendingAction) {
           const action = pendingAction;
@@ -1016,6 +1086,78 @@
         if (cls) el.classList.add(cls);
       }
 
+      /* ---------- USERNAME VALIDATION (client side) ---------- */
+      function validateUsernameClient(name) {
+        if (!name || typeof name !== "string") return "Please choose a username.";
+        const t = name.trim();
+        if (t.length < 3) return "Username must be at least 3 characters.";
+        if (t.length > 30) return "Username must be at most 30 characters.";
+        if (!/^[A-Za-z]/.test(t)) return "Username must start with a letter.";
+        if (!/^[A-Za-z0-9_.]+$/.test(t)) return "Only letters, numbers, underscore (_) and dot (.) allowed.";
+        return null;
+      }
+
+      let usernameCheckTimer = null;
+      let usernameAbortController = null;
+
+      async function checkUsernameServer(username) {
+        if (usernameAbortController) usernameAbortController.abort();
+        usernameAbortController = new AbortController();
+        try {
+          const res = await fetch("/api/auth/check-username", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username }),
+            signal: usernameAbortController.signal,
+          });
+          const data = await res.json().catch(() => ({}));
+          return data;
+        } catch (err) {
+          if (err.name === "AbortError") return null;
+          return { success: false, available: false, message: "Couldn't check availability. Try again." };
+        }
+      }
+
+      function initUsernameField() {
+        const input = $("#registerUsername");
+        const status = $("#usernameStatus");
+        if (!input || !status) return;
+
+        input.addEventListener("input", () => {
+          clearTimeout(usernameCheckTimer);
+          state._registerUsername = input.value.trim();
+          state._usernameChecked = false;
+          state._usernameAvailable = false;
+
+          const clientError = validateUsernameClient(state._registerUsername);
+          if (clientError) {
+            status.textContent = clientError;
+            status.className = "username-status bad";
+            return;
+          }
+
+          status.textContent = "Checking…";
+          status.className = "username-status checking";
+
+          usernameCheckTimer = setTimeout(async () => {
+            const data = await checkUsernameServer(state._registerUsername);
+            if (!data) return; // aborted
+            if (data.success && data.available) {
+              status.textContent = "✓ @" + state._registerUsername + " is available!";
+              status.className = "username-status ok";
+              state._usernameChecked = true;
+              state._usernameAvailable = true;
+            } else {
+              status.textContent = data.message || "Username is not available.";
+              status.className = "username-status bad";
+              state._usernameChecked = true;
+              state._usernameAvailable = false;
+            }
+          }, 450);
+        });
+      }
+
       function initAuth() {
         const modal = $("#authModal");
         const closeBtn = $("#authClose");
@@ -1029,41 +1171,43 @@
         $("#backToLogin2")?.addEventListener("click", () => showPane("loginPane"));
         $("#backToLogin3")?.addEventListener("click", () => showPane("loginPane"));
 
+        initUsernameField();
+
         $("#loginForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
-          const email = $("#loginEmail").value.trim();
+          const identifier = $("#loginEmail").value.trim();
           const password = $("#loginPassword").value;
           const btn = $("#loginSubmit");
           setErr("loginError", "");
-          if (!email) { setErr("loginError", "Please enter your email."); return; }
+          if (!identifier) { setErr("loginError", "Please enter your email or username."); return; }
           if (!password) { setErr("loginError", "Please enter your password."); return; }
           btn.disabled = true; btn.textContent = "Signing in…";
           try {
             const res = await fetch("/api/auth/login", {
               method: "POST", credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password }),
+              body: JSON.stringify({ email: identifier, password }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.success) {
               if (data.needsVerification) {
-                state._verifyEmail = data.email || email;
+                state._verifyEmail = data.email || identifier;
                 $("#verifyEmailDisplay").textContent = state._verifyEmail;
                 setErr("loginError", data.message || "Please verify your email.");
                 setTimeout(() => showPane("verifyPane"), 800);
                 return;
               }
               if (data.needsPasswordSetup) {
-                state._verifyEmail = data.email || email;
+                state._verifyEmail = data.email || identifier;
                 setErr("loginError", data.message || "Please complete your account setup.");
                 setTimeout(() => showPane(data.needsVerification ? "verifyPane" : "setPasswordPane"), 800);
                 return;
               }
-              throw new Error(data.message || "Incorrect email or password.");
+              throw new Error(data.message || "Incorrect email/username or password.");
             }
-            handleAuthSuccess(data.user);
+            handleAuthSuccess(data.user, "Welcome back, @" + getDisplayName(data.user) + " ✦");
           } catch (err) {
-            setErr("loginError", err.message || "Incorrect email or password.");
+            setErr("loginError", err.message || "Incorrect email/username or password.");
           } finally {
             btn.disabled = false; btn.textContent = "Sign in";
           }
@@ -1071,19 +1215,53 @@
 
         $("#registerForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
+          const username = $("#registerUsername").value.trim();
           const email = $("#registerEmail").value.trim();
           const btn = $("#registerSubmit");
           setErr("registerError", "");
+
+          const unameError = validateUsernameClient(username);
+          if (unameError) { setErr("registerError", unameError); return; }
           if (!email) { setErr("registerError", "Please enter your email."); return; }
+
+          // If not yet verified, verify right now
+          if (!state._usernameChecked || !state._usernameAvailable) {
+            btn.disabled = true; btn.textContent = "Checking username…";
+            const data = await checkUsernameServer(username);
+            btn.disabled = false; btn.textContent = "Send verification code";
+            if (!data) { setErr("registerError", "Couldn't check username. Try again."); return; }
+            if (!data.success || !data.available) {
+              const status = $("#usernameStatus");
+              if (status) {
+                status.textContent = data.message || "Username is not available.";
+                status.className = "username-status bad";
+              }
+              setErr("registerError", data.message || "That username is already taken.");
+              return;
+            }
+            state._usernameChecked = true;
+            state._usernameAvailable = true;
+          }
+
           btn.disabled = true; btn.textContent = "Sending…";
           try {
             const res = await fetch("/api/auth/register", {
               method: "POST", credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email }),
+              body: JSON.stringify({ email, username }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.success) {
+              if (data.usernameTaken) {
+                const status = $("#usernameStatus");
+                if (status) {
+                  status.textContent = "That username is already taken. Please pick another.";
+                  status.className = "username-status bad";
+                }
+                state._usernameAvailable = false;
+                state._usernameChecked = false;
+                throw new Error("That username is already taken. Please pick another.");
+              }
               if (data.alreadyRegistered) {
                 setErr("registerError", data.message || "Account already exists.");
                 return;
@@ -1091,6 +1269,7 @@
               throw new Error(data.message || "Could not start registration.");
             }
             state._verifyEmail = data.email || email;
+            state._registerUsername = data.username || username;
             $("#verifyEmailDisplay").textContent = state._verifyEmail;
             showPane("verifyPane");
             showToast("Check your email for the verification code.");
@@ -1116,8 +1295,11 @@
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.success) throw new Error(data.message || "Verification failed.");
-            if (data.hasPassword && data.authenticated) handleAuthSuccess(data.user);
-            else showPane("setPasswordPane");
+            if (data.hasPassword && data.authenticated) {
+              handleAuthSuccess(data.user, "Welcome back, @" + getDisplayName(data.user) + " ✦");
+            } else {
+              showPane("setPasswordPane");
+            }
           } catch (err) {
             setErr("verifyError", err.message || "Could not verify.");
           } finally {
@@ -1154,7 +1336,7 @@
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.success) throw new Error(data.message || "Could not set password.");
-            handleAuthSuccess(data.user);
+            handleAuthSuccess(data.user, "You're all set, @" + getDisplayName(data.user) + "! Welcome to NIVA ♥");
           } catch (err) {
             setErr("setPasswordError", err.message || "Could not set password.");
           } finally {
@@ -1279,7 +1461,7 @@
           updateAuthUI();
           renderTemplates();
           menu.classList.remove("show");
-          showToast("Signed out.");
+          showToast("Signed out. Come back soon ♥");
         });
 
         myGifts?.addEventListener("click", () => {
@@ -1450,11 +1632,37 @@
       function openPreview(template) {
         const modal = $("#previewModal");
         const frame = $("#previewFrame");
+        const errBox = $("#previewError");
+        const errMsg = $("#previewErrorMessage");
         if (!modal || !frame) return;
+
         $("#previewTitle").textContent = template.name + ' — Preview';
         const customizeBtn = $("#previewCustomize");
         customizeBtn.href = template.customize;
         customizeBtn.dataset.editorUrl = template.customize;
+
+        if (errBox) errBox.classList.remove("show");
+
+        frame.onload = function () {
+          try {
+            const doc = frame.contentDocument;
+            if (!doc || !doc.body || doc.body.innerHTML.trim() === "") {
+              if (errMsg) {
+                errMsg.innerHTML = 'The template rendered an empty page. Check that the file exists at <code>' + esc(template.preview) + '</code>.';
+              }
+              if (errBox) errBox.classList.add("show");
+            }
+          } catch (e) {
+            // Cross-origin iframe — can't inspect; assume loaded (sandbox allow-same-origin should prevent this)
+          }
+        };
+        frame.onerror = function () {
+          if (errMsg) {
+            errMsg.innerHTML = 'Could not load <code>' + esc(template.preview) + '</code>. Make sure the file exists in your <code>templates/</code> folder.';
+          }
+          if (errBox) errBox.classList.add("show");
+        };
+
         frame.src = template.preview;
         modal.classList.add("open");
         document.body.style.overflow = "hidden";
@@ -1658,23 +1866,33 @@
           const registry = window.NivaTemplates.getAll();
           if (!Array.isArray(registry) || !registry.length) return;
 
+          // LOCAL entries always win — registry only ADDS new ones
           const localById = new Map(TEMPLATES.map(t => [t.id, t]));
-          const merged = registry.map(r => {
-            const local = localById.get(r.id) || {};
-            return {
-              id: r.id,
-              name: r.name || local.name || r.id,
-              category: r.category || local.category || 'love',
-              price: local.price || r.price || 299,
-              badge: local.badge || '✦ DIGITAL GIFT',
-              description: r.description || local.description || '',
-              features: local.features || ['Personalised gift', 'Private link'],
-              preview: r.templatePath || local.preview,
-              customize: local.customize || `./editor/editor.html?template=${encodeURIComponent(r.id)}&category=${encodeURIComponent(r.category || 'love')}`,
-            };
+          const merged = [];
+          const seen = new Set();
+
+          // Start with local entries (these take precedence)
+          TEMPLATES.forEach(t => {
+            merged.push(t);
+            seen.add(t.id);
           });
-          const regIds = new Set(registry.map(r => r.id));
-          TEMPLATES.forEach(t => { if (!regIds.has(t.id)) merged.push(t); });
+
+          // Add registry-only entries (not already in local list)
+          registry.forEach(r => {
+            if (seen.has(r.id)) return; // local wins
+            seen.add(r.id);
+            merged.push({
+              id: r.id,
+              name: r.name || r.id,
+              category: r.category || 'love',
+              price: r.price || 299,
+              badge: '✦ DIGITAL GIFT',
+              description: r.description || '',
+              features: ['Personalised gift', 'Private link'],
+              preview: r.templatePath,
+              customize: `./editor/editor.html?template=${encodeURIComponent(r.id)}&category=${encodeURIComponent(r.category || 'love')}`,
+            });
+          });
 
           state.templates = merged;
           renderTemplates();
@@ -1683,6 +1901,7 @@
         }
       }
 
+      /* NIVI can dispatch nivi:login with a user object */
       document.addEventListener("nivi:login", (e) => {
         const user = e.detail;
         if (!user) return;
@@ -1690,7 +1909,7 @@
         updateAuthUI();
         closeAuthModal();
         fetchWishlist().then(() => renderTemplates());
-        showToast("Welcome, " + (user.email?.split("@")[0] || "friend") + " ✦");
+        showToast("Welcome, @" + getDisplayName(user) + " ✦");
       });
 
       async function boot() {
@@ -1706,7 +1925,13 @@
         initReveal();
 
         const user = await fetchUser();
-        if (user) state.user = user;
+        if (user) {
+          state.user = user;
+          // Warm welcome back
+          setTimeout(() => {
+            showToast("Welcome back, @" + getDisplayName(user) + " ✦");
+          }, 500);
+        }
         updateAuthUI();
         await fetchWishlist();
         renderTemplates();
@@ -1729,7 +1954,6 @@
     })();
   </script>
 
-  <!-- NIVI — global assistant -->
   <script src="/nivabot.js" defer></script>
 </body>
 </html>

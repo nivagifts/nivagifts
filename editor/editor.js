@@ -22,6 +22,8 @@ const TEMPLATE_PRICES = {
   "birthday-magic": 299,
   "loveletter": 39,
   "eternal-anniversary": 599,
+  "besties": 299,
+  "memory-box": 99,
 };
 
 const TEMPLATE_PLAN_NAMES = {

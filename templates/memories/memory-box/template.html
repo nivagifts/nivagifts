@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>A Memory Box — For You</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="googleFontsLink" rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap">
+
+<style>
+/* ==================== THEME VARIABLES (overridden by JS) ==================== */
+:root {
+  --bg: #fdf7ed;
+  --bg-alt: #faf0e0;
+  --bg-card: #fffdf8;
+  --accent: #d99b6c;
+  --accent-dark: #b6753f;
+  --accent-soft: #f5ddc1;
+  --ink: #3d2e22;
+  --muted: #8c7767;
+  --line: #ecdcc4;
+  --gold: #c9a961;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-script: 'Caveat', cursive;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  transition: background-color .5s ease, color .5s ease;
+}
+
+button { font: inherit; cursor: pointer; touch-action: manipulation; border: 0; background: none; color: inherit; }
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+
+/* ==================== PAGE SYSTEM ==================== */
+.page {
+  display: none;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 60px 20px;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  position: relative;
+  overflow-x: hidden;
+}
+.page.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: pageFadeIn .9s ease both;
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.inner {
+  width: min(100%, 880px);
+  margin: auto;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* ==================== FLOATING ITEMS LAYER ==================== */
+.floating-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  transition: opacity .4s ease;
+}
+.floating-item {
+  position: absolute;
+  font-size: 24px;
+  opacity: 0;
+  user-select: none;
+  animation: floatUp linear infinite;
+  will-change: transform, opacity;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(10vh) rotate(0deg) scale(0.85); opacity: 0; }
+  10%  { opacity: 0.65; }
+  50%  { transform: translateY(-45vh) rotate(180deg) scale(1.05); opacity: 0.85; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(-105vh) rotate(360deg) scale(0.9); opacity: 0; }
+}
+
+/* ==================== BUTTONS ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 32px;
+  min-height: 48px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+  transition: .3s ease;
+  margin-top: 26px;
+}
+.btn:hover {
+  background: var(--accent-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--accent-dark);
+  border: 1.5px solid var(--accent);
+  box-shadow: none;
+}
+.btn.ghost:hover { background: var(--accent); color: #fff; }
+
+/* ==================== PAGE 1 — COVER ==================== */
+#page1 {
+  background:
+    radial-gradient(circle at 15% 20%, var(--accent-soft) 0, transparent 45%),
+    radial-gradient(circle at 85% 80%, var(--bg-alt) 0, transparent 55%),
+    var(--bg);
+}
+
+.cover-name {
+  font-family: var(--font-script);
+  font-size: clamp(56px, 14vw, 108px);
+  color: var(--accent-dark);
+  line-height: 1;
+  margin-bottom: 12px;
+  position: relative;
+  display: inline-block;
+  animation: nameGlow 3s ease-in-out infinite;
+}
+@keyframes nameGlow {
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50% { text-shadow: 0 0 30px rgba(217, 155, 108, 0.35); }
+}
+
+.cover-eyebrow {
+  font-size: 12px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.cover-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(28px, 6vw, 44px);
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+.cover-subtitle {
+  max-width: 500px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+/* Envelope decoration */
+.cover-envelope {
+  width: 140px;
+  height: 100px;
+  margin: 0 auto 36px;
+  position: relative;
+  cursor: pointer;
+  animation: envelopeFloat 4s ease-in-out infinite;
+  transition: transform .3s ease;
+}
+.cover-envelope:hover { transform: scale(1.05) rotate(-2deg); }
+@keyframes envelopeFloat {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+.envelope-body {
+  position: absolute;
+  inset: 15px 0 0;
+  height: 80px;
+  background: linear-gradient(145deg, var(--accent), var(--accent-dark));
+  border-radius: 6px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+.envelope-flap {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 70px solid transparent;
+  border-right: 70px solid transparent;
+  border-top: 50px solid var(--accent-soft);
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.1));
+  z-index: 3;
+}
+.envelope-heart {
+  position: absolute;
+  inset: 40px 0 auto;
+  text-align: center;
+  font-size: 24px;
+  color: #fff;
+  z-index: 4;
+  animation: heartBeat 2s infinite;
+}
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.15); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
+}
+
+/* ==================== PAGE 2 — LETTER + ALBUM ==================== */
+#page2 {
+  background: linear-gradient(180deg, var(--bg), var(--bg-alt));
+  justify-content: flex-start;
+  padding-top: 70px;
+}
+
+/* Letter */
+.letter {
+  width: min(100%, 640px);
+  margin: 0 auto 60px;
+  padding: clamp(30px, 6vw, 60px);
+  background:
+    repeating-linear-gradient(transparent 0 33px, rgba(150, 120, 80, 0.08) 34px),
+    var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 22px 60px rgba(90, 70, 50, 0.14);
+  transform: rotate(-0.5deg);
+  text-align: left;
+  position: relative;
+  transition: transform .3s ease;
+}
+.letter::before {
+  content: "✿";
+  position: absolute;
+  top: 16px;
+  right: 22px;
+  font-size: 26px;
+  color: var(--accent);
+  opacity: 0.6;
+}
+.letter-title {
+  font-family: var(--font-script);
+  font-size: clamp(32px, 6vw, 46px);
+  color: var(--accent-dark);
+  text-align: center;
+  margin-bottom: 26px;
+}
+.letter h3 {
+  font-family: var(--font-script);
+  font-size: clamp(24px, 5vw, 32px);
+  color: var(--accent-dark);
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.letter p {
+  font-family: var(--font-script);
+  font-size: clamp(20px, 4.4vw, 25px);
+  line-height: 1.8;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+.letter .sig {
+  text-align: right;
+  color: var(--accent-dark);
+  margin-top: 12px;
+  font-size: clamp(22px, 5vw, 28px);
+  font-family: var(--font-script);
+}
+.letter .sig small {
+  display: block;
+  font-size: 1.05em;
+}
+
+/* Album */
+.album-head { margin-bottom: 36px; text-align: center; }
+.album-eyebrow {
+  font-size: 11px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.album-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(30px, 6vw, 48px);
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.album-subtitle { color: var(--muted); font-size: 14px; }
+
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 4px;
+}
+@media (min-width: 640px) {
+  .album-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+}
+
+.album-photo {
+  background: var(--bg-card);
+  padding: 8px 8px 44px;
+  box-shadow: 0 10px 26px rgba(90, 70, 50, 0.14);
+  transform: rotate(var(--rot, 0deg));
+  transition: transform .35s ease, box-shadow .35s ease;
+  cursor: pointer;
+  position: relative;
+  border-radius: 3px;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+}
+.album-photo:nth-child(1) { --rot: -3deg; }
+.album-photo:nth-child(2) { --rot: 2.5deg; }
+.album-photo:nth-child(3) { --rot: -2deg; }
+.album-photo:nth-child(4) { --rot: 3deg; }
+.album-photo:nth-child(5) { --rot: -1.5deg; }
+.album-photo:hover {
+  transform: rotate(0) translateY(-6px) scale(1.03);
+  box-shadow: 0 20px 40px rgba(90, 70, 50, 0.22);
+  z-index: 3;
+}
+.album-photo-img {
+  flex: 1;
+  min-height: 0;
+  border-radius: 2px;
+  background: var(--accent-soft);
+  overflow: hidden;
+}
+.album-photo-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.album-photo-img.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: var(--accent);
+  opacity: 0.5;
+}
+.album-photo-cap {
+  position: absolute;
+  bottom: 10px;
+  left: 8px;
+  right: 8px;
+  text-align: center;
+  font-family: var(--font-script);
+  font-size: 18px;
+  color: var(--accent-dark);
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* ==================== PAGE 3 — FINALE ==================== */
+#page3 {
+  background:
+    radial-gradient(circle at 50% 100%, var(--accent-soft) 0, transparent 60%),
+    radial-gradient(circle at 50% 0%, var(--bg-alt) 0, transparent 55%),
+    var(--bg);
+  text-align: center;
+}
+
+.finale-icon {
+  font-size: clamp(64px, 14vw, 92px);
+  margin-bottom: 20px;
+  display: block;
+  animation: heartBeat 2s infinite;
+}
+.finale-title {
+  font-family: var(--font-script);
+  font-size: clamp(44px, 10vw, 82px);
+  color: var(--accent-dark);
+  line-height: 1.05;
+  margin-bottom: 24px;
+}
+.finale-body {
+  max-width: 520px;
+  margin: 0 auto 20px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+.finale-footer {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--accent);
+  margin-top: 22px;
+}
+
+/* Keepsake recap */
+.keepsakes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 32px auto 8px;
+  max-width: 500px;
+}
+.keepsake {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  box-shadow: 0 6px 16px rgba(90, 70, 50, 0.12);
+  animation: keepsakeIn .6s ease both;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes keepsakeIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ==================== LIGHTBOX ==================== */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 20, 10, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  cursor: zoom-out;
+}
+.lightbox.open { display: flex; animation: pageFadeIn .3s ease; }
+.lightbox img {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  color: #fff;
+  font-size: 36px;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 2;
+}
+
+/* ==================== CONFETTI ==================== */
+.confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 300;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 600px) {
+  .page { padding: 40px 16px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+  .letter { transform: none; padding: 28px 22px; }
+  .album-grid { gap: 12px; }
+  .album-photo { padding: 6px 6px 36px; }
+  .album-photo-cap { font-size: 15px; bottom: 8px; }
+  .keepsake { width: 54px; height: 54px; font-size: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .floating-item { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- FLOATING LAYER -->
+<div class="floating-layer" id="floatingLayer" aria-hidden="true"></div>
+
+<!-- ==================== PAGE 1 — COVER ==================== -->
+<section class="page active" id="page1">
+  <div class="inner">
+    <div class="cover-envelope" onclick="goTo(2)">
+      <div class="envelope-body"></div>
+      <div class="envelope-flap"></div>
+      <div class="envelope-heart">💌</div>
+    </div>
+
+    <p class="cover-eyebrow" id="coverEyebrow"></p>
+    <div class="cover-name" id="coverRecipientName"></div>
+    <h1 class="cover-title" id="coverTitle"></h1>
+    <p class="cover-subtitle" id="coverSubtitle"></p>
+
+    <button class="btn" onclick="goTo(2)">
+      <span id="coverButtonText"></span> →
+    </button>
+  </div>
+</section>
+
+<!-- ==================== PAGE 2 — LETTER + ALBUM ==================== -->
+<section class="page" id="page2">
+  <div class="inner">
+    <!-- Letter -->
+    <div class="letter">
+      <div class="letter-title" id="letterTitle"></div>
+      <h3 id="letterGreeting"></h3>
+      <div id="letterParagraphs"></div>
+      <p class="sig">
+        <span id="letterSignature"></span>
+        <small id="letterSignatureName"></small>
+      </p>
+    </div>
+
+    <!-- Album -->
+    <div class="album-head">
+      <p class="album-eyebrow">The Album</p>
+      <h2 class="album-title" id="albumTitle"></h2>
+      <p class="album-subtitle" id="albumSubtitle"></p>
+    </div>
+    <div class="album-grid" id="albumGrid"></div>
+
+    <div style="text-align:center;width:100%">
+      <button class="btn ghost" onclick="goTo(3)">One last thing →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== PAGE 3 — FINALE ==================== -->
+<section class="page" id="page3">
+  <div class="inner">
+    <span class="finale-icon">💛</span>
+    <p class="album-eyebrow">The Keepsake</p>
+    <h2 class="finale-title" id="finalTitle"></h2>
+    <p class="finale-body" id="finalBody"></p>
+    <p class="finale-footer" id="finalFooter"></p>
+
+    <div class="keepsakes" id="keepsakes"></div>
+
+    <button class="btn ghost" onclick="restartAll()">
+      <span id="finalButtonText"></span>
+    </button>
+  </div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" type="button" onclick="closeLightbox(event)" aria-label="Close">×</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let CONFIG = null;
+let currentPage = 1;
+
+/* ============================================================
+   THEME PRESETS
+   ============================================================ */
+const THEME_PRESETS = {
+  "warm-cream": {
+    bg: "#fdf7ed", bgAlt: "#faf0e0", bgCard: "#fffdf8",
+    accent: "#d99b6c", accentDark: "#b6753f", accentSoft: "#f5ddc1",
+    ink: "#3d2e22", muted: "#8c7767", line: "#ecdcc4", gold: "#c9a961"
+  },
+  "lavender-dream": {
+    bg: "#f7f3fc", bgAlt: "#efe7f8", bgCard: "#fffdfe",
+    accent: "#a888d0", accentDark: "#7a5ba8", accentSoft: "#e4d8f3",
+    ink: "#3d2f4d", muted: "#8a7b98", line: "#e4d6f2", gold: "#c9a961"
+  },
+  "sage-garden": {
+    bg: "#f5f9f2", bgAlt: "#eaf2e3", bgCard: "#fdfefb",
+    accent: "#7fa466", accentDark: "#587a44", accentSoft: "#d8e6ca",
+    ink: "#2f3d28", muted: "#6e7f65", line: "#dbe8cf", gold: "#b89968"
+  },
+  "peach-sunset": {
+    bg: "#fff5ee", bgAlt: "#ffe5d4", bgCard: "#fffcf8",
+    accent: "#f0854b", accentDark: "#c65f26", accentSoft: "#ffd9bd",
+    ink: "#4a2e1c", muted: "#956e55", line: "#f5d8c0", gold: "#d9a441"
+  },
+  "ocean-breeze": {
+    bg: "#f2f9fc", bgAlt: "#e0eff7", bgCard: "#fcfdfe",
+    accent: "#6a95b8", accentDark: "#476c8a", accentSoft: "#d1e0ed",
+    ink: "#273b4b", muted: "#64809a", line: "#d3e4ef", gold: "#c9a961"
+  },
+  "rose-gold": {
+    bg: "#fdf5f6", bgAlt: "#fae8e8", bgCard: "#fffcfc",
+    accent: "#d4878e", accentDark: "#a85f68", accentSoft: "#f5d5d7",
+    ink: "#3d2c2e", muted: "#96787a", line: "#f0d5d6", gold: "#c9a961"
+  },
+  "midnight-blue": {
+    bg: "#1a1f2e", bgAlt: "#232a3d", bgCard: "#2a3247",
+    accent: "#8facd9", accentDark: "#c9d6e8", accentSoft: "#3a4560",
+    ink: "#e8ecf3", muted: "#98a5bd", line: "#3a4560", gold: "#d4a456"
+  },
+  "forest-green": {
+    bg: "#f0f5ef", bgAlt: "#e2ebe0", bgCard: "#fcfdfb",
+    accent: "#5d8a4a", accentDark: "#3d6030", accentSoft: "#c9dbc2",
+    ink: "#243021", muted: "#5f7560", line: "#d4e2ce", gold: "#b89968"
+  }
+};
+
+/* ============================================================
+   FONT PRESETS
+   ============================================================ */
+const FONT_PRESETS = {
+  "classic": {
+    link: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap",
+    display: "'Playfair Display', Georgia, serif",
+    script: "'Caveat', cursive",
+    body: "'Inter', system-ui, sans-serif"
+  },
+  "modern": {
+    link: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Caveat:wght@500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap",
+    display: "'Fraunces', Georgia, serif",
+    script: "'Caveat', cursive",
+    body: "'Nunito', system-ui, sans-serif"
+  },
+  "elegant": {
+    link: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Dancing+Script:wght@500;600;700&family=Lato:wght@300;400;700&display=swap",
+    display: "'Cormorant Garamond', Georgia, serif",
+    script: "'Dancing Script', cursive",
+    body: "'Lato', system-ui, sans-serif"
+  },
+  "playful": {
+    link: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap",
+    display: "'Poppins', system-ui, sans-serif",
+    script: "'Pacifico', cursive",
+    body: "'Quicksand', system-ui, sans-serif"
+  }
+};
+
+/* ============================================================
+   DEFAULTS
+   ============================================================ */
+function defaults() {
+  return {
+    recipientName: "Amma",
+    senderName: "Aarav",
+    occasion: "Your 60th birthday",
+    year: "2025",
+    coverEyebrow: "A little memory box for",
+    coverTitle: "For You",
+    coverSubtitle: "Some memories are too precious to forget. I've collected a few of my favourites here — just for you.",
+    coverButton: "Open the memory box",
+    themeMode: "warm-cream",
+    accentColor: "",
+    bgTone: "",
+    fontStyle: "classic",
+    floatingItems: "📷 ❤️ 🌸 ☕ 🎵",
+    floatingCount: "12",
+    floatingSpeed: "gentle",
+    letterTitle: "A letter for you",
+    letterGreeting: "Dear Amma,",
+    letterBody: "I've been thinking about all the small moments we've shared — the morning tea you always made a little too sweet, the way you hummed while doing the dishes, the stories you told me that I never got tired of hearing.\n\nLooking back, I realise how much of who I am today comes from you. Every kindness I show, every meal I cook, every silly song I remember — it all started with you.\n\nThis little memory box is my way of saying: I remember. I always will. And I'm so grateful.",
+    letterSignature: "With all my love,",
+    letterSignatureName: "Aarav",
+    albumTitle: "Moments I Keep",
+    albumSubtitle: "Five little pieces of forever",
+    photos: [],
+    photoCaptions: [
+      "The old house",
+      "Your famous tea",
+      "That laugh I'll never forget",
+      "The day we made everything",
+      "Always in my heart"
+    ],
+    finalTitle: "Always, in Every Memory",
+    finalBody: "Some people shape our lives in ways we don't fully understand until much later. You are one of them. Every memory I keep, I keep because of you.",
+    finalFooter: "With love, always ♡",
+    finalButton: "Replay our story ↻"
+  };
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function setText(id, v) {
+  const el = document.getElementById(id);
+  if (el && v != null) el.textContent = v;
+}
+
+/* ============================================================
+   THEME
+   ============================================================ */
+function applyTheme(cfg) {
+  const preset = THEME_PRESETS[cfg.themeMode] || THEME_PRESETS["warm-cream"];
+  const root = document.documentElement.style;
+
+  root.setProperty("--bg", cfg.bgTone || preset.bg);
+  root.setProperty("--bg-alt", preset.bgAlt);
+  root.setProperty("--bg-card", preset.bgCard);
+  root.setProperty("--accent", cfg.accentColor || preset.accent);
+  root.setProperty("--accent-dark", preset.accentDark);
+  root.setProperty("--accent-soft", preset.accentSoft);
+  root.setProperty("--ink", preset.ink);
+  root.setProperty("--muted", preset.muted);
+  root.setProperty("--line", preset.line);
+  root.setProperty("--gold", preset.gold);
+}
+
+/* ============================================================
+   FONTS
+   ============================================================ */
+function applyFonts(cfg) {
+  const preset = FONT_PRESETS[cfg.fontStyle] || FONT_PRESETS["classic"];
+  const link = document.getElementById("googleFontsLink");
+  if (link && link.href !== preset.link) link.href = preset.link;
+
+  const root = document.documentElement.style;
+  root.setProperty("--font-display", preset.display);
+  root.setProperty("--font-script", preset.script);
+  root.setProperty("--font-body", preset.body);
+}
+
+/* ============================================================
+   FLOATING ITEMS
+   ============================================================ */
+function buildFloating(cfg) {
+  const layer = document.getElementById("floatingLayer");
+  if (!layer) return;
+  layer.innerHTML = "";
+
+  const emojis = String(cfg.floatingItems || "📷 ❤️ 🌸")
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!emojis.length) return;
+
+  const count = Math.max(4, Math.min(40, parseInt(cfg.floatingCount) || 12));
+  const speedMap = {
+    slow: [14, 22],
+    gentle: [10, 16],
+    lively: [6, 12]
+  };
+  const [minDur, maxDur] = speedMap[cfg.floatingSpeed] || speedMap.gentle;
+
+  // Pause animation on dark theme for readability
+  if (cfg.themeMode === "midnight-blue") {
+    layer.style.opacity = "0.35";
+  } else {
+    layer.style.opacity = "1";
+  }
+
+  for (let i = 0; i < count; i++) {
+    const emoji = emojis[i % emojis.length];
+    const el = document.createElement("div");
+    el.className = "floating-item";
+    el.textContent = emoji;
+    el.style.left = (Math.random() * 100) + "%";
+    el.style.bottom = "-30px";
+    el.style.fontSize = (16 + Math.random() * 18) + "px";
+    const dur = minDur + Math.random() * (maxDur - minDur);
+    el.style.animationDuration = dur + "s";
+    el.style.animationDelay = (-Math.random() * dur) + "s";
+    layer.appendChild(el);
+  }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(cfg) {
+  applyTheme(cfg);
+  applyFonts(cfg);
+
+  // Cover
+  setText("coverEyebrow", cfg.coverEyebrow);
+  setText("coverRecipientName", cfg.recipientName);
+  setText("coverTitle", cfg.coverTitle);
+  setText("coverSubtitle", cfg.coverSubtitle);
+  setText("coverButtonText", cfg.coverButton);
+
+  // Letter
+  setText("letterTitle", cfg.letterTitle);
+  setText("letterGreeting", cfg.letterGreeting);
+  setText("letterSignature", cfg.letterSignature);
+  setText("letterSignatureName", cfg.letterSignatureName);
+  const lp = document.getElementById("letterParagraphs");
+  lp.innerHTML = "";
+  String(cfg.letterBody || "").split(/\n\s*\n/).forEach(t => {
+    if (!t.trim()) return;
+    const p = document.createElement("p");
+    p.textContent = t;
+    lp.appendChild(p);
+  });
+
+  // Album
+  setText("albumTitle", cfg.albumTitle);
+  setText("albumSubtitle", cfg.albumSubtitle);
+  buildAlbum(cfg.photos || [], cfg.photoCaptions || []);
+
+  // Finale
+  setText("finalTitle", cfg.finalTitle);
+  setText("finalBody", cfg.finalBody);
+  setText("finalFooter", cfg.finalFooter);
+  setText("finalButtonText", cfg.finalButton);
+
+  buildKeepsakes(cfg.floatingItems || "📷 ❤️ 🌸");
+  buildFloating(cfg);
+}
+
+/* ============================================================
+   ALBUM
+   ============================================================ */
+function buildAlbum(photos, captions) {
+  const grid = document.getElementById("albumGrid");
+  grid.innerHTML = "";
+
+  const list = photos.slice(0, 5);
+
+  for (let i = 0; i < 5; i++) {
+    const src = list[i];
+    const cap = captions[i] || "";
+
+    const card = document.createElement("div");
+    card.className = "album-photo";
+
+    const imgWrap = document.createElement("div");
+    imgWrap.className = "album-photo-img";
+
+    if (src) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = cap || "Memory";
+      img.loading = "lazy";
+      img.onerror = function () {
+        imgWrap.classList.add("placeholder");
+        imgWrap.textContent = "✿";
+        this.remove();
+      };
+      img.addEventListener("click", () => openLightbox(src));
+      imgWrap.appendChild(img);
+    } else {
+      imgWrap.classList.add("placeholder");
+      imgWrap.textContent = "✿";
+    }
+
+    const capEl = document.createElement("div");
+    capEl.className = "album-photo-cap";
+    capEl.textContent = cap;
+
+    card.appendChild(imgWrap);
+    card.appendChild(capEl);
+    grid.appendChild(card);
+  }
+}
+
+/* ============================================================
+   KEEPSAKES (final page icons)
+   ============================================================ */
+function buildKeepsakes(itemsStr) {
+  const wrap = document.getElementById("keepsakes");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+
+  const items = String(itemsStr || "📷 ❤️ 🌸 ☕ 🎵").split(/\s+/).filter(Boolean).slice(0, 6);
+  items.forEach((emoji, i) => {
+    const el = document.createElement("div");
+    el.className = "keepsake";
+    el.textContent = emoji;
+    el.style.setProperty("--delay", (i * 0.1) + "s");
+    wrap.appendChild(el);
+  });
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goTo(n) {
+  if (n === currentPage) return;
+  const cur = document.getElementById("page" + currentPage);
+  const next = document.getElementById("page" + n);
+  if (!next) return;
+  cur.classList.remove("active");
+  next.classList.add("active");
+  currentPage = n;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (n === 3) celebrate();
+}
+
+/* ============================================================
+   LIGHTBOX
+   ============================================================ */
+function openLightbox(src) {
+  const lb = document.getElementById("lightbox");
+  const img = document.getElementById("lightboxImg");
+  if (!lb || !img) return;
+  img.src = src;
+  lb.classList.add("open");
+}
+function closeLightbox(e) {
+  if (e && e.target && e.target.tagName === "IMG" && e.target.id !== "lightboxImg") return;
+  const lb = document.getElementById("lightbox");
+  if (lb) lb.classList.remove("open");
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeLightbox();
+});
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+function celebrate() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const emojis = String(CONFIG?.floatingItems || "💛 ⭐ ✿")
+    .split(/\s+/).filter(Boolean);
+  if (!emojis.length) emojis.push("💛");
+
+  for (let i = 0; i < 22; i++) {
+    const c = document.createElement("span");
+    c.className = "confetti";
+    c.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    c.style.left = Math.random() * 100 + "%";
+    c.style.top = "-20px";
+    c.style.fontSize = (16 + Math.random() * 14) + "px";
+    c.style.animationDuration = (2.5 + Math.random() * 3) + "s";
+    c.style.animationDelay = (Math.random() * 1.5) + "s";
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 6000);
+  }
+}
+
+/* ============================================================
+   RESTART
+   ============================================================ */
+function restartAll() {
+  goTo(1);
+}
+
+/* ============================================================
+   NORMALIZE
+   ============================================================ */
+function normalizeArrays(cfg) {
+  const toArr = (v, fallback) => {
+    if (Array.isArray(v)) return v.filter(x => x != null && String(x).trim() !== "");
+    if (typeof v === "string") return v.split("\n").map(s => s.trim()).filter(Boolean);
+    return fallback;
+  };
+  const def = defaults();
+  cfg.photos = Array.isArray(cfg.photos) ? cfg.photos : [];
+  cfg.photoCaptions = toArr(cfg.photoCaptions, def.photoCaptions);
+  return cfg;
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function boot() {
+  CONFIG = defaults();
+  render(CONFIG);
+
+  // Fetch config.json
+  fetch("config.json", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : null)
+    .then(json => {
+      if (!json) return;
+      CONFIG = normalizeArrays({ ...defaults(), ...json });
+      render(CONFIG);
+    })
+    .catch(() => {});
+
+  // NIVA editor live preview
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin) return;
+    const msg = event.data || {};
+
+    if (msg.type === "NIVA_PREVIEW_UPDATE" && msg.data) {
+      CONFIG = normalizeArrays({ ...defaults(), ...msg.data });
+      render(CONFIG);
+    }
+
+    if (msg.type === "NIVA_PREVIEW_PING") {
+      try { window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin); } catch {}
+    }
+  });
+
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin);
+    }
+  } catch {}
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot, { once: true });
+} else {
+  boot();
+}
+</script>
+</body>
+</html>

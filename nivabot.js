@@ -5,17 +5,13 @@
    - No clipping behind the keyboard
    - Errors always SAD (no angry face, no brackets)
    - ✅ Runs ONLY on NIVA's own pages — never on customer gift sites (/g/...)
+   - NEW: Signup now asks for username too, with uniqueness check
+   - NEW: Warm welcome messages on every login / signup
    ========================================================= */
 (() => {
   "use strict";
 
   if (window.__NIVI_LOADED__) return;
-
-  /* =======================================================
-     ✅ FIX: NEVER run on customer gift pages (/g/<id>)
-     Those are the recipient's personal gift websites.
-     NIVI belongs only on NIVA's own pages.
-     ======================================================= */
   if (/^\/g\//.test(location.pathname)) return;
 
   window.__NIVI_LOADED__ = true;
@@ -48,7 +44,7 @@
       next: ["Pricing?","How to create a gift?","Is it private?"] },
     { id: "pricing", tag: "Pricing",
       keywords: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"],
-      answer: "Our gifts:\n• **Love Letter** — ₹39\n• **Eternal Love** — ₹299\n• **Birthday Magic** — ₹299\n• **Love Proposal** — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
+      answer: "Our gifts:\n• **Love Letter** — ₹39\n• **Eternal Love** — ₹599\n• **Birthday Magic** — ₹299\n• **Love Proposal** — ₹599\n• **Eternal Anniversary** — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
       next: ["What is the Love Letter?","How to create a gift?","Templates"] },
     { id: "special-letter", tag: "Love Letter",
       keywords: ["special letter","love letter","loveletter","39","letter only","single letter","cheap","cheapest"],
@@ -56,11 +52,11 @@
       next: ["Pricing?","How to create a gift?"] },
     { id: "templates", tag: "Templates",
       keywords: ["template","templates","design","designs","theme","options","what can i make","kinds","types"],
-      answer: "We have 4 templates right now:\n✦ **Eternal Love** (₹299)\n✦ **Love Proposal** (₹599)\n✦ **Birthday Magic** (₹299)\n✦ **Love Letter** (₹39)",
+      answer: "We have several templates:\n✦ **Eternal Love** (₹599)\n✦ **Love Proposal** (₹599)\n✦ **Birthday Magic** (₹299)\n✦ **Love Letter** (₹39)\n✦ **Eternal Anniversary** (₹599)",
       next: ["Pricing?","How to create a gift?"] },
     { id: "howto", tag: "How to create",
       keywords: ["how to create","how do i make","make a gift","create gift","start","begin","steps","how does it work"],
-      answer: "Making a gift is easy:\n\n1. Pick a template\n2. Sign in (I can help — say **sign up**)\n3. Fill in your words & photos — live preview updates as you type\n4. Set a **gift password** and pay\n5. Share the private link ♥",
+      answer: "Making a gift is easy:\n\n1. Pick a template\n2. Sign up with a **username + email** — I can help right here\n3. Fill in your words & photos — live preview updates as you type\n4. Set a **gift password** and pay\n5. Share the private link ♥",
       next: ["Sign up","Pricing?","Is it private?"] },
     { id: "privacy", tag: "Privacy",
       keywords: ["password","private","secure","encrypt","security","safe","is it private","data"],
@@ -71,8 +67,8 @@
       answer: "Payments are handled securely by **Razorpay** — UPI, cards, netbanking.\n\nYou only pay once, at the moment you publish a gift.",
       next: ["Refunds?","Sign up"] },
     { id: "account", tag: "Account",
-      keywords: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password"],
-      answer: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• **sign up** — to create a new account\n• **sign in** — to log in\n• **forgot password** — to reset",
+      keywords: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password","username"],
+      answer: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• **sign up** — to create a new account (choose a username!)\n• **sign in** — to log in\n• **forgot password** — to reset",
       next: ["Sign up","Sign in","Forgot password"] },
     { id: "mygifts", tag: "My Gifts",
       keywords: ["my gifts","my gifts page","drafts","wishlist","saved","saved gifts","account page"],
@@ -88,7 +84,7 @@
       next: ["Refunds?","My Gifts?"] },
     { id: "upload", tag: "Uploads",
       keywords: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"],
-      answer: "You can upload photos, video and audio — up to **1 GB total** per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB\n\n(Note: the Love Letter template is text-only — no photos.)",
+      answer: "You can upload photos, video and audio — up to **1 GB total** per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB",
       next: ["How to create a gift?","Is it private?"] },
     { id: "refund", tag: "Refunds",
       keywords: ["refund","cancel","return","money back","chargeback"],
@@ -228,6 +224,9 @@
     authData: {},
     user: null,
     loginFailCount: 0,
+    usernameCheckTimer: null,
+    usernameAvailable: false,
+    usernameChecked: false,
   };
 
   /* =======================================================
@@ -279,11 +278,8 @@
       transition: opacity .3s;
     }
     .niva-bot-root.hidden-for-modal {
-      opacity: 0;
-      pointer-events: none;
-      visibility: hidden;
+      opacity: 0; pointer-events: none; visibility: hidden;
     }
-
     .niva-bot-fab {
       width: 82px; height: 94px; position: relative;
       display: grid; place-items: center; padding: 0;
@@ -296,14 +292,12 @@
     .niva-bot-fab:hover { filter: drop-shadow(0 12px 23px rgba(255,126,190,.42)); transform: translateY(-4px); }
     .niva-bot-fab:focus-visible { outline: 2px solid #ff8fbd; outline-offset: 5px; border-radius: 30px; }
     @keyframes niviFloat { 0%,100%{translate:0 0;} 50%{translate:0 -7px;} }
-
     .nivi-character {
       position: relative; width: 68px; height: 73px;
       display: block; transform-origin: 50% 85%;
       transition: transform .25s;
     }
     .niva-bot-fab:hover .nivi-character { transform: rotate(-5deg) scale(1.04); }
-
     .nivi-antenna {
       position: absolute; z-index: 1; width: 3px; height: 12px;
       top: -5px; left: 33px; border-radius: 8px;
@@ -320,7 +314,6 @@
       0%,100%{box-shadow:0 0 8px rgba(255,143,189,.55);}
       50%{box-shadow:0 0 18px rgba(182,154,255,.95);}
     }
-
     .nivi-head {
       position: absolute; top: 7px; left: 4px;
       width: 60px; height: 51px;
@@ -414,7 +407,6 @@
       0%,100%{opacity:.35; transform:translateY(2px) scale(.8);}
       50%{opacity:1; transform:translateY(-5px) scale(1.15);}
     }
-
     .nivi-badge {
       position: absolute; right: 73px; bottom: 27px;
       padding: 8px 11px;
@@ -430,7 +422,6 @@
       to{opacity:1; transform:translateX(0) scale(1);}
     }
     .niva-bot-root.chat-open .nivi-badge { display: none; }
-
     .niva-bot-panel {
       position: absolute; right: 0; bottom: 105px;
       width: min(370px, calc(100vw - 28px));
@@ -446,7 +437,6 @@
       transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .2s, visibility .2s;
     }
     .niva-bot-panel.open { transform: translateY(0) scale(1); opacity: 1; visibility: visible; pointer-events: auto; }
-
     .niva-bot-head {
       position: relative;
       display: flex; align-items: center; gap: 11px;
@@ -476,9 +466,7 @@
       background: linear-gradient(145deg, #f7efff, #ffe5f1);
       border: 1px solid white;
     }
-    .nivi-mini-face {
-      position: absolute; inset: 4px; border-radius: 6px; background: #2c203d;
-    }
+    .nivi-mini-face { position: absolute; inset: 4px; border-radius: 6px; background: #2c203d; }
     .nivi-mini-face::before, .nivi-mini-face::after {
       content: ""; position: absolute; top: 6px;
       width: 4px; height: 5px; border-radius: 50%; background: #ffa9d0;
@@ -517,7 +505,6 @@
       transition: background .2s, transform .2s;
     }
     .niva-bot-close:hover { background: #fff; transform: rotate(90deg); }
-
     .niva-bot-body {
       flex: 1; min-height: 0; overflow-y: auto;
       overscroll-behavior: contain;
@@ -529,7 +516,6 @@
     }
     .niva-bot-body::-webkit-scrollbar { width: 4px; }
     .niva-bot-body::-webkit-scrollbar-thumb { border-radius: 8px; background: #dfc9f1; }
-
     .niva-bot-msg {
       max-width: 87%; padding: 11px 13px;
       border-radius: 16px; font-size: 12.5px; line-height: 1.65;
@@ -566,7 +552,6 @@
     .niva-bot-msg strong { color: #2c1f39; font-weight: 700; }
     .niva-bot-msg.user strong { color: #fff; }
     .nivi-bullet { color: #b69aff; font-weight: 700; }
-
     .niva-bot-quick {
       display: flex; flex-wrap: wrap; gap: 7px;
       padding: 0 13px 12px; flex-shrink: 0;
@@ -582,7 +567,6 @@
     }
     .niva-bot-quick button:hover { background: #f8edff; border-color: #c5a5e8; transform: translateY(-1px); }
     .niva-bot-quick button:disabled { opacity: .5; cursor: wait; }
-
     .niva-bot-input {
       display: flex; align-items: center; gap: 8px;
       padding: 11px 12px; flex-shrink: 0;
@@ -611,7 +595,6 @@
     .niva-bot-input button:hover { transform: scale(1.06); box-shadow: 0 5px 14px rgba(183,139,222,.35); }
     .niva-bot-input button:active { transform: scale(.94); }
     .niva-bot-input button:disabled { opacity: .55; cursor: wait; }
-
     @media (max-width: 480px) {
       .niva-bot-root { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
       .niva-bot-fab { width: 72px; height: 82px; }
@@ -638,9 +621,7 @@
       }
     }
 
-    /* =====================================================
-       MODAL ROBOT AT BOTTOM — MOBILE-FRIENDLY
-       ===================================================== */
+    /* MODAL ROBOT */
     .nivi-modal-root {
       position: relative;
       margin: 14px auto 4px;
@@ -654,11 +635,9 @@
       max-width: 100%;
       font-family: 'DM Sans', system-ui, sans-serif;
     }
-
     .nivi-modal-root .nivi-modal-robot {
       pointer-events: auto;
-      width: 64px;
-      height: 72px;
+      width: 64px; height: 72px;
       position: relative;
       transform-origin: bottom center;
       animation: niviModalFloat 3s ease-in-out infinite;
@@ -669,11 +648,8 @@
       0%,100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
     }
-
-    /* HAPPY face */
     .nivi-modal-root .nivi-modal-robot.happy .nivi-modal-mouth {
-      width: 12px;
-      height: 7px;
+      width: 12px; height: 7px;
       border-bottom: 2.5px solid #ffb5d7;
       border-radius: 0 0 10px 10px;
     }
@@ -681,22 +657,16 @@
       background: #ffb8dd;
       box-shadow: 0 0 12px rgba(255,143,189,.9);
     }
-
-    /* SAD face — soft purple eyes, small frown */
     .nivi-modal-root .nivi-modal-robot.sad .nivi-modal-eye {
       background: #c9a0ff;
       box-shadow: 0 0 10px rgba(201,160,255,.75);
       height: 8px;
     }
     .nivi-modal-root .nivi-modal-robot.sad .nivi-modal-mouth {
-      width: 10px;
-      height: 5px;
-      border-top: 2px solid #d9b8ff;
-      border-bottom: 0;
-      border-radius: 8px 8px 0 0;
-      top: 26px;
+      width: 10px; height: 5px;
+      border-top: 2px solid #d9b8ff; border-bottom: 0;
+      border-radius: 8px 8px 0 0; top: 26px;
     }
-
     .nivi-modal-antenna {
       position: absolute; z-index: 1; width: 3px; height: 10px;
       top: -3px; left: 30px; border-radius: 8px;
@@ -769,7 +739,6 @@
     }
     .nivi-modal-arm.left { left: 10px; transform: rotate(22deg); }
     .nivi-modal-arm.right { right: 10px; transform: rotate(-22deg); }
-
     .nivi-modal-bubble {
       pointer-events: auto;
       background: #fffaff;
@@ -795,13 +764,9 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
     .nivi-modal-bubble::after {
-      content: "";
-      position: absolute;
-      top: -6px;
-      left: 50%;
+      content: ""; position: absolute; top: -6px; left: 50%;
       transform: translateX(-50%) rotate(45deg);
-      width: 12px;
-      height: 12px;
+      width: 12px; height: 12px;
       background: #fffaff;
       border-left: 1px solid #e8c4c8;
       border-top: 1px solid #e8c4c8;
@@ -809,55 +774,37 @@
     }
     .nivi-modal-bubble strong { color: #2c1f39; font-weight: 700; }
     .nivi-modal-bubble .nivi-modal-emotion {
-      display: inline-block;
-      margin-right: 4px;
+      display: inline-block; margin-right: 4px;
     }
-
-    .nivi-modal-bubble.happy {
-      background: #f3fff7;
-      border-color: #b5e6c6;
-    }
+    .nivi-modal-bubble.happy { background: #f3fff7; border-color: #b5e6c6; }
     .nivi-modal-bubble.happy::after {
       background: #f3fff7;
       border-left-color: #b5e6c6;
       border-top-color: #b5e6c6;
     }
-    .nivi-modal-bubble.sad {
-      background: #f7f2ff;
-      border-color: #d9c7f0;
-    }
+    .nivi-modal-bubble.sad { background: #f7f2ff; border-color: #d9c7f0; }
     .nivi-modal-bubble.sad::after {
       background: #f7f2ff;
       border-left-color: #d9c7f0;
       border-top-color: #d9c7f0;
     }
-
     .nivi-modal-bubble .nivi-forgot-btn {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 6px 12px;
-      border-radius: 999px;
+      display: inline-block; margin-top: 8px;
+      padding: 6px 12px; border-radius: 999px;
       border: 1px solid #d9c7f0;
-      background: #fff;
-      color: #b76e79;
-      font-size: 11px;
-      font-weight: 700;
+      background: #fff; color: #b76e79;
+      font-size: 11px; font-weight: 700;
       cursor: pointer;
       transition: background .2s, transform .15s;
     }
     .nivi-modal-bubble .nivi-forgot-btn:hover {
-      background: #f5eeff;
-      transform: translateY(-1px);
+      background: #f5eeff; transform: translateY(-1px);
     }
-
-    /* Tablet and below — bubble can be wider, robot smaller */
     @media (max-width: 640px) {
       .nivi-modal-root { margin: 12px auto 2px; gap: 6px; }
       .nivi-modal-root .nivi-modal-robot { width: 58px; height: 66px; }
       .nivi-modal-bubble { font-size: 12px; padding: 9px 11px; }
     }
-
-    /* Phone — shrink robot further, bubble full-width */
     @media (max-width: 520px) {
       .nivi-modal-root { margin: 10px auto 2px; gap: 6px; }
       .nivi-modal-root .nivi-modal-robot { width: 52px; height: 58px; }
@@ -875,8 +822,6 @@
       .nivi-modal-arm.right { right: 8px; }
       .nivi-modal-bubble { font-size: 11.5px; padding: 8px 10px; }
     }
-
-    /* Extra small phones (iPhone SE etc.) */
     @media (max-width: 400px) {
       .nivi-modal-root { margin: 8px auto 2px; gap: 5px; }
       .nivi-modal-root .nivi-modal-robot { width: 46px; height: 52px; }
@@ -896,25 +841,13 @@
       .nivi-modal-bubble { font-size: 11px; padding: 7px 9px; line-height: 1.5; border-radius: 12px 12px 3px 12px; }
       .nivi-modal-bubble::after { width: 10px; height: 10px; top: -5px; }
     }
-
-    /* When the auth modal is open, ensure the card can grow to fit robot + bubble */
-    .modal-card {
-      position: relative;
-      padding-bottom: 8px;
-    }
+    .modal-card { position: relative; padding-bottom: 8px; }
     @media (max-width: 520px) {
-      .modal-card {
-        padding: 26px 18px calc(8px + env(safe-area-inset-bottom));
-        max-height: calc(100dvh - 40px);
-      }
-      .modal-card .nivi-modal-bubble {
-        margin-top: 2px;
-      }
+      .modal-card { padding: 26px 18px calc(8px + env(safe-area-inset-bottom)); max-height: calc(100dvh - 40px); }
+      .modal-card .nivi-modal-bubble { margin-top: 2px; }
     }
     @media (max-width: 400px) {
-      .modal-card {
-        padding: 22px 16px calc(6px + env(safe-area-inset-bottom));
-      }
+      .modal-card { padding: 22px 16px calc(6px + env(safe-area-inset-bottom)); }
     }
   `;
   document.head.appendChild(style);
@@ -995,7 +928,7 @@
   }
 
   /* =======================================================
-     9. BOTTOM-RIGHT CHAT RENDERING
+     9. CHAT RENDERING
      ======================================================= */
   function addMessage(html, who = "bot") {
     const el = document.createElement("div");
@@ -1035,9 +968,6 @@
     });
   }
 
-  /* =======================================================
-     10. HISTORY
-     ======================================================= */
   const HISTORY_KEY = "nivi-history-v1";
   function saveHistory() {
     try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(state.history.slice(-30))); } catch {}
@@ -1052,7 +982,7 @@
   }
 
   /* =======================================================
-     11. AUTH API WRAPPERS
+     10. AUTH API WRAPPERS
      ======================================================= */
   async function apiCall(path, body) {
     const res = await fetch(path, {
@@ -1064,6 +994,12 @@
     const data = await res.json().catch(() => ({}));
     return { ok: res.ok, status: res.status, data };
   }
+
+  async function checkUsernameAvailable(username) {
+    const { ok, data } = await apiCall("/api/auth/check-username", { username });
+    return { ok, data };
+  }
+
   async function checkCurrentUser() {
     try {
       const res = await fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" });
@@ -1084,13 +1020,28 @@
       const avatar = document.getElementById("navAvatar");
       const userName = document.getElementById("navUserName");
       const menuEmail = document.getElementById("menuEmail");
+      const menuUsername = document.getElementById("menuUsername");
       if (signInBtn) signInBtn.style.display = "none";
       if (userBtn) userBtn.classList.add("show");
-      const email = user.email || "you";
-      if (avatar) avatar.textContent = (email[0] || "U").toUpperCase();
-      if (userName) userName.textContent = email.split("@")[0] || "user";
-      if (menuEmail) menuEmail.textContent = email;
+      const display = user.username || user.displayName || (user.email ? user.email.split("@")[0] : "friend");
+      if (avatar) avatar.textContent = (display[0] || "U").toUpperCase();
+      if (userName) userName.textContent = display;
+      if (menuEmail) menuEmail.textContent = user.email || "";
+      if (menuUsername) menuUsername.textContent = "@" + display;
     } catch {}
+  }
+
+  /* =======================================================
+     11. USERNAME VALIDATION
+     ======================================================= */
+  function validateUsernameClient(name) {
+    if (!name || typeof name !== "string") return "Please choose a username.";
+    const t = name.trim();
+    if (t.length < 3) return "Username must be at least 3 characters.";
+    if (t.length > 30) return "Username must be at most 30 characters.";
+    if (!/^[A-Za-z]/.test(t)) return "Username must start with a letter.";
+    if (!/^[A-Za-z0-9_.]+$/.test(t)) return "Only letters, numbers, underscore (_) and dot (.) allowed.";
+    return null;
   }
 
   /* =======================================================
@@ -1099,15 +1050,17 @@
   function resetAuthFlow() {
     state.authFlow = null;
     state.authData = {};
+    state.usernameAvailable = false;
+    state.usernameChecked = false;
   }
   async function startAuthFlow(kind) {
     resetAuthFlow();
     state.authFlow = kind;
     if (kind === "signup") {
-      addMessage("Let's create your account ♥\n\nFirst, what's your **email**? I'll send you a 6-digit verification code.");
+      addMessage("Let's create your account ♥\n\nFirst, choose a **username** (3–30 characters, letters/numbers/_/.). It'll be yours forever!");
       renderNextChips([]);
     } else if (kind === "signin") {
-      addMessage("Welcome back! ♥\n\nWhat's your **email**?");
+      addMessage("Welcome back! ♥\n\nWhat's your **email or username**?");
       renderNextChips([]);
     } else if (kind === "forgot") {
       addMessage("No worries — I'll help you reset your password. ♥\n\nWhat's your **email**?");
@@ -1120,6 +1073,26 @@
     const flow = state.authFlow;
 
     if (flow === "signup") {
+      if (!state.authData.username) {
+        const uname = q.replace(/^@/, "").trim();
+        const err = validateUsernameClient(uname);
+        if (err) {
+          addMessage("Hmm, " + err.charAt(0).toLowerCase() + err.slice(1) + " 🥺 Try again?");
+          return;
+        }
+        const t = showTyping();
+        const { ok, data } = await checkUsernameAvailable(uname);
+        t.remove();
+        if (!ok || !data.success || !data.available) {
+          addMessage("Oh no — " + (data.message || "that username is already taken.") + " 🥺 Try another?");
+          return;
+        }
+        state.authData.username = uname;
+        state.usernameAvailable = true;
+        state.usernameChecked = true;
+        addMessage("Perfect — **@" + uname + "** is yours! ✦\n\nNow, what's your **email**? I'll send you a 6-digit verification code.");
+        return;
+      }
       if (!state.authData.email) {
         const email = q.toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -1128,9 +1101,19 @@
         }
         state.authData.email = email;
         const t = showTyping();
-        const { ok, data } = await apiCall("/api/auth/register", { email });
+        const { ok, data } = await apiCall("/api/auth/register", {
+          email,
+          username: state.authData.username,
+        });
         t.remove();
         if (!ok || !data.success) {
+          if (data.usernameTaken) {
+            addMessage("Oh! Someone grabbed that username just before us 🥺 Please pick a different one.");
+            state.authData.username = null;
+            state.usernameAvailable = false;
+            state.usernameChecked = false;
+            return;
+          }
           if (data.alreadyRegistered) {
             addMessage("Oh! An account with that email already exists. Try **sign in** instead, or say **forgot password** if you can't remember it. 💗");
             resetAuthFlow();
@@ -1163,7 +1146,8 @@
       if (data.hasPassword && data.authenticated) {
         resetAuthFlow();
         await dispatchLogin(data.user);
-        addMessage("You're in! ♥✦ Welcome back, " + (data.user.email.split("@")[0]) + ".");
+        const display = data.user.username || data.user.email.split("@")[0];
+        addMessage("🎉 You're in, **@" + display + "**! Welcome back ♥✦");
         renderNextChips(["Create a gift", "Pricing?"]);
         return;
       }
@@ -1201,37 +1185,39 @@
       }
       resetAuthFlow();
       await dispatchLogin(data.user);
-      addMessage("You're all set! ♥✦ Welcome to NIVA, " + data.user.email.split("@")[0] + ".\n\nReady to create your first gift?");
+      const display = data.user.username || data.user.email.split("@")[0];
+      addMessage("🎉 You're all set, **@" + display + "**! Welcome to NIVA ♥✦\n\nReady to create your first gift?");
       renderNextChips(["Create a gift", "Pricing?", "Templates"]);
       return;
     }
 
     if (flow === "signin") {
-      if (!state.authData.email) {
-        const email = q.toLowerCase();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          addMessage("That doesn't look like an email. Try **you@example.com** ♡");
+      if (!state.authData.identifier) {
+        if (!q) {
+          addMessage("Please enter your **email or username** ♡");
           return;
         }
-        state.authData.email = email;
+        state.authData.identifier = q;
         addMessage("Got it. Now what's your **password**?");
         return;
       }
       if (!state.authData.password) state.authData.password = q;
       const t = showTyping();
       const { ok, status, data } = await apiCall("/api/auth/login", {
-        email: state.authData.email,
+        email: state.authData.identifier,
         password: state.authData.password,
       });
       t.remove();
       if (!ok || !data.success) {
         if (status === 403 && data.needsVerification) {
           state.authFlow = "verify-email";
-          addMessage("Almost there! Your email isn't verified yet. ♥\n\nI just sent a fresh **6-digit code** to **" + state.authData.email + "**. Type it here when it arrives.");
+          state.authData.email = data.email;
+          addMessage("Almost there! Your email isn't verified yet. ♥\n\nI just sent a fresh **6-digit code** to **" + data.email + "**. Type it here when it arrives.");
           return;
         }
         if (status === 403 && data.needsPasswordSetup) {
           state.authFlow = "set-password";
+          state.authData.email = data.email;
           state.authData.password = null;
           addMessage("Your account exists but has no password yet. Let's set one — choose **8–128 characters**. ♡");
           return;
@@ -1242,7 +1228,8 @@
       }
       resetAuthFlow();
       await dispatchLogin(data.user);
-      addMessage("You're in! ♥✦ Welcome back, " + data.user.email.split("@")[0] + ".\n\nWhat would you like to do?");
+      const display = data.user.username || data.user.email.split("@")[0];
+      addMessage("🎉 Welcome back, **@" + display + "**! ♥✦\n\nWhat would you like to do?");
       renderNextChips(["Create a gift", "My gifts", "Pricing?"]);
       return;
     }
@@ -1374,7 +1361,10 @@
           else addRaw(m.html, "bot");
         });
       } else {
-        const greet = `Hi! ♥ I'm **NIVI** — NIVA's little robot guide.\n\n${PAGE_HINTS[PAGE] || ""}\n\nI can also **sign you up** or **sign you in** right here. Just tell me.`;
+        const loggedIn = state.user
+          ? "♥ Welcome back, **@" + (state.user.username || state.user.displayName || state.user.email?.split("@")[0] || "friend") + "**! "
+          : "";
+        const greet = `Hi! ♥ I'm **NIVI** — NIVA's little robot guide.\n\n${loggedIn}${PAGE_HINTS[PAGE] || ""}\n\nI can also **sign you up** or **sign you in** right here. Just tell me.`;
         addRaw(renderRich(greet), "bot");
         state.history.push({ who: "bot", html: greet });
         saveHistory();
@@ -1399,7 +1389,7 @@
   });
 
   /* =======================================================
-     15. MODAL ROBOT (SAD-ONLY errors, mobile-friendly)
+     15. MODAL ROBOT
      ======================================================= */
   const EMOTIONS = {
     neutral:   { emoji: "♥" },
@@ -1459,7 +1449,6 @@
     modalRobot.classList.remove("happy", "sad");
     if (currentEmotion === "happy") modalRobot.classList.add("happy");
     else if (currentEmotion === "sad") modalRobot.classList.add("sad");
-
     if (modalBubble) {
       modalBubble.classList.remove("happy", "sad");
       if (currentEmotion === "happy" || currentEmotion === "sad") {
@@ -1499,11 +1488,11 @@
   const PANE_GUIDES = {
     loginPane: {
       emotion: "neutral",
-      text: "Hi! I'm NIVI ♥ Sign in here — type your email and password, then tap Sign in. I'll cheer you on!",
+      text: "Hi! I'm NIVI ♥ Sign in here — type your email or username, then your password. I'll cheer you on!",
     },
     registerPane: {
       emotion: "neutral",
-      text: "Let's make you an account ✦ Just enter your email — I'll send you a 6-digit code.",
+      text: "Let's make you an account ✦ First pick a **username** — something you love. Then add your email.",
     },
     verifyPane: {
       emotion: "think",
@@ -1536,13 +1525,20 @@
     speak(guide.text, guide.emotion);
   }
 
-  /* ---------- Narrate errors — SAD only, no brackets ---------- */
   function narrateError(paneId, errorText) {
     const e = String(errorText || "").toLowerCase();
 
-    if (e.includes("incorrect email or password") || (e.includes("password") && (e.includes("incorrect") || e.includes("wrong") || e.includes("match") || e.includes("invalid")))) {
-      state.loginFailCount += 1;
+    if (e.includes("username") && (e.includes("taken") || e.includes("already"))) {
+      speak(
+        "Ohh... that username is already taken 🥺 Can you think of another one? I really want this to be special for you!",
+        "sad"
+      );
+      return;
+    }
 
+    if (e.includes("incorrect email") || e.includes("incorrect email/username") ||
+        (e.includes("password") && (e.includes("incorrect") || e.includes("wrong") || e.includes("match") || e.includes("invalid")))) {
+      state.loginFailCount += 1;
       if (state.loginFailCount >= 3) {
         speak(
           "Oh... did you forget your password? 🥺 Don't worry, I'm here to help you...",
@@ -1551,7 +1547,6 @@
         );
         return;
       }
-
       const nth = state.loginFailCount === 1
         ? "Oh oh! That password isn't quite right 🥺"
         : "Hmm... still not that one 🥺";
@@ -1791,7 +1786,7 @@
     open: openPanel,
     close: closePanel,
     ask: (q) => { openPanel(); respond(q); },
-    version: "3.3.1",
+    version: "3.4.0",
     speak: (text, emotion) => { ensureModalRobot(); speak(text, emotion); },
     narrateError: (paneId, text) => { ensureModalRobot(); narrateError(paneId, text); },
   };

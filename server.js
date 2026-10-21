@@ -1,4 +1,4 @@
-﻿﻿/* =========================================================
+﻿﻿﻿﻿/* =========================================================
    NIVA SERVER — Complete Production-Ready Version
    Light Theme · Email Verification · Password Reset
    Reviews · Stats · Payment Gating · Contact
@@ -6,8 +6,8 @@
    Bot · Special Letter (₹39)
 
    AUTH FLOW:
-   - Register: email only → OTP sent → verify OTP → set password
-   - Login: email + password (only after password set)
+   - Register: email + username → OTP sent → verify OTP → set password
+   - Login: email (or username) + password
    - Reset: email → OTP sent → verify OTP → set new password
 
    EMAIL: Resend API (RESEND_API_KEY + RESEND_FROM_EMAIL)
@@ -107,7 +107,6 @@ app.use(helmet({
 }));
 
 /* ---------- 6. BODY PARSING ---------- */
-// 1 GB uploads need a big limit. Gifts are JSON envelopes (base64).
 app.use(express.json({ limit: "1024mb" }));
 
 /* ---------- 7. SESSIONS ---------- */
@@ -192,6 +191,42 @@ function isValidPassword(pw) {
   return typeof pw === "string" && pw.length >= 8 && pw.length <= 128;
 }
 
+/* ---------- USERNAME HELPERS ---------- */
+function normalizeUsername(name) {
+  return String(name || "").trim().toLowerCase();
+}
+
+function isValidUsername(name) {
+  if (typeof name !== "string") return false;
+  const trimmed = name.trim();
+  if (trimmed.length < 3 || trimmed.length > 30) return false;
+  // letters, numbers, underscore, dot — no spaces, no weird symbols
+  if (!/^[A-Za-z0-9_.]+$/.test(trimmed)) return false;
+  // must start with a letter
+  if (!/^[A-Za-z]/.test(trimmed)) return false;
+  return true;
+}
+
+function usernameErrorMessage(name) {
+  if (!name || typeof name !== "string") return "Please choose a username.";
+  const t = name.trim();
+  if (t.length < 3) return "Username must be at least 3 characters.";
+  if (t.length > 30) return "Username must be at most 30 characters.";
+  if (!/^[A-Za-z]/.test(t)) return "Username must start with a letter.";
+  if (!/^[A-Za-z0-9_.]+$/.test(t)) return "Username can only use letters, numbers, underscore (_) and dot (.).";
+  return null;
+}
+
+async function isUsernameTaken(name) {
+  const normalized = normalizeUsername(name);
+  if (!normalized) return false;
+  const result = await pool.query(
+    `SELECT 1 FROM app.users WHERE LOWER(username) = $1 LIMIT 1`,
+    [normalized]
+  );
+  return result.rows.length > 0;
+}
+
 function requireAuthenticated(req, res, next) {
   if (!req.session?.userId) {
     return res.status(401).json({ success: false, message: "Please log in to continue." });
@@ -263,14 +298,15 @@ async function sendEmail({ to, subject, html }) {
   }
 }
 
-function verificationEmailHTML(code) {
+function verificationEmailHTML(code, username) {
+  const greeting = username ? `Hi ${username},` : "Hi there,";
   return `
     <div style="font-family: 'Playfair Display', Georgia, serif; max-width: 500px; margin: auto; padding: 32px; background: #fdf8f3; border-radius: 20px;">
       <div style="text-align: center; margin-bottom: 24px;">
         <span style="display: inline-block; width: 60px; height: 60px; line-height: 60px; border-radius: 50%; background: linear-gradient(145deg, #f9e8e4, #fff); color: #b76e79; font-size: 28px; font-family: Georgia, serif;">♥</span>
       </div>
       <h2 style="color: #b76e79; text-align: center; font-weight: 500; letter-spacing: 0.1em;">NIVA</h2>
-      <p style="color: #3d2c2e; font-size: 16px; text-align: center; margin-top: 20px;">Your verification code is:</p>
+      <p style="color: #3d2c2e; font-size: 16px; text-align: center; margin-top: 20px;">${greeting} your verification code is:</p>
       <div style="text-align: center; padding: 22px; background: #fff; border-radius: 14px; border: 1px solid #e8c4c8; margin: 22px 0;">
         <strong style="font-size: 38px; color: #b76e79; letter-spacing: 0.3em;">${code}</strong>
       </div>
@@ -280,11 +316,12 @@ function verificationEmailHTML(code) {
   `;
 }
 
-function resetEmailHTML(code) {
+function resetEmailHTML(code, username) {
+  const greeting = username ? `Hi ${username},` : "Hi there,";
   return `
     <div style="font-family: 'Playfair Display', Georgia, serif; max-width: 500px; margin: auto; padding: 32px; background: #fdf8f3; border-radius: 20px;">
       <h2 style="color: #b76e79; text-align: center; font-weight: 500; letter-spacing: 0.1em;">NIVA</h2>
-      <p style="color: #3d2c2e; font-size: 16px; text-align: center; margin-top: 20px;">Your password reset code is:</p>
+      <p style="color: #3d2c2e; font-size: 16px; text-align: center; margin-top: 20px;">${greeting} your password reset code is:</p>
       <div style="text-align: center; padding: 22px; background: #fff; border-radius: 14px; border: 1px solid #e8c4c8; margin: 22px 0;">
         <strong style="font-size: 38px; color: #b76e79; letter-spacing: 0.3em;">${code}</strong>
       </div>
@@ -299,16 +336,40 @@ async function runMigrations() {
   try {
     await pool.query(`CREATE SCHEMA IF NOT EXISTS app;`);
 
+    // Create users table (with username) — legacy-safe
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.users (
         id BIGSERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
+        username TEXT,
         password_hash TEXT,
         email_verified BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `);
 
+    // Add username column if upgrading from an older schema
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_schema = 'app' AND table_name = 'users'
+            AND column_name = 'username'
+        ) THEN
+          ALTER TABLE app.users ADD COLUMN username TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // Add case-insensitive unique index for usernames
+    await pool.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS IDX_users_username_lower
+        ON app.users (LOWER(username))
+        WHERE username IS NOT NULL;
+    `);
+
+    // Allow NULL password_hash (email-only accounts before setting password)
     await pool.query(`
       DO $$
       BEGIN
@@ -450,21 +511,57 @@ app.get("/api/health", async (req, res) => {
 });
 
 /* =========================================================
-   13. AUTH ROUTES
+   13. AUTH ROUTES (with username)
    ========================================================= */
 
+/* --- 13a. Check username availability --- */
+app.post("/api/auth/check-username", authLimiter, async (req, res, next) => {
+  try {
+    const { username } = req.body || {};
+    const err = usernameErrorMessage(username);
+    if (err) {
+      return res.status(400).json({ success: false, available: false, message: err });
+    }
+    const taken = await isUsernameTaken(username);
+    if (taken) {
+      return res.status(200).json({
+        success: true,
+        available: false,
+        message: "That username is already taken. Please pick another.",
+      });
+    }
+    res.json({ success: true, available: true, message: "Username is available." });
+  } catch (err) { next(err); }
+});
+
+/* --- 13b. Register (email + username) --- */
 app.post("/api/auth/register", authLimiter, async (req, res, next) => {
   try {
-    const { email } = req.body || {};
+    const { email, username } = req.body || {};
 
     if (typeof email !== "string" || !isValidEmail(email)) {
       return res.status(400).json({ success: false, message: "Please enter a valid email address." });
     }
 
+    const unameError = usernameErrorMessage(username);
+    if (unameError) {
+      return res.status(400).json({ success: false, message: unameError });
+    }
+
     const normalized = normalizeEmail(email);
+    const cleanUsername = String(username).trim();
+
+    // Check username uniqueness FIRST (before inserting)
+    if (await isUsernameTaken(cleanUsername)) {
+      return res.status(409).json({
+        success: false,
+        usernameTaken: true,
+        message: "That username is already taken. Please choose another.",
+      });
+    }
 
     const existing = await pool.query(
-      `SELECT id, email, password_hash, email_verified FROM app.users WHERE email = $1 LIMIT 1`,
+      `SELECT id, email, username, password_hash, email_verified FROM app.users WHERE email = $1 LIMIT 1`,
       [normalized]
     );
 
@@ -478,6 +575,12 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
           message: "An account with this email already exists. Please sign in instead.",
         });
       }
+
+      // Email exists but no password yet — update username & resend code
+      await pool.query(
+        `UPDATE app.users SET username = $1 WHERE id = $2`,
+        [cleanUsername, user.id]
+      );
 
       const code = generateCode();
       const codeHash = await hashCode(code);
@@ -495,7 +598,7 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
       const emailSent = await sendEmail({
         to: normalized,
         subject: "Your NIVA verification code",
-        html: verificationEmailHTML(code),
+        html: verificationEmailHTML(code, cleanUsername),
       });
 
       if (!emailSent) {
@@ -509,15 +612,17 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
         success: true,
         requiresVerification: true,
         email: normalized,
+        username: cleanUsername,
         message: "A verification code has been sent to your email.",
       });
     }
 
+    // New user
     const result = await pool.query(
-      `INSERT INTO app.users (email, password_hash, email_verified)
-       VALUES ($1, NULL, FALSE)
-       RETURNING id, email`,
-      [normalized]
+      `INSERT INTO app.users (email, username, password_hash, email_verified)
+       VALUES ($1, $2, NULL, FALSE)
+       RETURNING id, email, username`,
+      [normalized, cleanUsername]
     );
 
     const code = generateCode();
@@ -532,7 +637,7 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
     const emailSent = await sendEmail({
       to: normalized,
       subject: "Your NIVA verification code",
-      html: verificationEmailHTML(code),
+      html: verificationEmailHTML(code, cleanUsername),
     });
 
     if (!emailSent) {
@@ -547,9 +652,18 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
       message: "Verification code sent. Check your email.",
       requiresVerification: true,
       email: normalized,
+      username: cleanUsername,
       userId: String(result.rows[0].id),
     });
   } catch (err) {
+    // Unique constraint on username (race condition)
+    if (err.code === "23505" && String(err.constraint || "").includes("username")) {
+      return res.status(409).json({
+        success: false,
+        usernameTaken: true,
+        message: "That username is already taken. Please choose another.",
+      });
+    }
     if (err.code === "23505") {
       return res.status(409).json({
         success: false,
@@ -594,7 +708,7 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
 
     const userResult = await pool.query(
       `UPDATE app.users SET email_verified = TRUE WHERE email = $1
-       RETURNING id, email, password_hash, created_at`,
+       RETURNING id, email, username, password_hash, created_at`,
       [normalized]
     );
 
@@ -609,6 +723,7 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
       await regenerateSession(req);
       req.session.userId = String(user.id);
       req.session.userEmail = user.email;
+      req.session.userName = user.username || null;
       await saveSession(req);
 
       return res.json({
@@ -617,7 +732,13 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
         hasPassword: true,
         authenticated: true,
         message: "Email verified. Welcome to NIVA.",
-        user: { id: String(user.id), email: user.email, createdAt: user.created_at },
+        user: {
+          id: String(user.id),
+          email: user.email,
+          username: user.username || null,
+          displayName: user.username || (user.email.split("@")[0]),
+          createdAt: user.created_at,
+        },
       });
     }
 
@@ -627,6 +748,7 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
       hasPassword: false,
       authenticated: false,
       email: user.email,
+      username: user.username || null,
       message: "Email verified. Now set your password.",
     });
   } catch (err) { next(err); }
@@ -649,7 +771,7 @@ app.post("/api/auth/set-password", authLimiter, async (req, res, next) => {
     const normalized = normalizeEmail(email);
 
     const result = await pool.query(
-      `SELECT id, email, password_hash, email_verified FROM app.users WHERE email = $1 LIMIT 1`,
+      `SELECT id, email, username, password_hash, email_verified FROM app.users WHERE email = $1 LIMIT 1`,
       [normalized]
     );
 
@@ -674,12 +796,19 @@ app.post("/api/auth/set-password", authLimiter, async (req, res, next) => {
     await regenerateSession(req);
     req.session.userId = String(user.id);
     req.session.userEmail = user.email;
+    req.session.userName = user.username || null;
     await saveSession(req);
 
     res.json({
       success: true,
       message: "Password set. Welcome to NIVA.",
-      user: { id: String(user.id), email: user.email, createdAt: user.created_at },
+      user: {
+        id: String(user.id),
+        email: user.email,
+        username: user.username || null,
+        displayName: user.username || (user.email.split("@")[0]),
+        createdAt: user.created_at,
+      },
     });
   } catch (err) { next(err); }
 });
@@ -694,12 +823,14 @@ app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
     const codeType = purpose === "reset" ? "reset" : "verify";
 
     const userCheck = await pool.query(
-      `SELECT id, email_verified, password_hash FROM app.users WHERE email = $1`,
+      `SELECT id, username, email_verified, password_hash FROM app.users WHERE email = $1`,
       [normalized]
     );
     if (!userCheck.rows.length) {
       return res.status(404).json({ success: false, message: "No account with this email." });
     }
+
+    const username = userCheck.rows[0].username || null;
 
     if (codeType === "verify" && userCheck.rows[0].email_verified) {
       return res.status(400).json({ success: false, message: "This email is already verified." });
@@ -721,7 +852,9 @@ app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
     const emailSent = await sendEmail({
       to: normalized,
       subject: codeType === "reset" ? "Reset your NIVA password" : "Your new NIVA verification code",
-      html: codeType === "reset" ? resetEmailHTML(code) : verificationEmailHTML(code),
+      html: codeType === "reset"
+        ? resetEmailHTML(code, username)
+        : verificationEmailHTML(code, username),
     });
 
     if (!emailSent) {
@@ -739,22 +872,36 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
 
-    if (typeof email !== "string" || !isValidEmail(email)) {
-      return res.status(400).json({ success: false, message: "Please enter a valid email." });
+    // Allow login with email OR username
+    if (typeof email !== "string" || !email.trim()) {
+      return res.status(400).json({ success: false, message: "Please enter your email or username." });
     }
     if (typeof password !== "string" || password.length === 0 || password.length > 128) {
       return res.status(400).json({ success: false, message: "Please enter your password." });
     }
 
-    const result = await pool.query(
-      `SELECT id, email, password_hash, email_verified, created_at
-       FROM app.users WHERE email = $1 LIMIT 1`,
-      [normalizeEmail(email)]
-    );
+    const identifier = email.trim();
+    const isEmail = identifier.includes("@");
+    let result;
+
+    if (isEmail) {
+      result = await pool.query(
+        `SELECT id, email, username, password_hash, email_verified, created_at
+         FROM app.users WHERE email = $1 LIMIT 1`,
+        [normalizeEmail(identifier)]
+      );
+    } else {
+      result = await pool.query(
+        `SELECT id, email, username, password_hash, email_verified, created_at
+         FROM app.users WHERE LOWER(username) = $1 LIMIT 1`,
+        [normalizeUsername(identifier)]
+      );
+    }
+
     const user = result.rows[0];
 
     if (!user) {
-      return res.status(401).json({ success: false, message: "Incorrect email or password." });
+      return res.status(401).json({ success: false, message: "Incorrect email/username or password." });
     }
 
     if (!user.password_hash) {
@@ -763,6 +910,7 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
         needsPasswordSetup: true,
         needsVerification: !user.email_verified,
         email: user.email,
+        username: user.username || null,
         message: user.email_verified
           ? "Your account has no password yet. Please set a password."
           : "Please verify your email first.",
@@ -774,7 +922,7 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
     catch { match = false; }
 
     if (!match) {
-      return res.status(401).json({ success: false, message: "Incorrect email or password." });
+      return res.status(401).json({ success: false, message: "Incorrect email/username or password." });
     }
 
     if (!user.email_verified) {
@@ -793,7 +941,7 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
       const emailSent = await sendEmail({
         to: user.email,
         subject: "Your NIVA verification code",
-        html: verificationEmailHTML(code),
+        html: verificationEmailHTML(code, user.username || null),
       });
 
       if (!emailSent) {
@@ -814,12 +962,19 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
     await regenerateSession(req);
     req.session.userId = String(user.id);
     req.session.userEmail = user.email;
+    req.session.userName = user.username || null;
     await saveSession(req);
 
     res.json({
       success: true,
       message: "Login successful.",
-      user: { id: String(user.id), email: user.email, createdAt: user.created_at },
+      user: {
+        id: String(user.id),
+        email: user.email,
+        username: user.username || null,
+        displayName: user.username || (user.email.split("@")[0]),
+        createdAt: user.created_at,
+      },
     });
   } catch (err) { next(err); }
 });
@@ -828,10 +983,16 @@ app.get("/api/auth/me", (req, res) => {
   if (!req.session?.userId) {
     return res.json({ success: true, authenticated: false, user: null });
   }
+  const username = req.session.userName || null;
   res.json({
     success: true,
     authenticated: true,
-    user: { id: req.session.userId, email: req.session.userEmail },
+    user: {
+      id: req.session.userId,
+      email: req.session.userEmail,
+      username: username,
+      displayName: username || (req.session.userEmail ? req.session.userEmail.split("@")[0] : "friend"),
+    },
   });
 });
 
@@ -851,10 +1012,12 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
     }
     const normalized = normalizeEmail(email);
 
-    const userCheck = await pool.query(`SELECT id FROM app.users WHERE email = $1`, [normalized]);
+    const userCheck = await pool.query(`SELECT id, username FROM app.users WHERE email = $1`, [normalized]);
     if (!userCheck.rows.length) {
       return res.json({ success: true, message: "If an account exists, a reset code has been sent." });
     }
+
+    const username = userCheck.rows[0].username || null;
 
     const code = generateCode();
     const codeHash = await hashCode(code);
@@ -872,7 +1035,7 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
     const emailSent = await sendEmail({
       to: normalized,
       subject: "Reset your NIVA password",
-      html: resetEmailHTML(code),
+      html: resetEmailHTML(code, username),
     });
 
     if (!emailSent) {
@@ -960,7 +1123,7 @@ app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
 
     const result = await pool.query(
-      `UPDATE app.users SET password_hash = $1 WHERE email = $2 RETURNING id, email`,
+      `UPDATE app.users SET password_hash = $1 WHERE email = $2 RETURNING id, email, username`,
       [passwordHash, normalized]
     );
 
@@ -979,7 +1142,7 @@ app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
 app.get("/api/account", requireAuthenticated, async (req, res, next) => {
   try {
     const result = await pool.query(
-      `SELECT id, email, created_at FROM app.users WHERE id = $1 LIMIT 1`,
+      `SELECT id, email, username, created_at FROM app.users WHERE id = $1 LIMIT 1`,
       [req.session.userId]
     );
 
@@ -992,7 +1155,13 @@ app.get("/api/account", requireAuthenticated, async (req, res, next) => {
     const user = result.rows[0];
     res.json({
       success: true,
-      user: { id: String(user.id), email: user.email, createdAt: user.created_at },
+      user: {
+        id: String(user.id),
+        email: user.email,
+        username: user.username || null,
+        displayName: user.username || user.email.split("@")[0],
+        createdAt: user.created_at,
+      },
     });
   } catch (err) { next(err); }
 });
@@ -1004,6 +1173,9 @@ const ALLOWED_TEMPLATE_IDS = new Set([
   "love-proposal",
   "birthday-magic",
   "loveletter",
+  "eternal-anniversary",
+  "besties",
+  "memory-box",
 ]);
 
 const TEMPLATE_PRICES = {
@@ -1012,6 +1184,8 @@ const TEMPLATE_PRICES = {
   "birthday-magic": 299,
   "loveletter": 39,
   "eternal-anniversary": 599,
+  "besties": 299,
+  "memory-box": 99,
 };
 
 const MAX_ENVELOPE_BYTES = 1024 * 1024 * 1024;
@@ -1367,15 +1541,18 @@ app.get("/api/stats", async (req, res) => {
 app.get("/api/reviews", async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, name, role, stars, text, tag, created_at
-       FROM app.reviews ORDER BY created_at DESC LIMIT 30`
+      `SELECT r.id, r.name, r.role, r.stars, r.text, r.tag, r.created_at,
+              u.username
+       FROM app.reviews r
+       LEFT JOIN app.users u ON u.id = r.user_id
+       ORDER BY r.created_at DESC LIMIT 30`
     );
 
     res.json({
       success: true,
       reviews: result.rows.map((r, i) => ({
         id: r.id,
-        name: r.name,
+        name: r.username || r.name,
         role: r.role,
         stars: r.stars,
         text: r.text,
@@ -1409,16 +1586,16 @@ app.post("/api/reviews", requireAuthenticated, async (req, res, next) => {
     }
 
     const userResult = await pool.query(
-      `SELECT email FROM app.users WHERE id = $1 LIMIT 1`,
+      `SELECT email, username FROM app.users WHERE id = $1 LIMIT 1`,
       [req.session.userId]
     );
-    const email = userResult.rows[0]?.email || "Anonymous";
-    const displayName = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    const user = userResult.rows[0] || {};
+    const displayName = user.username || (user.email ? user.email.split("@")[0] : "A NIVA user");
 
     await pool.query(
       `INSERT INTO app.reviews (user_id, name, role, stars, text, tag)
        VALUES ($1, $2, 'Verified customer', $3, $4, 'NIVA gift')`,
-      [req.session.userId, displayName || "A NIVA user", stars, text.trim()]
+      [req.session.userId, displayName, stars, text.trim()]
     );
 
     res.status(201).json({ success: true, message: "Review posted. Thank you!" });
@@ -1442,7 +1619,6 @@ try {
   console.log("💳 Payments: Mock mode (razorpay package not installed)");
 }
 
-/* 19a. CREATE ORDER */
 app.post("/api/payments/create-order", requireAuthenticated, async (req, res, next) => {
   try {
     const { templateId } = req.body || {};
@@ -1494,7 +1670,6 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
   } catch (err) { next(err); }
 });
 
-/* 19b. CONFIRM (mock mode only — production uses /verify) */
 app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) => {
   try {
     const { orderId, paymentId } = req.body || {};
@@ -1533,7 +1708,6 @@ app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) =
   } catch (err) { next(err); }
 });
 
-/* 19c. VERIFY (Razorpay HMAC) */
 app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) => {
   try {
     const { orderId, paymentId, signature } = req.body || {};
@@ -1566,7 +1740,6 @@ app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) =>
   } catch (err) { next(err); }
 });
 
-/* 19d. PUBLISH (atomic: confirm payment + insert gift + return link) */
 app.post("/api/gifts/publish", requireAuthenticated, async (req, res, next) => {
   const client = await pool.connect();
   try {
@@ -1691,17 +1864,17 @@ app.post("/api/gifts/publish", requireAuthenticated, async (req, res, next) => {
    ========================================================= */
 const BOT_KNOWLEDGE = [
   { id: "about", tag: "About", kw: ["what is niva","about niva","about","explain niva","what is this","what do you do"], a: "NIVA is a place to create beautiful personalised digital gifts — love letters, proposals, birthday surprises and more. Pick a template, add your words, photos and music, then share a private password-protected link with someone special. ✦", next: ["Pricing?","How to create a gift?","Is it private?"] },
-  { id: "pricing", tag: "Pricing", kw: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"], a: "Our gifts:\n• Love Letter — ₹39\n• Eternal Love — ₹599\n• Birthday Magic — ₹299\n• Love Proposal — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕", next: ["What is the Love Letter?","How to create a gift?","Templates"] },
+  { id: "pricing", tag: "Pricing", kw: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"], a: "Our gifts:\n• Love Letter — ₹39\n• Eternal Love — ₹599\n• Birthday Magic — ₹299\n• Love Proposal — ₹599\n• Eternal Anniversary — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕", next: ["What is the Love Letter?","How to create a gift?","Templates"] },
   { id: "special-letter", tag: "Love Letter", kw: ["special letter","love letter","loveletter","39","letter only","single letter","cheap","cheapest"], a: "The Love Letter is our sweetest little gift at just ₹39 💌\n\nTwo handwritten-style love letter pages, sealed with a beautiful envelope-opening animation. You'll find it in the templates grid.", next: ["Pricing?","How to create a gift?"] },
-  { id: "templates", tag: "Templates", kw: ["template","templates","design","designs","theme","options","what can i make","kinds","types"], a: "We have 4 templates right now:\n✦ Eternal Love (₹599)\n✦ Love Proposal (₹599)\n✦ Birthday Magic (₹299)\n✦ Love Letter (₹39)\n\nNew templates are added regularly.", next: ["Pricing?","How to create a gift?"] },
-  { id: "howto", tag: "How to create", kw: ["how to create","how do i make","make a gift","create gift","start","begin","steps","how does it work"], a: "Making a gift is easy:\n\n1. Pick a template\n2. Sign in (I can help — say \"sign up\")\n3. Fill in your words & photos — live preview updates as you type\n4. Set a gift password and pay\n5. Share the private link ♥", next: ["Sign up","Pricing?","Is it private?"] },
+  { id: "templates", tag: "Templates", kw: ["template","templates","design","designs","theme","options","what can i make","kinds","types"], a: "We have several templates:\n✦ Eternal Love (₹599)\n✦ Love Proposal (₹599)\n✦ Birthday Magic (₹299)\n✦ Love Letter (₹39)\n✦ Eternal Anniversary (₹599)\n\nNew templates are added regularly.", next: ["Pricing?","How to create a gift?"] },
+  { id: "howto", tag: "How to create", kw: ["how to create","how do i make","make a gift","create gift","start","begin","steps","how does it work"], a: "Making a gift is easy:\n\n1. Pick a template\n2. Sign up with a username + email — I can help right here\n3. Fill in your words & photos — live preview updates as you type\n4. Set a gift password and pay\n5. Share the private link ♥", next: ["Sign up","Pricing?","Is it private?"] },
   { id: "privacy", tag: "Privacy", kw: ["password","private","secure","encrypt","security","safe","is it private","data"], a: "Your gift is encrypted in your browser with AES-256-GCM before it ever reaches our server. 🔒\n\n• PBKDF2 key derivation (310,000 iterations)\n• Only ciphertext + metadata is stored\n• Recipient needs the password you set\n• We never see your gift content", next: ["How does the recipient open it?","Sign up"] },
   { id: "payment", tag: "Payment", kw: ["payment","pay","razorpay","upi","card","how to pay","checkout","billing"], a: "Payments are handled securely by Razorpay — UPI, cards, netbanking.\n\nYou only pay once, at the moment you publish a gift. Drafting & previewing is free.", next: ["Refunds?","Sign up"] },
-  { id: "account", tag: "Account", kw: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password"], a: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• sign up — to create a new account\n• sign in — to log in\n• forgot password — to reset", next: ["Sign up","Sign in","Forgot password"] },
+  { id: "account", tag: "Account", kw: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password","username"], a: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• sign up — to create a new account (choose a username!)\n• sign in — to log in\n• forgot password — to reset", next: ["Sign up","Sign in","Forgot password"] },
   { id: "mygifts", tag: "My Gifts", kw: ["my gifts","my gifts page","drafts","wishlist","saved","saved gifts","account page"], a: "Head to My Gifts from the home page. You'll find three tabs:\n• Drafts — works in progress\n• Published — finished gifts + shareable links\n• Wishlist — templates you've hearted ♥", next: ["Delete a gift?","What is a draft?"] },
   { id: "draft", tag: "Drafts", kw: ["draft","drafts","save","autosave","unsaved","work in progress"], a: "Drafts autosave to your browser as you type, and to your account within a couple of seconds. Hit \"Save Draft\" any time to force a cloud save.", next: ["My Gifts?","How to create a gift?"] },
   { id: "delete", tag: "Delete", kw: ["delete","remove","unpublish","stop link","take down","erase"], a: "Go to My Gifts → Published and tap Delete on any gift. The private link stops working immediately.", next: ["Refunds?","My Gifts?"] },
-  { id: "upload", tag: "Uploads", kw: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"], a: "You can upload photos, video and audio — up to 1 GB total per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB\n\n(Note: The Love Letter template is text-only — no photos.)", next: ["How to create a gift?","Is it private?"] },
+  { id: "upload", tag: "Uploads", kw: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"], a: "You can upload photos, video and audio — up to 1 GB total per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB", next: ["How to create a gift?","Is it private?"] },
   { id: "refund", tag: "Refunds", kw: ["refund","cancel","return","money back","chargeback"], a: "Gifts are digital and shareable, so we don't offer refunds after publishing. If something fails before publishing, you won't be charged.", next: ["Payment?","Contact support?"] },
   { id: "contact", tag: "Contact", kw: ["contact","support","help","email you","reach you","talk to someone"], a: "Reach us through the Privacy & Safety page. Until then, I (NIVI!) can answer most questions. Just ask! 💕", next: ["Pricing?","Sign up"] },
   { id: "recipient", tag: "Recipient", kw: ["recipient","open gift","receive","someone sent","unlock","unlock gift"], a: "Your recipient opens the private link, enters the gift password you gave them, and the gift unlocks in their browser. ✦\n\nThe decryption happens locally — even we can't see it without the password.", next: ["Is it private?","Password?"] },
@@ -1770,7 +1943,7 @@ app.post("/api/niva-bot", botLimiter, (req, res) => {
     if (typeof message !== "string") return res.status(400).json({ success: false, reply: "Please send a valid message." });
     if (message.length > 500) return res.status(400).json({ success: false, reply: "Please send a shorter message (max 500 characters)." });
     const { reply, next } = botAnswer(message);
-    res.json({ success: true, reply, next, version: "3.3.0" });
+    res.json({ success: true, reply, next, version: "3.4.0" });
   } catch (err) {
     console.error("Bot error:", err.message);
     res.status(500).json({ success: false, reply: "Oh no, my little brain glitched. Try again in a moment. 🥺", next: [] });

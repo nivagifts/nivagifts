@@ -1,0 +1,269 @@
+{
+  "id": "besties",
+  "name": "Besties",
+  "category": "friendship",
+  "description": "A friendship time capsule — gift box opening, live counter, chapter story, mood-board photos, hidden messages, memory game, and a star-filled finale.",
+  "templatePath": "/templates/friendship/besties/template.html",
+  "thumbnail": "/templates/friendship/besties/thumb.jpg",
+
+  "templateLimits": {
+    "photoSlots": 5
+  },
+
+  "sections": [
+    {
+      "title": "The Duo",
+      "subtitle": "Who is this for?",
+      "fields": ["name1", "name2", "sinceDate", "giftTitle", "giftNote"]
+    },
+    {
+      "title": "Friendship Story",
+      "subtitle": "Chapters of you two",
+      "fields": ["storyTitle", "chapters"]
+    },
+    {
+      "title": "Photo Corkboard",
+      "subtitle": "Five memories scattered",
+      "fields": ["boardTitle", "photos", "photoCaptions"]
+    },
+    {
+      "title": "Hidden Messages",
+      "subtitle": "Things you never said out loud",
+      "fields": ["hiddenTitle", "hiddenMessages"]
+    },
+    {
+      "title": "Memory Game",
+      "subtitle": "Guess what really happened",
+      "fields": ["gameTitle", "gameSubtitle", "memoryCards"]
+    },
+    {
+      "title": "This Is Us",
+      "subtitle": "The songs that mean us",
+      "fields": ["vibeTitle", "vibeTracks"]
+    },
+    {
+      "title": "Friendship Contract",
+      "subtitle": "The (unbreakable) rules",
+      "fields": ["contractTitle", "contractIntro", "contractClauses"]
+    },
+    {
+      "title": "Star Sky Finale",
+      "subtitle": "A sky full of memories",
+      "fields": ["finalTitle", "finalBody", "finalFooter", "finalButton"]
+    }
+  ],
+
+  "customization": {
+    "name1": {
+      "type": "text",
+      "label": "Your name",
+      "placeholder": "e.g. Aarav",
+      "default": "Aarav",
+      "required": true,
+      "maxLength": 30
+    },
+    "name2": {
+      "type": "text",
+      "label": "Best friend's name",
+      "placeholder": "e.g. Riya",
+      "default": "Riya",
+      "required": true,
+      "maxLength": 30
+    },
+    "sinceDate": {
+      "type": "date",
+      "label": "Friends since",
+      "default": "2018-08-15",
+      "required": true,
+      "help": "Powers the live friendship counter."
+    },
+    "giftTitle": {
+      "type": "text",
+      "label": "Gift box title",
+      "placeholder": "For You, My Person",
+      "default": "For You, My Person",
+      "maxLength": 60
+    },
+    "giftNote": {
+      "type": "textarea",
+      "label": "Gift box note",
+      "placeholder": "A little something I made...",
+      "default": "A little something I made with my own two hands. Tap to open.",
+      "maxLength": 200
+    },
+
+    "storyTitle": {
+      "type": "text",
+      "label": "Story section title",
+      "placeholder": "The Story of Us",
+      "default": "The Story of Us",
+      "maxLength": 60
+    },
+    "chapters": {
+      "type": "textArray",
+      "label": "Story chapters",
+      "placeholder": "Chapter 1 — The Beginning | We met in the most random way...\nChapter 2 — The Chaos | Then things got wild...",
+      "default": [
+        "Chapter 1 — The Beginning | We met in the most random way possible. Neither of us knew we were about to meet our person.",
+        "Chapter 2 — The Chaos | Then things got loud. And weird. And wonderful. We became a two-person disaster team.",
+        "Chapter 3 — The Middle | The 2am calls, the inside jokes, the 'you won't believe what happened' texts. It all became our language.",
+        "Chapter 4 — Still Going | Through every season, every version of ourselves, we're still here. And I wouldn't have it any other way."
+      ],
+      "help": "One chapter per line: Title | Description"
+    },
+
+    "boardTitle": {
+      "type": "text",
+      "label": "Corkboard title",
+      "placeholder": "Moments I Keep",
+      "default": "Moments I Keep",
+      "maxLength": 60
+    },
+    "photos": {
+      "type": "imageGallery",
+      "label": "Your 5 photos",
+      "accept": "image/*",
+      "maxSizeMB": 800,
+      "help": "Pick 5 photos for the corkboard."
+    },
+    "photoCaptions": {
+      "type": "textArray",
+      "label": "Photo captions",
+      "placeholder": "That summer\nOur first trip\n…",
+      "default": [
+        "That one summer",
+        "Our first adventure",
+        "The rainy-day selfie",
+        "That night we got lost",
+        "Still going strong"
+      ],
+      "help": "One caption per line. Matches photos in order."
+    },
+
+    "hiddenTitle": {
+      "type": "text",
+      "label": "Hidden messages title",
+      "placeholder": "Things I Never Said",
+      "default": "Things I Never Said Out Loud",
+      "maxLength": 60
+    },
+    "hiddenMessages": {
+      "type": "textArray",
+      "label": "Hidden messages",
+      "placeholder": "Thank you for showing up when I needed you most.\nYou make me braver than I would be alone.\n…",
+      "default": [
+        "Thank you for showing up when I needed you most — even when I didn't ask.",
+        "You make me braver than I would be alone. You probably don't know that.",
+        "The way you laugh at your own jokes is my favourite sound in the world.",
+        "I don't tell you enough: you're one of the best things that ever happened to me.",
+        "If I had to do life all over again, I'd still find you. Every time."
+      ],
+      "help": "One message per line. Tap each card to flip and reveal."
+    },
+
+    "gameTitle": {
+      "type": "text",
+      "label": "Game title",
+      "placeholder": "Guess the Memory",
+      "default": "Guess the Memory",
+      "maxLength": 60
+    },
+    "gameSubtitle": {
+      "type": "textarea",
+      "label": "Game subtitle",
+      "placeholder": "Tap a card to reveal the truth",
+      "default": "Tap a card to reveal what really happened.",
+      "maxLength": 200
+    },
+    "memoryCards": {
+      "type": "textArray",
+      "label": "Memory cards",
+      "placeholder": "THE MYTH | We went skydiving.\nTHE TRUTH | We watched a skydiving video and cried.",
+      "default": [
+        "THE MYTH | We once went skydiving.",
+        "THE TRUTH | We watched a skydiving video and cried.",
+        "THE MYTH | We have a signature cocktail.",
+        "THE TRUTH | It's just sparkling water with a lemon.",
+        "THE MYTH | We have our lives together.",
+        "THE TRUTH | We're still figuring it out. Together."
+      ],
+      "help": "One card per line: Label | Text. Cards alternate myth/truth."
+    },
+
+    "vibeTitle": {
+      "type": "text",
+      "label": "Playlist title",
+      "placeholder": "This Is Us",
+      "default": "This Is Us",
+      "maxLength": 60
+    },
+    "vibeTracks": {
+      "type": "textArray",
+      "label": "Playlist tracks",
+      "placeholder": "Song Name — Artist | Why it's ours\nAnother Song — Artist | The 2am call anthem",
+      "default": [
+        "Song Name — Artist | Why it's ours",
+        "Another Song — Artist | The 2am call anthem",
+        "One More — Artist | Our road trip song"
+      ],
+      "help": "One track per line: Song — Artist | Reason"
+    },
+
+    "contractTitle": {
+      "type": "text",
+      "label": "Contract title",
+      "placeholder": "The Friendship Contract",
+      "default": "The Official Friendship Contract",
+      "maxLength": 60
+    },
+    "contractIntro": {
+      "type": "textarea",
+      "label": "Contract intro",
+      "placeholder": "By continuing to be my best friend...",
+      "default": "By continuing to be my best friend, you hereby agree to the following non-negotiable terms.",
+      "maxLength": 200
+    },
+    "contractClauses": {
+      "type": "textArray",
+      "label": "Contract clauses",
+      "placeholder": "Clause 1: Voice notes must be returned within 24 hours.\nClause 2: …",
+      "default": [
+        "Clause 1 — Every voice note must be replied to within 24 hours.",
+        "Clause 2 — No funny story can be told only once. Repeat it forever.",
+        "Clause 3 — If I say 'I have news', you must call. No texting.",
+        "Clause 4 — You are legally required to laugh at my worst jokes.",
+        "Clause 5 — We will always, always choose each other."
+      ],
+      "help": "One clause per line."
+    },
+
+    "finalTitle": {
+      "type": "text",
+      "label": "Final heading",
+      "placeholder": "A Sky Full of Us",
+      "default": "A Sky Full of Us",
+      "maxLength": 60
+    },
+    "finalBody": {
+      "type": "textarea",
+      "label": "Final message",
+      "placeholder": "Every star is a memory...",
+      "default": "Every star in this sky is a memory we've made together. Some bright, some quiet, all ours. Here's to filling the whole sky.",
+      "maxLength": 400
+    },
+    "finalFooter": {
+      "type": "text",
+      "label": "Footer line",
+      "placeholder": "From your person, always ♥",
+      "default": "From your person, always ♥",
+      "maxLength": 80
+    },
+    "finalButton": {
+      "type": "text",
+      "label": "Replay button",
+      "placeholder": "Start over",
+      "default": "Start over ↻",
+      "maxLength": 40
+    }
+  }
+}

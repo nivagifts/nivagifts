@@ -1,0 +1,279 @@
+{
+  "id": "memory-box",
+  "name": "Memory Box",
+  "category": "memories",
+  "description": "A nostalgic 3-page website: floating keepsakes, 5-photo memory album, handwritten letter, and a warm finale. Fully customizable theme + floating items.",
+  "templatePath": "/templates/memories/memory-box/template.html",
+  "thumbnail": "/templates/memories/memory-box/thumb.jpg",
+
+  "templateLimits": {
+    "photoSlots": 5
+  },
+
+  "sections": [
+    {
+      "title": "The Story",
+      "subtitle": "Whose memories are these?",
+      "fields": ["recipientName", "senderName", "occasion", "year"]
+    },
+    {
+      "title": "Cover Page",
+      "subtitle": "The opening vibe",
+      "fields": ["coverEyebrow", "coverTitle", "coverSubtitle", "coverButton"]
+    },
+    {
+      "title": "Theme",
+      "subtitle": "Colors and mood",
+      "fields": ["themeMode", "accentColor", "bgTone", "fontStyle"]
+    },
+    {
+      "title": "Floating Items",
+      "subtitle": "What floats around the page?",
+      "fields": ["floatingItems", "floatingCount", "floatingSpeed"]
+    },
+    {
+      "title": "Handwritten Letter",
+      "subtitle": "Say it from the heart",
+      "fields": ["letterTitle", "letterGreeting", "letterBody", "letterSignature", "letterSignatureName"]
+    },
+    {
+      "title": "Photo Album",
+      "subtitle": "5 moments to keep",
+      "fields": ["albumTitle", "albumSubtitle", "photos", "photoCaptions"]
+    },
+    {
+      "title": "Finale",
+      "subtitle": "The last thing they read",
+      "fields": ["finalTitle", "finalBody", "finalFooter", "finalButton"]
+    }
+  ],
+
+  "customization": {
+    "recipientName": {
+      "type": "text",
+      "label": "Their name",
+      "placeholder": "e.g. Amma, Riya, Appa",
+      "default": "Amma",
+      "required": true,
+      "maxLength": 30
+    },
+    "senderName": {
+      "type": "text",
+      "label": "Your name",
+      "placeholder": "e.g. Aarav",
+      "default": "Aarav",
+      "required": true,
+      "maxLength": 30
+    },
+    "occasion": {
+      "type": "text",
+      "label": "Occasion",
+      "placeholder": "e.g. Your 60th birthday",
+      "default": "Your 60th birthday",
+      "maxLength": 60
+    },
+    "year": {
+      "type": "text",
+      "label": "Year (optional)",
+      "placeholder": "e.g. 2025",
+      "default": "2025",
+      "maxLength": 10
+    },
+
+    "coverEyebrow": {
+      "type": "text",
+      "label": "Cover label",
+      "placeholder": "A little memory box for",
+      "default": "A little memory box for",
+      "maxLength": 40
+    },
+    "coverTitle": {
+      "type": "text",
+      "label": "Cover title",
+      "placeholder": "For You",
+      "default": "For You",
+      "maxLength": 60
+    },
+    "coverSubtitle": {
+      "type": "textarea",
+      "label": "Cover subtitle",
+      "placeholder": "Some memories are too precious to forget...",
+      "default": "Some memories are too precious to forget. I've collected a few of my favourites here — just for you.",
+      "maxLength": 250
+    },
+    "coverButton": {
+      "type": "text",
+      "label": "Start button",
+      "placeholder": "Open the memory box",
+      "default": "Open the memory box",
+      "maxLength": 40
+    },
+
+    "themeMode": {
+      "type": "select",
+      "label": "Theme preset",
+      "default": "warm-cream",
+      "options": [
+        { "value": "warm-cream", "label": "Warm Cream (default)" },
+        { "value": "lavender-dream", "label": "Lavender Dream" },
+        { "value": "sage-garden", "label": "Sage Garden" },
+        { "value": "peach-sunset", "label": "Peach Sunset" },
+        { "value": "ocean-breeze", "label": "Ocean Breeze" },
+        { "value": "rose-gold", "label": "Rose Gold" },
+        { "value": "midnight-blue", "label": "Midnight Blue (dark)" },
+        { "value": "forest-green", "label": "Forest Green" }
+      ],
+      "help": "Pick a preset or customise colors below."
+    },
+    "accentColor": {
+      "type": "color",
+      "label": "Accent color",
+      "default": "#d99b6c"
+    },
+    "bgTone": {
+      "type": "color",
+      "label": "Background tone",
+      "default": "#fdf7ed"
+    },
+    "fontStyle": {
+      "type": "select",
+      "label": "Font pairing",
+      "default": "classic",
+      "options": [
+        { "value": "classic", "label": "Classic (Playfair + Caveat + Inter)" },
+        { "value": "modern", "label": "Modern (Fraunces + Caveat + Nunito)" },
+        { "value": "elegant", "label": "Elegant (Cormorant + Dancing Script + Lato)" },
+        { "value": "playful", "label": "Playful (Poppins + Pacifico + Quicksand)" }
+      ]
+    },
+
+    "floatingItems": {
+      "type": "text",
+      "label": "Floating emojis",
+      "placeholder": "📷 ❤️ 🌸 ☕ 🎵",
+      "default": "📷 ❤️ 🌸 ☕ 🎵",
+      "maxLength": 200,
+      "help": "Space-separated emojis. These float gently around the page."
+    },
+    "floatingCount": {
+      "type": "text",
+      "label": "How many to float",
+      "placeholder": "12",
+      "default": "12",
+      "maxLength": 3,
+      "help": "Between 4 and 30 recommended."
+    },
+    "floatingSpeed": {
+      "type": "select",
+      "label": "Floating speed",
+      "default": "gentle",
+      "options": [
+        { "value": "slow", "label": "Slow & dreamy" },
+        { "value": "gentle", "label": "Gentle (default)" },
+        { "value": "lively", "label": "Lively & playful" }
+      ]
+    },
+
+    "letterTitle": {
+      "type": "text",
+      "label": "Letter title",
+      "placeholder": "A letter for you",
+      "default": "A letter for you",
+      "maxLength": 60
+    },
+    "letterGreeting": {
+      "type": "text",
+      "label": "Greeting",
+      "placeholder": "Dear Amma,",
+      "default": "Dear Amma,",
+      "maxLength": 60
+    },
+    "letterBody": {
+      "type": "textarea",
+      "label": "Letter body",
+      "placeholder": "Write from the heart…",
+      "default": "I've been thinking about all the small moments we've shared — the morning tea you always made a little too sweet, the way you hummed while doing the dishes, the stories you told me that I never got tired of hearing.\n\nLooking back, I realise how much of who I am today comes from you. Every kindness I show, every meal I cook, every silly song I remember — it all started with you.\n\nThis little memory box is my way of saying: I remember. I always will. And I'm so grateful.",
+      "required": true,
+      "maxLength": 2500,
+      "help": "Separate paragraphs with a blank line."
+    },
+    "letterSignature": {
+      "type": "text",
+      "label": "Sign-off",
+      "placeholder": "With all my love,",
+      "default": "With all my love,",
+      "maxLength": 40
+    },
+    "letterSignatureName": {
+      "type": "text",
+      "label": "Signed by",
+      "placeholder": "Your name",
+      "default": "Aarav",
+      "maxLength": 40
+    },
+
+    "albumTitle": {
+      "type": "text",
+      "label": "Album title",
+      "placeholder": "Moments I Keep",
+      "default": "Moments I Keep",
+      "maxLength": 60
+    },
+    "albumSubtitle": {
+      "type": "text",
+      "label": "Album subtitle",
+      "placeholder": "Five little pieces of forever",
+      "default": "Five little pieces of forever",
+      "maxLength": 100
+    },
+    "photos": {
+      "type": "imageGallery",
+      "label": "Your 5 photos",
+      "accept": "image/*",
+      "maxSizeMB": 800,
+      "help": "Pick 5 photos. Square or 4:5 ratio looks best."
+    },
+    "photoCaptions": {
+      "type": "textArray",
+      "label": "Photo captions",
+      "placeholder": "The first cup of tea\nThe old house\nThe birthday cake\n…",
+      "default": [
+        "The old house",
+        "Your famous tea",
+        "That laugh I'll never forget",
+        "The day we made everything",
+        "Always in my heart"
+      ],
+      "help": "One caption per line. Matches photos in order."
+    },
+
+    "finalTitle": {
+      "type": "text",
+      "label": "Final heading",
+      "placeholder": "Always, in Every Memory",
+      "default": "Always, in Every Memory",
+      "maxLength": 60
+    },
+    "finalBody": {
+      "type": "textarea",
+      "label": "Final message",
+      "placeholder": "Some people shape our lives…",
+      "default": "Some people shape our lives in ways we don't fully understand until much later. You are one of them. Every memory I keep, I keep because of you.",
+      "maxLength": 400
+    },
+    "finalFooter": {
+      "type": "text",
+      "label": "Footer line",
+      "placeholder": "With love, always ♡",
+      "default": "With love, always ♡",
+      "maxLength": 80
+    },
+    "finalButton": {
+      "type": "text",
+      "label": "Replay button",
+      "placeholder": "Replay our story",
+      "default": "Replay our story ↻",
+      "maxLength": 40
+    }
+  }
+}
