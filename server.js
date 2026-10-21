@@ -1011,6 +1011,7 @@ const TEMPLATE_PRICES = {
   "love-proposal": 599,
   "birthday-magic": 299,
   "loveletter": 39,
+  "eternal-anniversary": 599,
 };
 
 const MAX_ENVELOPE_BYTES = 1024 * 1024 * 1024;

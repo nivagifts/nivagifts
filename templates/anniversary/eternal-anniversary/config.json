@@ -1,0 +1,352 @@
+{
+  "id": "eternal-anniversary",
+  "name": "Eternal Anniversary",
+  "category": "love",
+  "description": "A romantic seven-chapter journey: hero cover, handwritten letter, story timeline, memory gallery, anniversary countdown, heart-catching game, and a forever finale.",
+  "templatePath": "/templates/love/eternal-anniversary/template.html",
+  "thumbnail": "/templates/love/eternal-anniversary/thumb.jpg",
+
+  "templateLimits": {
+    "photoSlots": 10
+  },
+
+  "sections": [
+    {
+      "title": "The Couple",
+      "subtitle": "Who is this gift for?",
+      "fields": ["name1", "name2", "anniversaryDate"]
+    },
+    {
+      "title": "Cover Page",
+      "subtitle": "The first thing they'll see",
+      "fields": ["heroEyebrow", "heroTitleTop", "heroTitleScript", "heroSubtitle", "heroButton"]
+    },
+    {
+      "title": "Handwritten Letter",
+      "subtitle": "Say what's in your heart",
+      "fields": ["letterTitle", "letterGreeting", "letterBody", "letterSignature", "letterSignatureName"]
+    },
+    {
+      "title": "Story Timeline",
+      "subtitle": "The moments that made you",
+      "fields": ["timelineEyebrow", "timelineTitle", "timelineEvents"]
+    },
+    {
+      "title": "Memory Gallery",
+      "subtitle": "Ten photos to treasure",
+      "fields": ["galleryEyebrow", "galleryTitle", "gallerySubtitle", "photos", "photoCaptions"]
+    },
+    {
+      "title": "Countdown",
+      "subtitle": "Until your next anniversary",
+      "fields": ["countdownEyebrow", "countdownTitle", "countdownSubtitle", "countdownFinished"]
+    },
+    {
+      "title": "Heart Game",
+      "subtitle": "A little playful surprise",
+      "fields": ["gameEyebrow", "gameTitle", "gameSubtitle", "gameStart", "gameWin", "gameLose", "gameDuration", "gameTarget"]
+    },
+    {
+      "title": "Forever Finale",
+      "subtitle": "The last thing they'll read",
+      "fields": ["finalEyebrow", "finalTitle", "finalBody", "finalFooter", "finalButton"]
+    }
+  ],
+
+  "customization": {
+    "name1": {
+      "type": "text",
+      "label": "First name",
+      "placeholder": "e.g. Aarav",
+      "default": "Aarav",
+      "required": true,
+      "maxLength": 40
+    },
+    "name2": {
+      "type": "text",
+      "label": "Second name",
+      "placeholder": "e.g. Diya",
+      "default": "Diya",
+      "required": true,
+      "maxLength": 40
+    },
+    "anniversaryDate": {
+      "type": "date",
+      "label": "Anniversary date",
+      "default": "2024-02-14",
+      "required": true,
+      "help": "The countdown will point to the next occurrence of this date."
+    },
+
+    "heroEyebrow": {
+      "type": "text",
+      "label": "Small label above title",
+      "placeholder": "Happy Anniversary",
+      "default": "Happy Anniversary",
+      "maxLength": 40
+    },
+    "heroTitleTop": {
+      "type": "text",
+      "label": "Title line 1",
+      "placeholder": "Our",
+      "default": "Our",
+      "maxLength": 30
+    },
+    "heroTitleScript": {
+      "type": "text",
+      "label": "Title line 2 (script style)",
+      "placeholder": "Love Story",
+      "default": "Love Story",
+      "maxLength": 40
+    },
+    "heroSubtitle": {
+      "type": "textarea",
+      "label": "Subtitle",
+      "placeholder": "Every love story is beautiful, but ours is my favourite.",
+      "default": "Every love story is beautiful, but ours is my favourite.",
+      "maxLength": 200
+    },
+    "heroButton": {
+      "type": "text",
+      "label": "Button text",
+      "placeholder": "Begin our journey",
+      "default": "Begin our journey",
+      "maxLength": 40
+    },
+
+    "letterTitle": {
+      "type": "text",
+      "label": "Letter title",
+      "placeholder": "A letter for you",
+      "default": "A letter for you",
+      "maxLength": 60
+    },
+    "letterGreeting": {
+      "type": "text",
+      "label": "Greeting",
+      "placeholder": "My Dearest,",
+      "default": "My Dearest,",
+      "maxLength": 40
+    },
+    "letterBody": {
+      "type": "textarea",
+      "label": "Letter body",
+      "placeholder": "Write from the heart…",
+      "default": "From the very first moment we spoke, something in me knew you were different. You felt like home before I even understood what that meant.\n\nEvery day with you has been a page I want to read over and over again. Even the ordinary days — the quiet cups of tea, the silly arguments about what to watch — they became my favourite parts of life.\n\nThank you for being my calm in every storm, my reason to smile on the hardest days, and the person I want to grow old with.\n\nIf I could, I would relive every memory with you — a thousand times over, and it would never be enough.",
+      "required": true,
+      "maxLength": 2000,
+      "help": "Separate paragraphs with a blank line."
+    },
+    "letterSignature": {
+      "type": "text",
+      "label": "Sign-off",
+      "placeholder": "Always yours,",
+      "default": "Always yours,",
+      "maxLength": 40
+    },
+    "letterSignatureName": {
+      "type": "text",
+      "label": "Signed by",
+      "placeholder": "Your name",
+      "default": "Aarav",
+      "maxLength": 40
+    },
+
+    "timelineEyebrow": {
+      "type": "text",
+      "label": "Section label",
+      "placeholder": "Our journey",
+      "default": "Our journey",
+      "maxLength": 40
+    },
+    "timelineTitle": {
+      "type": "text",
+      "label": "Section title",
+      "placeholder": "The Story of Us",
+      "default": "The Story of Us",
+      "maxLength": 60
+    },
+    "timelineEvents": {
+      "type": "textArray",
+      "label": "Timeline events",
+      "placeholder": "12 March 2022 | The First Hello | A message that started everything.\n20 May 2022 | Our First Date | Coffee that went cold because we couldn't stop talking.",
+      "default": [
+        "12 March 2022 | The First Hello | A message that started everything. Just a simple 'hi' that changed my whole world.",
+        "20 May 2022 | Our First Date | Coffee that went cold because we couldn't stop talking.",
+        "14 Feb 2023 | First 'I Love You' | Whispered under fairy lights, and I meant every syllable.",
+        "10 Aug 2023 | Our First Trip | Three days, one suitcase, a thousand photos, and forever memories.",
+        "14 Feb 2024 | Our First Anniversary | One full year of choosing each other. The best yes of my life."
+      ],
+      "help": "One event per line:  Date | Title | Description"
+    },
+
+    "galleryEyebrow": {
+      "type": "text",
+      "label": "Section label",
+      "placeholder": "Our favourite moments",
+      "default": "Our favourite moments",
+      "maxLength": 40
+    },
+    "galleryTitle": {
+      "type": "text",
+      "label": "Section title",
+      "placeholder": "Captured Memories",
+      "default": "Captured Memories",
+      "maxLength": 60
+    },
+    "gallerySubtitle": {
+      "type": "text",
+      "label": "Section subtitle",
+      "placeholder": "Ten little pieces of forever.",
+      "default": "Ten little pieces of forever.",
+      "maxLength": 100
+    },
+    "photos": {
+      "type": "imageGallery",
+      "label": "Your 10 photos",
+      "accept": "image/*",
+      "maxSizeMB": 800,
+      "help": "Pick 10 photos. Use a 4:5 ratio for the best look."
+    },
+    "photoCaptions": {
+      "type": "textArray",
+      "label": "Photo captions",
+      "placeholder": "Where it began\nThat laugh\nOur first trip\n…",
+      "default": [
+        "Where it began",
+        "That laugh",
+        "Our first trip",
+        "Coffee dates",
+        "Rainy evenings",
+        "Your smile",
+        "Us being silly",
+        "Sunset walks",
+        "Just us",
+        "Forever to go"
+      ],
+      "help": "One caption per line. Matches photos in order."
+    },
+
+    "countdownEyebrow": {
+      "type": "text",
+      "label": "Section label",
+      "placeholder": "Counting down",
+      "default": "Counting down",
+      "maxLength": 40
+    },
+    "countdownTitle": {
+      "type": "text",
+      "label": "Section title",
+      "placeholder": "Until Our Next Anniversary",
+      "default": "Until Our Next Anniversary",
+      "maxLength": 60
+    },
+    "countdownSubtitle": {
+      "type": "textarea",
+      "label": "Subtitle",
+      "placeholder": "Because every day with you is worth celebrating.",
+      "default": "Because every day with you is worth celebrating.",
+      "maxLength": 200
+    },
+    "countdownFinished": {
+      "type": "text",
+      "label": "Message when countdown hits zero",
+      "placeholder": "Today is the day! Happy Anniversary, my love. 🎉",
+      "default": "Today is the day! Happy Anniversary, my love. 🎉",
+      "maxLength": 120
+    },
+
+    "gameEyebrow": {
+      "type": "text",
+      "label": "Section label",
+      "placeholder": "A tiny gift",
+      "default": "A tiny gift",
+      "maxLength": 40
+    },
+    "gameTitle": {
+      "type": "text",
+      "label": "Game title",
+      "placeholder": "Catch My Hearts",
+      "default": "Catch My Hearts",
+      "maxLength": 60
+    },
+    "gameSubtitle": {
+      "type": "textarea",
+      "label": "Game instructions",
+      "placeholder": "Catch 10 hearts in 30 seconds.",
+      "default": "Catch 10 hearts in 30 seconds. Every one holds a kiss from me!",
+      "maxLength": 200
+    },
+    "gameStart": {
+      "type": "text",
+      "label": "Start button",
+      "placeholder": "Start Game",
+      "default": "Start Game",
+      "maxLength": 30
+    },
+    "gameWin": {
+      "type": "text",
+      "label": "Win message",
+      "placeholder": "You caught them all!",
+      "default": "You caught them all! Kisses sent 💋",
+      "maxLength": 120
+    },
+    "gameLose": {
+      "type": "text",
+      "label": "Lose message",
+      "placeholder": "Almost! Try again?",
+      "default": "Almost! Try again? Every heart is worth it 💕",
+      "maxLength": 120
+    },
+    "gameDuration": {
+      "type": "text",
+      "label": "Duration (seconds)",
+      "placeholder": "30",
+      "default": "30",
+      "maxLength": 3
+    },
+    "gameTarget": {
+      "type": "text",
+      "label": "Hearts to win",
+      "placeholder": "10",
+      "default": "10",
+      "maxLength": 2
+    },
+
+    "finalEyebrow": {
+      "type": "text",
+      "label": "Section label",
+      "placeholder": "And so we continue",
+      "default": "And so we continue",
+      "maxLength": 40
+    },
+    "finalTitle": {
+      "type": "text",
+      "label": "Final heading",
+      "placeholder": "Forever, With You",
+      "default": "Forever, With You",
+      "maxLength": 60
+    },
+    "finalBody": {
+      "type": "textarea",
+      "label": "Final message",
+      "placeholder": "Here's to more sunsets, more laughter…",
+      "default": "Here's to more sunsets, more laughter, and a lifetime of little moments that only we understand.",
+      "maxLength": 400
+    },
+    "finalFooter": {
+      "type": "text",
+      "label": "Footer line",
+      "placeholder": "Happy Anniversary, My Love ♡",
+      "default": "Happy Anniversary, My Love ♡",
+      "maxLength": 80
+    },
+    "finalButton": {
+      "type": "text",
+      "label": "Replay button",
+      "placeholder": "Replay our story",
+      "default": "Replay our story",
+      "maxLength": 40
+    }
+  }
+}

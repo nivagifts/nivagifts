@@ -21,6 +21,7 @@ const TEMPLATE_PRICES = {
   "love-proposal": 599,
   "birthday-magic": 299,
   "loveletter": 39,
+  "eternal-anniversary": 599,
 };
 
 const TEMPLATE_PLAN_NAMES = {

@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Our Story — Happy Anniversary</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="googleFontsLink" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Great+Vibes&family=Poppins:wght@300;400;500;600&display=swap">
+
+<style>
+:root {
+  --bg: #fff5f7;
+  --bg-deep: #ffe4ec;
+  --primary: #e75a7c;
+  --primary-dark: #a83258;
+  --accent: #f7b2c1;
+  --soft: #fde7ee;
+  --ink: #4a2b3a;
+  --muted: #9b7b88;
+  --gold: #d4a456;
+
+  --font-heading: 'Playfair Display', serif;
+  --font-script: 'Great Vibes', cursive;
+  --font-body: 'Poppins', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  min-height: 100vh; min-height: 100dvh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; touch-action: manipulation; cursor: pointer; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: .8; }
+  100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.bg-hearts {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+}
+.bg-hearts span {
+  position: absolute; bottom: -60px;
+  color: var(--accent); opacity: 0;
+  animation: floatUp linear infinite;
+  font-size: 20px;
+}
+
+.page {
+  position: relative;
+  display: none;
+  min-height: 100vh; min-height: 100dvh;
+  width: 100%;
+  padding: 40px 20px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
+  z-index: 1;
+}
+.page.active { display: flex; flex-direction: column; }
+.page > * { animation: fadeUp .9s ease both; }
+
+.page-inner {
+  width: min(100%, 900px);
+  margin: auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+h1, h2, h3 { font-family: var(--font-heading); font-weight: 600; line-height: 1.15; }
+.script { font-family: var(--font-script); font-weight: 400; }
+.eyebrow {
+  font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--primary); margin-bottom: 18px; font-weight: 500;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 28px; min-height: 48px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 50px;
+  font-size: 13px; letter-spacing: 1.5px; font-weight: 500;
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+  transition: .35s ease;
+  margin-top: 24px;
+}
+.btn:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.16); }
+.btn.ghost {
+  background: transparent; color: var(--primary-dark);
+  border: 1.5px solid var(--primary);
+  box-shadow: none;
+}
+.btn.ghost:hover { background: var(--primary); color: #fff; }
+
+/* PAGE 1 — HERO */
+#page1 { text-align: center; justify-content: center; }
+#page1 .page-inner { display: flex; flex-direction: column; align-items: center; }
+
+.hero-names {
+  display: flex; align-items: center; justify-content: center;
+  gap: 18px; margin-bottom: 20px;
+  font-family: var(--font-script);
+  font-size: clamp(48px, 11vw, 90px);
+  color: var(--primary-dark);
+  flex-wrap: wrap;
+}
+.hero-names .amp {
+  font-family: var(--font-heading);
+  font-style: italic; font-size: .6em;
+  color: var(--primary); opacity: .75;
+  animation: pulse 2.5s infinite;
+}
+.hero-title {
+  font-size: clamp(38px, 8vw, 70px);
+  margin-bottom: 22px;
+}
+.hero-title .script {
+  display: block; color: var(--primary); font-size: 1.25em;
+}
+.hero-subtitle {
+  max-width: 460px; margin: 0 auto;
+  color: var(--muted); font-size: 14px; line-height: 1.9;
+}
+
+.hero-rings {
+  position: relative;
+  width: 110px; height: 110px;
+  margin: 0 auto 30px;
+}
+.hero-rings::before, .hero-rings::after {
+  content: ""; position: absolute;
+  width: 60px; height: 60px;
+  border: 2.5px solid var(--primary);
+  border-radius: 50%;
+  top: 50%;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+.hero-rings::before { left: 12px; transform: translateY(-50%); }
+.hero-rings::after  { right: 12px; transform: translateY(-50%); animation-delay: .4s; border-color: var(--gold); }
+
+/* PAGE 2 — LETTER */
+#page2 { justify-content: center; }
+.letter {
+  width: min(100%, 640px);
+  margin: 0 auto;
+  padding: clamp(28px, 6vw, 60px);
+  background:
+    repeating-linear-gradient(transparent 0 34px, rgba(160,120,140,.09) 35px),
+    #fffcf5;
+  border-radius: 4px;
+  box-shadow: 0 25px 70px rgba(150,100,120,.14);
+  border: 1px solid rgba(230,180,200,.35);
+  transform: rotate(-.6deg);
+  text-align: left;
+  position: relative;
+}
+.letter::before {
+  content: "✿";
+  position: absolute; top: 14px; right: 20px;
+  font-size: 26px; color: var(--accent);
+}
+.letter-title {
+  font-family: var(--font-script);
+  font-size: clamp(34px, 6vw, 48px);
+  color: var(--primary-dark);
+  text-align: center; margin-bottom: 26px;
+}
+.letter h3 {
+  font-family: var(--font-script);
+  font-size: clamp(24px, 5vw, 34px);
+  color: var(--primary);
+  margin-bottom: 18px;
+}
+.letter p {
+  font-family: var(--font-script);
+  font-size: clamp(20px, 4.3vw, 27px);
+  line-height: 1.85;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+.letter .sig {
+  text-align: right;
+  color: var(--primary-dark);
+  margin-top: 12px;
+  font-size: clamp(22px, 5vw, 30px);
+}
+.letter .sig small {
+  display: block;
+  font-family: var(--font-script);
+  font-size: 1.05em;
+}
+
+/* PAGE 3 — TIMELINE */
+#page3 { justify-content: flex-start; padding-top: 60px; }
+.timeline-head { margin-bottom: 50px; }
+.timeline-head h2 { font-size: clamp(32px, 6vw, 52px); }
+
+.timeline {
+  position: relative;
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: 20px 0;
+  text-align: left;
+}
+.timeline::before {
+  content: ""; position: absolute;
+  left: 22px; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--accent), var(--primary), var(--accent), transparent);
+}
+.timeline-item {
+  position: relative;
+  padding-left: 65px;
+  margin-bottom: 38px;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: .7s ease;
+}
+.timeline-item.visible { opacity: 1; transform: translateX(0); }
+.timeline-dot {
+  position: absolute; left: 12px; top: 6px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 3px var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #fff;
+}
+.timeline-date {
+  display: inline-block;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--primary); font-weight: 500;
+  margin-bottom: 6px;
+}
+.timeline-item h3 {
+  font-size: clamp(20px, 4vw, 26px);
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.timeline-item p {
+  font-size: 14px; color: var(--muted); line-height: 1.75;
+}
+.timeline-card {
+  background: var(--soft);
+  padding: 20px 22px;
+  border-radius: 16px;
+  border-left: 4px solid var(--primary);
+  box-shadow: 0 8px 24px rgba(150,100,120,.07);
+}
+
+/* PAGE 4 — GALLERY */
+#page4 { justify-content: flex-start; padding-top: 60px; }
+.gallery-head { margin-bottom: 35px; }
+.gallery-head h2 { font-size: clamp(32px, 6vw, 52px); margin-bottom: 10px; }
+
+.gallery {
+  width: min(100%, 900px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+}
+.photo {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(150,100,120,.1);
+  transition: .4s cubic-bezier(.2,.7,.2,1);
+  opacity: 0;
+  transform: translateY(30px) scale(.9);
+  animation: fadeUp .7s ease forwards;
+  animation-delay: var(--delay);
+  cursor: pointer;
+  position: relative;
+}
+.photo:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 20px 40px rgba(150,100,120,.2); z-index: 3; }
+.photo img { display: block; width: 100%; aspect-ratio: 4/5; object-fit: cover; background: var(--soft); }
+.photo .cap {
+  padding: 10px 12px 14px;
+  font-family: var(--font-script);
+  font-size: 18px;
+  color: var(--primary-dark);
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* PAGE 5 — COUNTDOWN */
+#page5 { justify-content: center; text-align: center; }
+.countdown-head { margin-bottom: 40px; }
+.countdown-head h2 { font-size: clamp(32px, 6vw, 52px); }
+.countdown-head .subtitle { color: var(--muted); max-width: 480px; margin: 12px auto 0; font-size: 14px; }
+
+.countdown {
+  display: flex; justify-content: center; gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+.countdown-unit {
+  background: var(--soft);
+  border-radius: 18px;
+  padding: 18px 14px;
+  min-width: 78px;
+  box-shadow: 0 8px 24px rgba(150,100,120,.09);
+  border: 1px solid rgba(230,180,200,.35);
+}
+.countdown-num {
+  font-family: var(--font-heading);
+  font-size: clamp(30px, 7vw, 46px);
+  font-weight: 700;
+  color: var(--primary-dark);
+  line-height: 1;
+}
+.countdown-label {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-top: 6px;
+}
+.countdown-finished {
+  font-family: var(--font-script);
+  font-size: clamp(26px, 6vw, 36px);
+  color: var(--primary);
+}
+
+/* PAGE 6 — GAME */
+#page6 { justify-content: center; text-align: center; }
+.game-head { margin-bottom: 22px; }
+.game-head h2 { font-size: clamp(32px, 6vw, 50px); }
+.game-head .subtitle { color: var(--muted); font-size: 13px; max-width: 420px; margin: 8px auto 0; }
+
+.game-hud {
+  display: flex; justify-content: center; gap: 20px;
+  margin-bottom: 18px;
+  font-size: 13px; color: var(--muted);
+}
+.game-hud strong { color: var(--primary-dark); font-size: 18px; font-family: var(--font-heading); }
+
+.game-arena {
+  position: relative;
+  width: min(100%, 500px);
+  height: clamp(320px, 60vh, 480px);
+  margin: 0 auto;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.7), transparent 60%),
+    linear-gradient(180deg, var(--soft), var(--bg-deep));
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1.5px solid rgba(230,180,200,.5);
+  box-shadow: inset 0 0 40px rgba(150,100,120,.08), 0 20px 40px rgba(150,100,120,.12);
+  cursor: crosshair;
+}
+.game-arena .start-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; background: rgba(255,255,255,.65);
+  backdrop-filter: blur(3px);
+  z-index: 5;
+  padding: 20px;
+}
+.game-arena .start-overlay p {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 28px);
+  color: var(--primary-dark);
+  max-width: 80%;
+}
+
+.game-heart {
+  position: absolute;
+  font-size: clamp(30px, 7vw, 42px);
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+  animation: heartPop .35s ease both;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.12));
+  transition: transform .1s;
+}
+.game-heart:active { transform: scale(.85); }
+@keyframes heartPop {
+  from { transform: scale(.2); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.game-heart.caught { animation: caught .4s forwards; pointer-events: none; }
+@keyframes caught {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.game-status {
+  min-height: 26px; margin-top: 16px;
+  font-family: var(--font-script);
+  font-size: 22px; color: var(--primary);
+}
+
+/* PAGE 7 — FINAL */
+#page7 { text-align: center; justify-content: center; }
+.final-wrap { position: relative; }
+.final-heart-big {
+  font-size: clamp(60px, 12vw, 90px);
+  display: block;
+  margin-bottom: 20px;
+  animation: pulse 1.8s infinite;
+}
+.final-wrap h2 {
+  font-family: var(--font-script);
+  font-size: clamp(48px, 11vw, 88px);
+  color: var(--primary-dark);
+  margin-bottom: 20px;
+  line-height: 1;
+}
+.final-wrap p {
+  max-width: 480px; margin: 0 auto 18px;
+  color: var(--muted); font-size: 15px; line-height: 1.9;
+}
+.final-footer {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--primary) !important;
+  margin-top: 20px !important;
+}
+
+/* PAGE DOTS */
+.page-dots {
+  position: fixed; right: 16px; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 10px;
+  z-index: 50;
+}
+.page-dots button {
+  width: 9px; height: 9px; border-radius: 50%;
+  border: none; padding: 0;
+  background: var(--accent); opacity: .4;
+  transition: .3s; cursor: pointer;
+}
+.page-dots button.active {
+  opacity: 1; background: var(--primary);
+  transform: scale(1.4);
+}
+
+/* LIGHTBOX */
+.lightbox {
+  position: fixed; inset: 0;
+  background: rgba(30,10,20,.9);
+  display: none; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+  cursor: zoom-out;
+}
+.lightbox.open { display: flex; animation: fadeUp .3s ease; }
+.lightbox img {
+  max-width: 90vw; max-height: 85vh;
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  background: #fff;
+  padding: 8px;
+}
+.lightbox-close {
+  position: absolute; top: 20px; right: 24px;
+  background: none; border: none;
+  color: #fff; font-size: 36px;
+  cursor: pointer; line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .page { padding: 32px 14px; padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+  .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; }
+  .photo .cap { font-size: 15px; padding: 8px 8px 12px; }
+  .letter { transform: none; padding: 26px 20px; }
+  .letter p { line-height: 1.75; }
+  .timeline::before { left: 16px; }
+  .timeline-item { padding-left: 52px; }
+  .timeline-dot { left: 6px; width: 20px; height: 20px; }
+  .timeline-card { padding: 16px 18px; }
+  .countdown { gap: 8px; }
+  .countdown-unit { padding: 14px 10px; min-width: 66px; border-radius: 14px; }
+  .page-dots { right: 8px; }
+  .page-dots button { width: 8px; height: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-hearts" id="bgHearts"></div>
+<div class="page-dots" id="pageDots"></div>
+
+<!-- PAGE 1 -->
+<section class="page active" id="page1">
+  <div class="page-inner">
+    <div class="hero-rings"></div>
+    <div class="hero-names" id="heroNames"></div>
+    <p class="eyebrow" id="p1-eyebrow"></p>
+    <h1 class="hero-title">
+      <span id="p1-titleTop"></span>
+      <span class="script" id="p1-titleScript"></span>
+    </h1>
+    <p class="hero-subtitle" id="p1-subtitle"></p>
+    <button class="btn" onclick="goTo(2)">
+      <span id="p1-btn"></span> →
+    </button>
+  </div>
+</section>
+
+<!-- PAGE 2 -->
+<section class="page" id="page2">
+  <div class="page-inner">
+    <div class="letter">
+      <div class="letter-title" id="letter-title"></div>
+      <h3 id="letter-greeting"></h3>
+      <div id="letter-paragraphs"></div>
+      <p class="sig">
+        <span id="letter-signature"></span>
+        <small id="letter-signatureName"></small>
+      </p>
+    </div>
+    <button class="btn ghost" onclick="goTo(3)">Our timeline →</button>
+  </div>
+</section>
+
+<!-- PAGE 3 -->
+<section class="page" id="page3">
+  <div class="timeline-head page-inner">
+    <p class="eyebrow" id="tl-eyebrow"></p>
+    <h2 id="tl-title"></h2>
+  </div>
+  <div class="timeline" id="timeline"></div>
+  <div class="page-inner">
+    <button class="btn" onclick="goTo(4)">Our photos →</button>
+  </div>
+</section>
+
+<!-- PAGE 4 -->
+<section class="page" id="page4">
+  <div class="gallery-head page-inner">
+    <p class="eyebrow" id="gal-eyebrow"></p>
+    <h2 id="gal-title"></h2>
+    <p style="color:var(--muted); font-size:13px" id="gal-subtitle"></p>
+  </div>
+  <div class="gallery" id="gallery"></div>
+  <div class="page-inner">
+    <button class="btn" onclick="goTo(5)">Our countdown →</button>
+  </div>
+</section>
+
+<!-- PAGE 5 -->
+<section class="page" id="page5">
+  <div class="page-inner">
+    <div class="countdown-head">
+      <p class="eyebrow" id="cd-eyebrow"></p>
+      <h2 id="cd-title"></h2>
+      <p class="subtitle" id="cd-subtitle"></p>
+    </div>
+    <div class="countdown" id="countdown">
+      <div class="countdown-unit"><div class="countdown-num" id="cd-d">0</div><div class="countdown-label">Days</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-h">0</div><div class="countdown-label">Hours</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-m">0</div><div class="countdown-label">Minutes</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-s">0</div><div class="countdown-label">Seconds</div></div>
+    </div>
+    <div class="countdown-finished" id="cd-finished" style="display:none"></div>
+    <button class="btn" onclick="goTo(6)">A little game →</button>
+  </div>
+</section>
+
+<!-- PAGE 6 -->
+<section class="page" id="page6">
+  <div class="page-inner">
+    <div class="game-head">
+      <p class="eyebrow" id="gm-eyebrow"></p>
+      <h2 id="gm-title"></h2>
+      <p class="subtitle" id="gm-subtitle"></p>
+    </div>
+    <div class="game-hud">
+      <div>Score <strong id="gm-score">0</strong>/<span id="gm-target">10</span></div>
+      <div>Time <strong id="gm-time">30</strong>s</div>
+    </div>
+    <div class="game-arena" id="gameArena">
+      <div class="start-overlay" id="startOverlay">
+        <p id="gm-startText"></p>
+        <button class="btn" id="gm-startBtn" onclick="startGame()"></button>
+      </div>
+    </div>
+    <p class="game-status" id="gm-status"></p>
+    <div id="gm-after" style="display:none">
+      <button class="btn" onclick="goTo(7)">See your surprise →</button>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 7 -->
+<section class="page" id="page7">
+  <div class="page-inner final-wrap">
+    <span class="final-heart-big">💗</span>
+    <p class="eyebrow" id="fin-eyebrow"></p>
+    <h2 id="fin-title"></h2>
+    <p id="fin-body"></p>
+    <p class="final-footer" id="fin-footer"></p>
+    <button class="btn ghost" onclick="restart()">
+      <span id="fin-btn"></span> ↻
+    </button>
+  </div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- AUDIO -->
+<audio id="music" loop preload="none"></audio>
+
+<script>
+"use strict";
+
+/* ============================================================
+   STATE + DEFAULTS
+   ============================================================ */
+let CONFIG = null;
+let currentPage = 1;
+let countdownInterval = null;
+const music = document.getElementById("music");
+
+function defaults() {
+  return {
+    couple: { name1: "Aarav", name2: "Diya", anniversaryDate: "2024-02-14" },
+    heroEyebrow: "Happy Anniversary",
+    heroTitleTop: "Our",
+    heroTitleScript: "Love Story",
+    heroSubtitle: "Every love story is beautiful, but ours is my favourite.",
+    heroButton: "Begin our journey",
+
+    letterTitle: "A letter for you",
+    letterGreeting: "My Dearest,",
+    letterBody: "From the very first moment we spoke, something in me knew you were different.\n\nEvery day with you has been a page I want to read over and over again.\n\nThank you for being my calm in every storm and the person I want to grow old with.",
+    letterSignature: "Always yours,",
+    letterSignatureName: "Aarav",
+
+    timelineEyebrow: "Our journey",
+    timelineTitle: "The Story of Us",
+    timelineEvents: [
+      "12 March 2022 | The First Hello | A message that started everything.",
+      "20 May 2022 | Our First Date | Coffee that went cold.",
+      "14 Feb 2023 | First 'I Love You' | Whispered under fairy lights.",
+      "14 Feb 2024 | Our First Anniversary | One full year of choosing each other."
+    ],
+
+    galleryEyebrow: "Our favourite moments",
+    galleryTitle: "Captured Memories",
+    gallerySubtitle: "Ten little pieces of forever.",
+    photos: [],
+    photoCaptions: [
+      "Where it began","That laugh","Our first trip","Coffee dates",
+      "Rainy evenings","Your smile","Us being silly","Sunset walks",
+      "Just us","Forever to go"
+    ],
+
+    countdownEyebrow: "Counting down",
+    countdownTitle: "Until Our Next Anniversary",
+    countdownSubtitle: "Because every day with you is worth celebrating.",
+    countdownFinished: "Today is the day! Happy Anniversary, my love. 🎉",
+
+    gameEyebrow: "A tiny gift",
+    gameTitle: "Catch My Hearts",
+    gameSubtitle: "Catch 10 hearts in 30 seconds.",
+    gameStart: "Start Game",
+    gameWin: "You caught them all! 💋",
+    gameLose: "Almost! Try again? 💕",
+    gameDuration: "30",
+    gameTarget: "10",
+
+    finalEyebrow: "And so we continue",
+    finalTitle: "Forever, With You",
+    finalBody: "Here's to more sunsets, more laughter, and a lifetime of little moments.",
+    finalFooter: "Happy Anniversary, My Love ♡",
+    finalButton: "Replay our story"
+  };
+}
+
+/* ============================================================
+   RENDER FROM CONFIG
+   ============================================================ */
+function render(cfg) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.textContent = v; };
+  const names = document.getElementById("heroNames");
+  names.innerHTML = `
+    <span>${escapeHtml(cfg.couple?.name1 || "")}</span>
+    <span class="amp">&amp;</span>
+    <span>${escapeHtml(cfg.couple?.name2 || "")}</span>
+  `;
+
+  set("p1-eyebrow", cfg.heroEyebrow);
+  set("p1-titleTop", cfg.heroTitleTop);
+  set("p1-titleScript", cfg.heroTitleScript);
+  set("p1-subtitle", cfg.heroSubtitle);
+  set("p1-btn", cfg.heroButton);
+
+  set("letter-title", cfg.letterTitle);
+  set("letter-greeting", cfg.letterGreeting);
+  set("letter-signature", cfg.letterSignature);
+  set("letter-signatureName", cfg.letterSignatureName);
+  const lp = document.getElementById("letter-paragraphs");
+  lp.innerHTML = "";
+  String(cfg.letterBody || "").split(/\n\s*\n/).forEach(t => {
+    if (!t.trim()) return;
+    const p = document.createElement("p"); p.textContent = t; lp.appendChild(p);
+  });
+
+  set("tl-eyebrow", cfg.timelineEyebrow);
+  set("tl-title", cfg.timelineTitle);
+  const tl = document.getElementById("timeline");
+  tl.innerHTML = "";
+  (Array.isArray(cfg.timelineEvents) ? cfg.timelineEvents : []).forEach((line, i) => {
+    const parts = String(line).split("|").map(s => s.trim());
+    const date = parts[0] || "";
+    const title = parts[1] || "";
+    const desc = parts[2] || "";
+    const item = document.createElement("div");
+    item.className = "timeline-item";
+    item.innerHTML = `
+      <div class="timeline-dot">${i + 1}</div>
+      <div class="timeline-card">
+        <span class="timeline-date">${escapeHtml(date)}</span>
+        <h3>${escapeHtml(title)}</h3>
+        <p>${escapeHtml(desc)}</p>
+      </div>`;
+    tl.appendChild(item);
+  });
+
+  set("gal-eyebrow", cfg.galleryEyebrow);
+  set("gal-title", cfg.galleryTitle);
+  set("gal-subtitle", cfg.gallerySubtitle);
+  buildGallery(cfg.photos || [], cfg.photoCaptions || []);
+
+  set("cd-eyebrow", cfg.countdownEyebrow);
+  set("cd-title", cfg.countdownTitle);
+  set("cd-subtitle", cfg.countdownSubtitle);
+  set("cd-finished", cfg.countdownFinished);
+
+  set("gm-eyebrow", cfg.gameEyebrow);
+  set("gm-title", cfg.gameTitle);
+  set("gm-subtitle", cfg.gameSubtitle);
+  set("gm-startText", cfg.gameSubtitle);
+  set("gm-startBtn", cfg.gameStart);
+  document.getElementById("gm-target").textContent = String(cfg.gameTarget || 10);
+
+  set("fin-eyebrow", cfg.finalEyebrow);
+  set("fin-title", cfg.finalTitle);
+  set("fin-body", cfg.finalBody);
+  set("fin-footer", cfg.finalFooter);
+  set("fin-btn", cfg.finalButton);
+}
+
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function goTo(n) {
+  if (n === currentPage) return;
+  const cur = document.getElementById("page" + currentPage);
+  const next = document.getElementById("page" + n);
+  if (!next) return;
+  cur.classList.remove("active");
+  next.classList.add("active");
+  currentPage = n;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  updateDots();
+  if (n === 3) revealTimeline();
+  if (n === 5) startCountdown();
+  if (n === 6) resetGameUI();
+  if (n === 7) celebrateFinal();
+}
+
+function buildPageDots() {
+  const dots = document.getElementById("pageDots");
+  dots.innerHTML = "";
+  for (let i = 1; i <= 7; i++) {
+    const b = document.createElement("button");
+    b.setAttribute("aria-label", "Go to page " + i);
+    b.addEventListener("click", () => goTo(i));
+    dots.appendChild(b);
+  }
+  updateDots();
+}
+function updateDots() {
+  document.querySelectorAll(".page-dots button").forEach((b, i) => {
+    b.classList.toggle("active", i + 1 === currentPage);
+  });
+}
+
+/* ============================================================
+   BG HEARTS
+   ============================================================ */
+function startBgHearts() {
+  const container = document.getElementById("bgHearts");
+  const glyphs = ["♡", "♥", "❥", "💕"];
+  for (let i = 0; i < 15; i++) {
+    const h = document.createElement("span");
+    h.textContent = glyphs[i % glyphs.length];
+    h.style.left = Math.random() * 100 + "%";
+    h.style.fontSize = (14 + Math.random() * 22) + "px";
+    h.style.animationDuration = (12 + Math.random() * 12) + "s";
+    h.style.animationDelay = (-Math.random() * 15) + "s";
+    container.appendChild(h);
+  }
+}
+
+/* ============================================================
+   TIMELINE reveal
+   ============================================================ */
+function revealTimeline() {
+  const items = document.querySelectorAll(".timeline-item");
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  items.forEach((item, i) => {
+    item.style.transitionDelay = (i * 0.08) + "s";
+    obs.observe(item);
+  });
+}
+
+/* ============================================================
+   GALLERY + LIGHTBOX
+   ============================================================ */
+function buildGallery(photos, captions) {
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+  photos.forEach((src, i) => {
+    if (!src) return;
+    const card = document.createElement("div");
+    card.className = "photo";
+    card.style.setProperty("--delay", (i * 0.06) + "s");
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = captions[i] || "Memory";
+    img.loading = "lazy";
+    img.onerror = function() {
+      this.style.background = "linear-gradient(135deg,var(--soft),var(--accent))";
+    };
+    img.addEventListener("click", () => openLightbox(src));
+
+    const cap = document.createElement("div");
+    cap.className = "cap";
+    cap.textContent = captions[i] || "";
+
+    card.appendChild(img);
+    card.appendChild(cap);
+    gallery.appendChild(card);
+  });
+}
+
+function openLightbox(src) {
+  document.getElementById("lightboxImg").src = src;
+  document.getElementById("lightbox").classList.add("open");
+}
+function closeLightbox(e) {
+  if (e && e.target.tagName === "IMG" && e.target.id !== "lightboxImg") return;
+  document.getElementById("lightbox").classList.remove("open");
+}
+
+/* ============================================================
+   COUNTDOWN
+   ============================================================ */
+function startCountdown() {
+  if (!CONFIG?.couple?.anniversaryDate) return;
+  clearInterval(countdownInterval);
+  updateCountdown();
+  countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function updateCountdown() {
+  const raw = CONFIG?.couple?.anniversaryDate;
+  if (!raw) return;
+  const now = new Date();
+  const target = new Date(raw);
+  const next = new Date(now.getFullYear(), target.getMonth(), target.getDate(), 0, 0, 0);
+  if (next < now) next.setFullYear(now.getFullYear() + 1);
+  const diff = next - now;
+
+  if (diff <= 0) {
+    document.getElementById("countdown").style.display = "none";
+    document.getElementById("cd-finished").style.display = "block";
+    return;
+  }
+  document.getElementById("countdown").style.display = "flex";
+  document.getElementById("cd-finished").style.display = "none";
+
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff / 3600000) % 24);
+  const m = Math.floor((diff / 60000) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  document.getElementById("cd-d").textContent = String(d).padStart(2, "0");
+  document.getElementById("cd-h").textContent = String(h).padStart(2, "0");
+  document.getElementById("cd-m").textContent = String(m).padStart(2, "0");
+  document.getElementById("cd-s").textContent = String(s).padStart(2, "0");
+}
+
+/* ============================================================
+   GAME
+   ============================================================ */
+let game = { active:false, score:0, timeLeft:30, spawnInterval:null, timerInterval:null, target:10 };
+
+function resetGameUI() {
+  const arena = document.getElementById("gameArena");
+  arena.querySelectorAll(".game-heart").forEach(el => el.remove());
+  document.getElementById("startOverlay").style.display = "flex";
+  document.getElementById("gm-score").textContent = "0";
+  document.getElementById("gm-time").textContent = String(CONFIG?.gameDuration || 30);
+  document.getElementById("gm-target").textContent = String(CONFIG?.gameTarget || 10);
+  document.getElementById("gm-status").textContent = "";
+  document.getElementById("gm-after").style.display = "none";
+  game.active = false; game.score = 0;
+  game.timeLeft = Number(CONFIG?.gameDuration) || 30;
+  game.target = Number(CONFIG?.gameTarget) || 10;
+  clearInterval(game.spawnInterval); clearInterval(game.timerInterval);
+}
+
+function startGame() {
+  resetGameUI();
+  document.getElementById("startOverlay").style.display = "none";
+  game.active = true;
+  game.score = 0;
+  game.timeLeft = Number(CONFIG?.gameDuration) || 30;
+  game.target = Number(CONFIG?.gameTarget) || 10;
+  document.getElementById("gm-status").textContent = "Tap the hearts as fast as you can!";
+  game.timerInterval = setInterval(() => {
+    game.timeLeft--;
+    document.getElementById("gm-time").textContent = String(Math.max(0, game.timeLeft));
+    if (game.timeLeft <= 0) endGame(false);
+  }, 1000);
+  game.spawnInterval = setInterval(spawnHeart, 650);
+  spawnHeart();
+}
+
+function spawnHeart() {
+  if (!game.active) return;
+  const arena = document.getElementById("gameArena");
+  const rect = arena.getBoundingClientRect();
+  const heart = document.createElement("div");
+  heart.className = "game-heart";
+  heart.textContent = ["💕","💖","💗","❤️","💘"][Math.floor(Math.random()*5)];
+  const x = Math.random() * (rect.width - 36);
+  const y = Math.random() * (rect.height - 36);
+  heart.style.left = x + "px"; heart.style.top = y + "px";
+  heart.addEventListener("click", () => catchHeart(heart));
+  heart.addEventListener("touchstart", (e) => { e.preventDefault(); catchHeart(heart); }, { passive: false });
+  arena.appendChild(heart);
+  setTimeout(() => { if (heart.parentNode && !heart.classList.contains("caught")) heart.remove(); }, 2000);
+}
+
+function catchHeart(heart) {
+  if (!game.active || heart.classList.contains("caught")) return;
+  heart.classList.add("caught");
+  game.score++;
+  document.getElementById("gm-score").textContent = String(game.score);
+  setTimeout(() => heart.remove(), 400);
+  if (game.score >= game.target) endGame(true);
+}
+
+function endGame(won) {
+  game.active = false;
+  clearInterval(game.spawnInterval); clearInterval(game.timerInterval);
+  document.getElementById("gameArena").querySelectorAll(".game-heart").forEach(el => el.remove());
+  document.getElementById("gm-status").textContent = won
+    ? (CONFIG?.gameWin || "You did it!")
+    : (CONFIG?.gameLose || "Try again!");
+  document.getElementById("gm-after").style.display = "block";
+  if (!won) {
+    const overlay = document.getElementById("startOverlay");
+    overlay.querySelector("p").textContent = CONFIG?.gameLose || "Try again!";
+    document.getElementById("gm-startBtn").textContent = "Play Again";
+    overlay.style.display = "flex";
+    document.getElementById("gm-after").style.display = "none";
+  }
+}
+
+/* ============================================================
+   FINAL + RESTART
+   ============================================================ */
+function celebrateFinal() {
+  const final = document.getElementById("page7");
+  for (let i = 0; i < 12; i++) {
+    const h = document.createElement("span");
+    h.textContent = "💖";
+    h.style.cssText = `position:fixed; left:${Math.random()*100}%; bottom:-40px;
+      font-size:${20+Math.random()*20}px; pointer-events:none; z-index:100;
+      animation: floatUp ${3+Math.random()*3}s ease-out forwards;`;
+    final.appendChild(h);
+    setTimeout(() => h.remove(), 6000);
+  }
+}
+
+function restart() {
+  resetGameUI();
+  goTo(1);
+  music.currentTime = 0;
+  if (CONFIG && music.paused) music.play().catch(() => {});
+}
+
+/* ============================================================
+   BOOT — reads NIVA_PREVIEW_UPDATE messages OR config.json
+   ============================================================ */
+function boot() {
+  CONFIG = defaults();
+  render(CONFIG);
+  buildPageDots();
+  startBgHearts();
+  startCountdown();
+
+  // Attempt to load config.json from same folder (when opened directly)
+  fetch("config.json", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : null)
+    .then(json => {
+      if (!json) return;
+      // Merge over defaults — keeps backwards compatibility
+      CONFIG = { ...defaults(), ...json,
+        couple: { ...defaults().couple, ...(json.couple || {}) }
+      };
+      // Normalize photoCaptions / timelineEvents into arrays
+      CONFIG.photoCaptions = Array.isArray(json.photoCaptions) ? json.photoCaptions
+                          : (json.photoCaptions ? String(json.photoCaptions).split("\n") : defaults().photoCaptions);
+      CONFIG.timelineEvents = Array.isArray(json.timelineEvents) ? json.timelineEvents
+                            : (json.timelineEvents ? String(json.timelineEvents).split("\n") : defaults().timelineEvents);
+      CONFIG.photos = Array.isArray(json.photos) ? json.photos : [];
+      render(CONFIG);
+      startCountdown();
+    })
+    .catch(() => {});
+
+  // ── NIVA editor live preview ──────────────────────────
+  // Editor posts NIVA_PREVIEW_UPDATE { data: {...} } — we merge into CONFIG and re-render.
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin) return;
+    const msg = event.data || {};
+
+    if (msg.type === "NIVA_PREVIEW_UPDATE" && msg.data) {
+      const d = msg.data;
+      CONFIG = {
+        ...defaults(),
+        ...d,
+        couple: {
+          ...defaults().couple,
+          name1: d.name1 || defaults().couple.name1,
+          name2: d.name2 || defaults().couple.name2,
+          anniversaryDate: d.anniversaryDate || defaults().couple.anniversaryDate
+        },
+        // map editor keys → template keys
+        heroEyebrow: d.heroEyebrow,
+        heroTitleTop: d.heroTitleTop,
+        heroTitleScript: d.heroTitleScript,
+        heroSubtitle: d.heroSubtitle,
+        heroButton: d.heroButton,
+        letterTitle: d.letterTitle,
+        letterGreeting: d.letterGreeting,
+        letterBody: d.letterBody,
+        letterSignature: d.letterSignature,
+        letterSignatureName: d.letterSignatureName,
+        timelineEyebrow: d.timelineEyebrow,
+        timelineTitle: d.timelineTitle,
+        galleryEyebrow: d.galleryEyebrow,
+        galleryTitle: d.galleryTitle,
+        gallerySubtitle: d.gallerySubtitle,
+        countdownEyebrow: d.countdownEyebrow,
+        countdownTitle: d.countdownTitle,
+        countdownSubtitle: d.countdownSubtitle,
+        countdownFinished: d.countdownFinished,
+        gameEyebrow: d.gameEyebrow,
+        gameTitle: d.gameTitle,
+        gameSubtitle: d.gameSubtitle,
+        gameStart: d.gameStart,
+        gameWin: d.gameWin,
+        gameLose: d.gameLose,
+        gameDuration: d.gameDuration,
+        gameTarget: d.gameTarget,
+        finalEyebrow: d.finalEyebrow,
+        finalTitle: d.finalTitle,
+        finalBody: d.finalBody,
+        finalFooter: d.finalFooter,
+        finalButton: d.finalButton
+      };
+
+      // timeline events: editor sends array
+      if (Array.isArray(d.timelineEvents)) CONFIG.timelineEvents = d.timelineEvents;
+
+      // photos: editor sends array of object URLs
+      if (Array.isArray(d.photos)) CONFIG.photos = d.photos;
+
+      // captions: editor sends array
+      if (Array.isArray(d.photoCaptions)) CONFIG.photoCaptions = d.photoCaptions;
+
+      render(CONFIG);
+      startCountdown();
+    }
+
+    // Signal readiness so editor can retry-send
+    if (msg.type === "NIVA_PREVIEW_PING") {
+      try {
+        window.parent.postMessage(
+          { type: "NIVA_PREVIEW_READY" },
+          window.location.origin
+        );
+      } catch {}
+    }
+  });
+
+  // Announce readiness to parent (editor iframe)
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin);
+    }
+  } catch {}
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot, { once: true });
+} else {
+  boot();
+}
+</script>
+</body>
+</html>
