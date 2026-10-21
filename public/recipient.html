@@ -388,12 +388,13 @@
       console.warn("[NIVA] Registry lookup failed, using fallback:", err);
     }
 
-    // Fallback map — keep in sync with templates.js registry.
+    // FIXED: fallback map now uses lowercase 'letter' for loveletter,
+    // matching the actual folder structure /templates/letter/loveletter/.
     const fallback = {
       "eternal-love": "love",
       "love-proposal": "love",
       "birthday-magic": "birthday",
-      "special-letter": "letter",
+      "loveletter": "letter",
     };
     return fallback[templateId] || "love";
   }

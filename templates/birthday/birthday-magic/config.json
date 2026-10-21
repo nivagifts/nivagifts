@@ -5,7 +5,7 @@
   "description": "A joyful multi-page birthday experience filled with wishes, memories, photos, a love letter, a video memory, and a fun heart-catching game.",
   "price": 499,
   "currency": "INR",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "active": true,
   "templatePath": "/templates/birthday/birthday-magic/template.html",
   "previewImage": "/templates/birthday/birthday-magic/preview.jpg",
@@ -13,18 +13,24 @@
     "Animated welcome and gift box",
     "Personalised birthday greeting",
     "Love letter",
-    "Two photo galleries (10 memories)",
-    "Video memory page",
-    "Interactive heart-catching game",
+    "Photo gallery (5 memories)",
+    "Interactive birthday quiz",
     "Final message card with confetti",
     "Optional background music",
+    "Light / dark theme + colour palette selector",
     "Responsive on mobile and desktop"
   ],
+
+  "templateLimits": {
+    "photoSlots": 5,
+    "note": "Template has exactly 5 photo slots. Editor must show only 5 image upload fields."
+  },
+
   "customization": {
     "personName": {
       "label": "Birthday person's name",
       "type": "text",
-      "default": "My Favourite Person",
+      "default": "Birthday Star",
       "required": true,
       "maxLength": 60,
       "placeholder": "e.g. Anjali"
@@ -32,48 +38,79 @@
     "senderName": {
       "label": "Your name",
       "type": "text",
-      "default": "Your Favourite Human",
+      "default": "Someone Who Cares",
       "required": true,
       "maxLength": 60,
       "placeholder": "e.g. Arjun"
     },
+    "birthdayDate": {
+      "label": "Birthday date",
+      "type": "date",
+      "required": false,
+      "help": "Used for the next-birthday countdown. Format: YYYY-MM-DD."
+    },
     "letter": {
-      "label": "Birthday letter",
+      "label": "Birthday letter opening",
       "type": "textarea",
-      "default": "Happy Birthday, my love.\n\nI wish I could put into words how much happiness you bring into my life. Every little moment with you becomes a memory I want to keep forever.\n\nYou deserve all the beautiful things this world has to offer. I hope this new chapter brings you countless reasons to smile.\n\nThank you for being you.",
+      "default": "On your special day, I want you to know how much happiness you bring into the world. You deserve beautiful moments, kind people, wonderful surprises, and countless reasons to smile.",
       "required": true,
       "maxLength": 2500
     },
+
+    "themeMode": {
+      "label": "Theme mode",
+      "type": "select",
+      "default": "light",
+      "required": false,
+      "options": [
+        { "value": "light", "label": "Light (soft & airy)" },
+        { "value": "dark",  "label": "Dark (romantic & cosy)" }
+      ],
+      "help": "Switches the whole website between light and dark theme."
+    },
+
+    "colorPalette": {
+      "label": "Colour palette",
+      "type": "select",
+      "default": "blush-pink",
+      "required": false,
+      "options": [
+        { "value": "blush-pink",     "label": "Blush Pink (default)" },
+        { "value": "rose-gold",      "label": "Rose Gold" },
+        { "value": "lavender-dream", "label": "Lavender Dream" },
+        { "value": "peach-cream",    "label": "Peach Cream" },
+        { "value": "mint-breeze",    "label": "Mint Breeze" },
+        { "value": "midnight-rose",  "label": "Midnight Rose (pairs with dark mode)" }
+      ],
+      "help": "Changes accent, button and background tint colours."
+    },
+
     "photos": {
-      "label": "Birthday memories (up to 10)",
+      "label": "Birthday memories (exactly 5)",
       "type": "imageGallery",
       "required": false,
-      "maxFiles": 10,
-      "maxSizeMB": 150,
+      "maxFiles": 5,
+      "minFiles": 0,
+      "maxSizeMB": 50,
       "accept": "image/jpeg,image/png,image/webp",
-      "help": "Photos up to 50 MB each. Shown 5 per gallery page."
+      "help": "Template shows 5 photo slots. Upload up to 5 images — no more."
     },
+
     "captions": {
-      "label": "Photo captions",
+      "label": "Photo captions (5)",
       "type": "textArray",
       "default": [
-        "A favourite moment", "Your beautiful smile", "A memory to keep",
-        "My happy place", "Just us", "Little things, big love",
-        "Forever remembered", "My favourite human", "Another reason to smile",
-        "A moment with you"
+        "A memory to treasure ♡",
+        "A little moment of happiness ✨",
+        "A smile worth remembering 🌸",
+        "One for the memory book 💗",
+        "More beautiful moments ahead 🎂"
       ],
       "required": false,
-      "maxItems": 10,
+      "maxItems": 5,
       "help": "One caption per line. Pairs with each photo in order."
     },
-    "video": {
-      "label": "Memory video",
-      "type": "video",
-      "required": false,
-      "maxSizeMB": 150,
-      "accept": "video/mp4,video/webm",
-      "help": "A short video memory (MP4 or WebM). Max 100 MB."
-    },
+
     "music": {
       "label": "Background music",
       "type": "audio",
@@ -81,28 +118,43 @@
       "maxSizeMB": 20,
       "accept": "audio/mpeg,audio/mp3,audio/wav,audio/ogg",
       "help": "Optional. Add a birthday song."
-    },
-    "gameDuration": {
-      "label": "Game duration (seconds)",
-      "type": "text",
-      "default": "15",
-      "required": false,
-      "maxLength": 2,
-      "help": "How long the heart-catching game lasts. Recommended: 10–25 seconds."
     }
   },
+
   "sections": [
-    { "title": "The birthday person", "subtitle": "Who is today for?", "fields": ["personName", "senderName"] },
-    { "title": "Your letter", "subtitle": "Put the feelings into words.", "fields": ["letter"] },
-    { "title": "Your memories", "subtitle": "Add photos and captions.", "fields": ["photos", "captions"] },
-    { "title": "A little movie", "subtitle": "Add a short video memory.", "fields": ["video"] },
-    { "title": "Music & game", "subtitle": "Soundtrack and game length.", "fields": ["music", "gameDuration"] }
+    {
+      "title": "The birthday person",
+      "subtitle": "Who is today for?",
+      "fields": ["personName", "senderName", "birthdayDate"]
+    },
+    {
+      "title": "Your letter",
+      "subtitle": "Put the feelings into words.",
+      "fields": ["letter"]
+    },
+    {
+      "title": "Theme & colours",
+      "subtitle": "Match the website to your mood.",
+      "fields": ["themeMode", "colorPalette"]
+    },
+    {
+      "title": "Your memories",
+      "subtitle": "Add exactly 5 photos and captions.",
+      "fields": ["photos", "captions"]
+    },
+    {
+      "title": "Music",
+      "subtitle": "Optional soundtrack.",
+      "fields": ["music"]
+    }
   ],
+
   "preview": {
     "nameField": "personName",
     "senderField": "senderName",
     "messageField": "letter",
     "photosField": "photos",
-    "themeField": null
+    "themeField": "themeMode",
+    "paletteField": "colorPalette"
   }
 }

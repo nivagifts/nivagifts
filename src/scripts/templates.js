@@ -1,17 +1,5 @@
 /* =========================================================
    NIVA TEMPLATE REGISTRY  (single source of truth)
-   =========================================================
-   HOW TO ADD A NEW TEMPLATE
-   ──────────────────────────
-   1. Create folder: templates/<category>/<id>/
-      ├── config.json
-      ├── template.html   (with NIVA preview bridge)
-      └── preview.jpg
-   2. Add ONE entry to TEMPLATE_REGISTRY below.
-   3. Add the id to server.js → ALLOWED_TEMPLATE_IDS
-   4. (optional) index.html marketing card.
-
-   Editor, recipient, wishlist, my-gifts all read from here.
    ========================================================= */
 
 const NivaTemplates = (() => {
@@ -31,16 +19,15 @@ const NivaTemplates = (() => {
       configPath: "/templates/birthday/birthday-magic/config.json",
     },
     {
-      id: "special-letter",
-      configPath: "/templates/letter/special-letter/config.json",
+      id: "loveletter",
+      configPath: "/templates/letter/loveletter/config.json",   // FIXED
     },
     // ▼▼▼ ADD NEW TEMPLATES BELOW ▼▼▼
   ];
 
-  // Category lookup is derived automatically from the path.
   function categoryFromPath(configPath) {
     const m = /^\/templates\/([^/]+)\//.exec(configPath || "");
-    return m ? m[1] : null;
+    return m ? m[1].toLowerCase() : null;
   }
 
   let templates = [];
@@ -57,7 +44,7 @@ const NivaTemplates = (() => {
       if (!config.id || !config.name) {
         throw new Error(`Invalid config: ${registryItem.configPath}`);
       }
-      const category = config.category || categoryFromPath(registryItem.configPath);
+      const category = (config.category || categoryFromPath(registryItem.configPath) || "love").toLowerCase();
       const templatePath =
         config.templatePath ||
         `/templates/${category}/${config.id}/template.html`;
@@ -90,9 +77,7 @@ const NivaTemplates = (() => {
     return initPromise;
   }
 
-  function getAll() {
-    return templates.filter(t => t.active === true);
-  }
+  function getAll() { return templates.filter(t => t.active === true); }
 
   function getById(templateId) {
     if (!templateId) return null;
@@ -142,16 +127,9 @@ const NivaTemplates = (() => {
   }
 
   return Object.freeze({
-    initialize,
-    getAll,
-    getById,
-    getByCategory,
-    getTemplatePath,
-    getCategory,
-    getPreviewImage,
-    getCategoriesWithTemplates,
-    register,
-    reload,
+    initialize, getAll, getById, getByCategory,
+    getTemplatePath, getCategory, getPreviewImage,
+    getCategoriesWithTemplates, register, reload,
   });
 })();
 

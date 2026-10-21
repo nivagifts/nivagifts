@@ -3,18 +3,26 @@
   "name": "Eternal Love",
   "category": "love",
   "description": "A romantic multi-page gift experience for your favourite person, filled with personal notes and memories.",
-  "price": 499,
+  "price": 599,
   "currency": "INR",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "active": true,
   "templatePath": "/templates/love/eternal-love/template.html",
   "previewImage": "/templates/love/eternal-love/preview.jpg",
   "features": [
     "Multi-page experience",
     "Love letter",
-    "Memory gallery",
-    "Relationship timer"
+    "Memory gallery (5 photos)",
+    "Relationship timer",
+    "Interactive love quiz",
+    "Light / dark theme + colour palette selector"
   ],
+
+  "templateLimits": {
+    "photoSlots": 5,
+    "note": "Template shows exactly 5 photo slots. Editor must allow only 5 uploads."
+  },
+
   "customization": {
     "partnerName": {
       "label": "Their name",
@@ -46,39 +54,62 @@
       "required": false,
       "help": "Used for the relationship timer. Choose a date in the past."
     },
+
+    "themeMode": {
+      "label": "Theme mode",
+      "type": "select",
+      "default": "light",
+      "required": false,
+      "options": [
+        { "value": "light", "label": "Light (soft & airy)" },
+        { "value": "dark",  "label": "Dark (romantic & cosy)" }
+      ],
+      "help": "Switches the whole website between light and dark theme."
+    },
+
+    "colorPalette": {
+      "label": "Colour palette",
+      "type": "select",
+      "default": "blush-pink",
+      "required": false,
+      "options": [
+        { "value": "blush-pink",     "label": "Blush Pink (default)" },
+        { "value": "rose-gold",      "label": "Rose Gold" },
+        { "value": "lavender-dream", "label": "Lavender Dream" },
+        { "value": "peach-cream",    "label": "Peach Cream" },
+        { "value": "mint-breeze",    "label": "Mint Breeze" },
+        { "value": "midnight-rose",  "label": "Midnight Rose (pairs with dark mode)" }
+      ],
+      "help": "Changes accent, button and background tint colours."
+    },
+
     "photos": {
-      "label": "Choose your photos",
+      "label": "Choose your photos (exactly 5)",
       "type": "imageGallery",
       "required": false,
-      "maxFiles": 20,
-      "maxSizeMB": 150,
-      "accept": "image/jpeg,image/png,image/webp,image/gif",
-      "help": "Photos up to 50 MB each."
-    },
-    "theme": {
-      "label": "Choose your mood",
-      "type": "theme",
-      "default": "rose",
-      "options": [
-        { "value": "rose", "label": "Rose", "swatch": "rose" },
-        { "value": "violet", "label": "Violet", "swatch": "violet" },
-        { "value": "midnight", "label": "Midnight", "swatch": "midnight" }
-      ]
+      "maxFiles": 5,
+      "minFiles": 0,
+      "maxSizeMB": 50,
+      "accept": "image/jpeg,image/png,image/webp",
+      "help": "Template supports exactly 5 photo slots. Upload up to 5 images — no more."
     }
   },
+
   "sections": [
     { "title": "The names", "subtitle": "Who is this little world for?", "fields": ["partnerName", "senderName"] },
     { "title": "Your letter", "subtitle": "Put the feelings into words.", "fields": ["loveMessage"] },
     { "title": "Your special date", "subtitle": "A day that means something to you.", "fields": ["relationshipDate"] },
-    { "title": "Your memories", "subtitle": "Select photos to see them in this preview.", "fields": ["photos"] },
-    { "title": "Choose your mood", "subtitle": "Select a colour style.", "fields": ["theme"] }
+    { "title": "Theme & colours", "subtitle": "Match the mood of your story.", "fields": ["themeMode", "colorPalette"] },
+    { "title": "Your memories", "subtitle": "Add exactly 5 photos.", "fields": ["photos"] }
   ],
+
   "preview": {
     "nameField": "partnerName",
     "senderField": "senderName",
     "messageField": "loveMessage",
     "dateField": "relationshipDate",
     "photosField": "photos",
-    "themeField": "theme"
+    "themeField": "themeMode",
+    "paletteField": "colorPalette"
   }
 }

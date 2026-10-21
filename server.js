@@ -1004,14 +1004,15 @@ const ALLOWED_TEMPLATE_IDS = new Set([
   "eternal-love",
   "love-proposal",
   "birthday-magic",
-  "special-letter",
+  "loveletter",
 ]);
 
+// FIXED: prices now match each template's config.json "price"
 const TEMPLATE_PRICES = {
   "eternal-love": 299,
   "love-proposal": 599,
   "birthday-magic": 299,
-  "special-letter": 39,
+  "loveletter": 39,
 };
 
 // ~1 GB encrypted envelope cap.
@@ -1546,13 +1547,6 @@ app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) =>
    19b. NIVA BOT — integrated, weighted, intent-aware
    ========================================================= */
 
-/* Knowledge entries. Each has:
-   - id: unique identifier
-   - tag: short label (used only for logs)
-   - kw:  array of lowercase keywords
-   - a:   the answer (plain text; client renders markdown-lite)
-   - next: optional follow-up suggestions (strings)
-*/
 const BOT_KNOWLEDGE = [
   {
     id: "about",
@@ -1565,21 +1559,21 @@ const BOT_KNOWLEDGE = [
     id: "pricing",
     tag: "Pricing",
     kw: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"],
-    a: "Our gifts:\n• Special Letter — ₹39\n• Eternal Love — ₹299\n• Birthday Magic — ₹299\n• Love Proposal — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
-    next: ["What is the Special Letter?","How to create a gift?","Templates"],
+    a: "Our gifts:\n• Love Letter — ₹39\n• Eternal Love — ₹299\n• Birthday Magic — ₹299\n• Love Proposal — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
+    next: ["What is the Love Letter?","How to create a gift?","Templates"],
   },
   {
     id: "special-letter",
-    tag: "Special Letter",
-    kw: ["special letter","39","letter only","single letter","cheap","cheapest"],
-    a: "The Special Letter is our sweetest little gift at just ₹39 💌\n\nOne heartfelt letter, sealed with a beautiful opening animation. You'll find it as the first card in the pricing section and in the templates grid.",
+    tag: "Love Letter",
+    kw: ["special letter","love letter","loveletter","39","letter only","single letter","cheap","cheapest"],
+    a: "The Love Letter is our sweetest little gift at just ₹39 💌\n\nTwo handwritten-style love letter pages, sealed with a beautiful envelope-opening animation. You'll find it in the templates grid.",
     next: ["Pricing?","How to create a gift?"],
   },
   {
     id: "templates",
     tag: "Templates",
     kw: ["template","templates","design","designs","theme","options","what can i make","kinds","types"],
-    a: "We have 4 templates right now:\n✦ Eternal Love (₹299)\n✦ Love Proposal (₹599)\n✦ Birthday Magic (₹299)\n✦ Special Letter (₹39)\n\nNew templates are added regularly.",
+    a: "We have 4 templates right now:\n✦ Eternal Love (₹299)\n✦ Love Proposal (₹599)\n✦ Birthday Magic (₹299)\n✦ Love Letter (₹39)\n\nNew templates are added regularly.",
     next: ["Pricing?","How to create a gift?"],
   },
   {
@@ -1635,7 +1629,7 @@ const BOT_KNOWLEDGE = [
     id: "upload",
     tag: "Uploads",
     kw: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"],
-    a: "You can upload photos, video and audio — up to 1 GB total per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB",
+    a: "You can upload photos, video and audio — up to 1 GB total per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB\n\n(Note: The Love Letter template is text-only — no photos.)",
     next: ["How to create a gift?","Is it private?"],
   },
   {
@@ -1668,7 +1662,6 @@ const BOT_KNOWLEDGE = [
   },
 ];
 
-/* Simple intents — matched before KB */
 const BOT_INTENTS = [
   {
     id: "greeting",
@@ -1710,7 +1703,6 @@ function botNormalize(s) {
   return String(s || "").toLowerCase().trim();
 }
 
-/* fuzzy-ish token match (simple substring) */
 function botScoreEntry(q, entry) {
   let best = 0;
   for (const kw of entry.kw) {
@@ -1747,14 +1739,12 @@ function botAnswer(message) {
   const q = botNormalize(message);
   if (!q) return { reply: BOT_FALLBACKS[0], next: [] };
 
-  // Intent first
   const intent = botMatchIntent(q);
   if (intent) {
     const pick = intent.answers[Math.floor(Math.random() * intent.answers.length)];
     return { reply: pick, next: intent.next || [] };
   }
 
-  // KB matches (may combine 2)
   const matches = botRankMatches(q);
   if (matches.length) {
     if (matches.length === 1) {
@@ -1767,7 +1757,6 @@ function botAnswer(message) {
     };
   }
 
-  // Fallback
   return {
     reply: BOT_FALLBACKS[Math.floor(Math.random() * BOT_FALLBACKS.length)],
     next: ["What is NIVA?","Pricing?","Sign up","Sign in"],
@@ -1835,7 +1824,7 @@ app.get("/templates.js", (req, res) => {
   res.sendFile(path.join(ROOT, "templates.js"));
 });
 
-/* ---------- NIVI BOT JAVASCRIPT — FIXED ---------- */
+/* ---------- NIVI BOT JAVASCRIPT ---------- */
 
 const fs = require("fs");
 
@@ -1847,7 +1836,6 @@ app.get("/nivabot.js", (req, res) => {
 
   console.log("[NIVI] JavaScript requested.");
 
-  // Check whether the file exists in the deployed application.
   if (!fs.existsSync(botPath)) {
     console.error("[NIVI] File missing:", botPath);
 

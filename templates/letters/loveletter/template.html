@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Letter For You 💌</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --pink: #e98ba8;
+  --deep-pink: #c95d82;
+  --soft-pink: #fff0f4;
+  --paper: #fffaf0;
+  --ink: #765464;
+  --rose: #f5c8d4;
+  --bg-1: #fff0f5;
+  --bg-2: #fce2e9;
+  --bg-3: #fff8f5;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at top left, var(--bg-1), transparent 55%),
+    radial-gradient(ellipse at bottom right, var(--bg-2), transparent 50%),
+    var(--bg-3);
+  color: var(--ink);
+  font-family: "DM Sans", sans-serif;
+  overflow-x: hidden;
+  transition: background .5s ease, color .5s ease;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#hearts {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.floating-heart {
+  position: absolute;
+  bottom: -50px;
+  opacity: 0;
+  animation: floatUp linear forwards;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0) rotate(0deg) scale(.7); opacity: 0; }
+  15% { opacity: .7; }
+  85% { opacity: .5; }
+  100% { transform: translateY(-115vh) rotate(35deg) scale(1.2); opacity: 0; }
+}
+
+/* INTRO SCREEN */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(145deg, var(--soft-pink), var(--bg-2));
+  transition: opacity .9s ease, visibility .9s ease;
+}
+
+.intro.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-content {
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+.intro-small {
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--deep-pink);
+  opacity: .8;
+  margin-bottom: 30px;
+}
+
+.envelope-wrap {
+  width: 230px;
+  height: 155px;
+  margin: 0 auto 35px;
+  position: relative;
+  perspective: 900px;
+  animation: envelopeFloat 3s ease-in-out infinite;
+}
+
+@keyframes envelopeFloat {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-9px) rotate(1deg); }
+}
+
+.envelope {
+  position: absolute;
+  inset: 0;
+  background: #f3c2d0;
+  border-radius: 7px;
+  box-shadow: 0 18px 40px rgba(207,130,150,.25);
+  overflow: visible;
+}
+
+.envelope::before,
+.envelope::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.envelope::before {
+  background: #e9a8bd;
+  clip-path: polygon(0 0, 50% 58%, 100% 0);
+  transform-origin: top;
+  z-index: 4;
+  transition: transform 1s ease, z-index .1s 1s;
+}
+
+.envelope::after {
+  background: #f8d8e1;
+  clip-path: polygon(0 100%, 0 0, 50% 58%);
+  z-index: 3;
+}
+
+.envelope-side {
+  position: absolute;
+  inset: 0;
+  background: #f5c9d6;
+  clip-path: polygon(100% 0, 100% 100%, 50% 58%);
+  z-index: 3;
+}
+
+.envelope-bottom {
+  position: absolute;
+  inset: 0;
+  background: #eeb5c7;
+  clip-path: polygon(0 100%, 50% 58%, 100% 100%);
+  z-index: 5;
+}
+
+.letter-peek {
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  height: 125px;
+  bottom: 12px;
+  background: var(--paper);
+  border-radius: 4px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 33px;
+  color: var(--deep-pink);
+  transition: transform 1.2s ease;
+}
+
+.seal {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  top: 57%;
+  transform: translate(-50%, -50%);
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  background: var(--deep-pink);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: 0 3px 10px rgba(169,87,115,.3);
+  transition: opacity .3s;
+}
+
+.envelope-wrap.opening .envelope::before {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+
+.envelope-wrap.opening .letter-peek { transform: translateY(-100px); }
+.envelope-wrap.opening .seal { opacity: 0; }
+
+.intro h1 {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(29px, 7vw, 43px);
+  font-weight: 500;
+  color: var(--deep-pink);
+  margin-bottom: 12px;
+}
+
+.intro p {
+  font-family: "Caveat", cursive;
+  font-size: 25px;
+  color: var(--ink);
+  opacity: .8;
+  margin-bottom: 28px;
+}
+
+.open-btn,
+.next-btn,
+.back-btn {
+  padding: 14px 27px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--pink), var(--deep-pink));
+  color: white;
+  box-shadow: 0 9px 25px rgba(215,126,157,.25);
+  transition: transform .25s, box-shadow .25s;
+}
+
+.open-btn:hover,
+.next-btn:hover,
+.back-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 13px 28px rgba(215,126,157,.35);
+}
+
+.open-btn span { margin-left: 8px; }
+
+/* MAIN LETTER */
+main {
+  width: 100%;
+  padding: 35px 16px 55px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.top-label {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--deep-pink);
+  opacity: .8;
+  text-transform: uppercase;
+  margin: 5px 0 20px;
+}
+
+.letter-card {
+  width: 100%;
+  max-width: 650px;
+  min-height: 650px;
+  position: relative;
+  padding: clamp(25px, 6vw, 55px);
+  background:
+    repeating-linear-gradient(transparent, transparent 35px, rgba(233,201,207,.2) 36px),
+    var(--paper);
+  border: 1px solid var(--rose);
+  border-radius: 5px;
+  box-shadow:
+    0 25px 70px rgba(166,106,123,.09),
+    0 3px 9px rgba(166,106,123,.04);
+  overflow: hidden;
+}
+
+.letter-card::before {
+  content: "♡";
+  position: absolute;
+  top: 14px;
+  right: 22px;
+  font-family: serif;
+  font-size: 35px;
+  color: var(--pink);
+  opacity: .7;
+}
+
+.letter-card::after {
+  content: "";
+  position: absolute;
+  bottom: 14px;
+  left: 20px;
+  width: 45px;
+  height: 45px;
+  border: 1px solid var(--rose);
+  border-radius: 50%;
+  opacity: .65;
+}
+
+.page {
+  display: none;
+  animation: pageIn .9s ease both;
+}
+
+.page.active { display: block; }
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-number {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--deep-pink);
+  opacity: .7;
+  margin-bottom: 24px;
+}
+
+.small-heart {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: var(--deep-pink);
+  animation: heartbeat 2s infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.15); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
+}
+
+.page h2 {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(28px, 6vw, 39px);
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--deep-pink);
+  margin-bottom: 14px;
+}
+
+.subtitle {
+  text-align: center;
+  font-family: "Caveat", cursive;
+  font-size: 25px;
+  color: var(--pink);
+  margin-bottom: 30px;
+}
+
+.handwriting {
+  font-family: "Caveat", cursive;
+  font-size: clamp(22px, 4.8vw, 27px);
+  line-height: 1.48;
+  color: var(--ink);
+  white-space: pre-line;
+}
+
+.greeting {
+  margin-bottom: 14px;
+  color: var(--deep-pink);
+  font-size: 30px;
+}
+
+.letter-body { margin-bottom: 23px; }
+
+.signature {
+  text-align: right;
+  font-family: "Caveat", cursive;
+  font-size: 27px;
+  line-height: 1.5;
+  color: var(--deep-pink);
+  margin-top: 15px;
+}
+
+.signature strong {
+  display: block;
+  font-size: 35px;
+  font-weight: 600;
+}
+
+.divider {
+  width: 70px;
+  height: 1px;
+  background: var(--rose);
+  margin: 24px auto;
+  position: relative;
+}
+
+.divider::after {
+  content: "♥";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--paper);
+  color: var(--deep-pink);
+  padding: 0 9px;
+  font-size: 13px;
+}
+
+.next-area {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+  position: relative;
+  z-index: 2;
+}
+
+.next-btn, .back-btn {
+  font-size: 13px;
+  letter-spacing: .3px;
+}
+
+.back-btn {
+  background: var(--soft-pink);
+  color: var(--deep-pink);
+  box-shadow: none;
+  margin-right: 9px;
+}
+
+.page-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 25px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  background: var(--rose);
+  border-radius: 50%;
+  transition: all .3s;
+}
+
+.dot.active {
+  background: var(--deep-pink);
+  width: 22px;
+  border-radius: 10px;
+}
+
+.footer-note {
+  margin-top: 25px;
+  font-family: "Caveat", cursive;
+  font-size: 22px;
+  color: var(--deep-pink);
+  opacity: .8;
+  text-align: center;
+}
+
+.write-line {
+  opacity: 0;
+  animation: writeReveal .8s ease forwards;
+}
+
+@keyframes writeReveal {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+.final-heart {
+  font-size: 55px;
+  text-align: center;
+  margin: 28px 0;
+  color: var(--deep-pink);
+  animation: heartbeat 1.8s infinite;
+}
+
+@media (max-width: 480px) {
+  main { padding: 25px 12px 40px; }
+  .letter-card { min-height: 590px; padding: 32px 23px; }
+  .handwriting { font-size: 23px; line-height: 1.45; }
+  .page h2 { font-size: 29px; }
+  .subtitle { font-size: 23px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+
+<!-- THEME ENGINE -->
+<script>
+window.TEMPLATE_THEME = window.TEMPLATE_THEME || {
+  themeMode: "light",
+  colorPalette: "blush-pink"
+};
+
+(function applyTheme() {
+  const PALETTES = {
+    "blush-pink": {
+      light: { pink:"#e98ba8", deepPink:"#c95d82", softPink:"#fff0f4",
+               paper:"#fffaf0", ink:"#765464", rose:"#f5c8d4",
+               bg1:"#fff0f5", bg2:"#fce2e9", bg3:"#fff8f5" },
+      dark:  { pink:"#f5a8c2", deepPink:"#ff9dbf", softPink:"#2a1a22",
+               paper:"#22141b", ink:"#f0dae2", rose:"#3a2430",
+               bg1:"#1a1016", bg2:"#241620", bg3:"#0f0a0e" }
+    },
+    "rose-gold": {
+      light: { pink:"#e8a87c", deepPink:"#c97a4a", softPink:"#fde6d6",
+               paper:"#fffaf3", ink:"#5a4234", rose:"#f5d8c4",
+               bg1:"#fff3ea", bg2:"#fde6d6", bg3:"#fffaf3" },
+      dark:  { pink:"#f0b98c", deepPink:"#ffc79a", softPink:"#2a1e16",
+               paper:"#241916", ink:"#f5e4d6", rose:"#3a251c",
+               bg1:"#191210", bg2:"#241916", bg3:"#100a08" }
+    },
+    "lavender-dream": {
+      light: { pink:"#b9a6ef", deepPink:"#7c5cd6", softPink:"#ece7ff",
+               paper:"#faf8ff", ink:"#4a4266", rose:"#d4c8ff",
+               bg1:"#f3f0ff", bg2:"#ece7ff", bg3:"#faf8ff" },
+      dark:  { pink:"#c7b6ff", deepPink:"#b39dff", softPink:"#1e182b",
+               paper:"#161222", ink:"#e5ddff", rose:"#2c2342",
+               bg1:"#14101e", bg2:"#1e182b", bg3:"#0a0814" }
+    },
+    "peach-cream": {
+      light: { pink:"#f5a97c", deepPink:"#d97b4a", softPink:"#ffe6d2",
+               paper:"#fffaf3", ink:"#5a4432", rose:"#f5d4bc",
+               bg1:"#fff3e6", bg2:"#ffe6d2", bg3:"#fffaf3" },
+      dark:  { pink:"#ffbf94", deepPink:"#ffcba6", softPink:"#2a1e16",
+               paper:"#241b16", ink:"#f5e4d6", rose:"#3a2820",
+               bg1:"#1a1310", bg2:"#241b16", bg3:"#100a08" }
+    },
+    "mint-breeze": {
+      light: { pink:"#7fd3b8", deepPink:"#3aa88a", softPink:"#dff5ee",
+               paper:"#f5fdfa", ink:"#3a544c", rose:"#b8e8d8",
+               bg1:"#eafaf4", bg2:"#dff5ee", bg3:"#f5fdfa" },
+      dark:  { pink:"#8fe6c8", deepPink:"#a0f0d4", softPink:"#16241f",
+               paper:"#0f1a17", ink:"#dff5ec", rose:"#1f3a30",
+               bg1:"#0a1410", bg2:"#16241f", bg3:"#050c09" }
+    },
+    "midnight-rose": {
+      light: { pink:"#e87a9e", deepPink:"#b84670", softPink:"#fde4ec",
+               paper:"#fffafc", ink:"#4a2c3a", rose:"#f7c4d6",
+               bg1:"#ffe8ef", bg2:"#fde4ec", bg3:"#fff7fa" },
+      dark:  { pink:"#ff9dc0", deepPink:"#ffb0cc", softPink:"#20141b",
+               paper:"#160d12", ink:"#f5dce6", rose:"#38202b",
+               bg1:"#160d12", bg2:"#20141b", bg3:"#0a0608" }
+    }
+  };
+
+  const mode = window.TEMPLATE_THEME.themeMode === "dark" ? "dark" : "light";
+  const key = PALETTES[window.TEMPLATE_THEME.colorPalette]
+    ? window.TEMPLATE_THEME.colorPalette
+    : "blush-pink";
+  const v = PALETTES[key][mode];
+  const root = document.documentElement;
+
+  root.style.setProperty("--pink", v.pink);
+  root.style.setProperty("--deep-pink", v.deepPink);
+  root.style.setProperty("--soft-pink", v.softPink);
+  root.style.setProperty("--paper", v.paper);
+  root.style.setProperty("--ink", v.ink);
+  root.style.setProperty("--rose", v.rose);
+  root.style.setProperty("--bg-1", v.bg1);
+  root.style.setProperty("--bg-2", v.bg2);
+  root.style.setProperty("--bg-3", v.bg3);
+
+  root.setAttribute("data-theme", mode);
+})();
+</script>
+</head>
+
+<body>
+
+<div id="hearts"></div>
+
+<!-- OPENING ENVELOPE -->
+<section class="intro" id="intro">
+  <div class="intro-content">
+    <div class="intro-small">A little something from my heart</div>
+
+    <div class="envelope-wrap" id="envelopeWrap">
+      <div class="envelope">
+        <div class="letter-peek">♡</div>
+        <div class="envelope-side"></div>
+        <div class="envelope-bottom"></div>
+      </div>
+      <div class="seal">♥</div>
+    </div>
+
+    <h1>A Letter For You</h1>
+    <p>Written with love, just for you...</p>
+
+    <button class="open-btn" id="openBtn">
+      Open your letter <span>♡</span>
+    </button>
+  </div>
+</section>
+
+<!-- LETTER WEBSITE -->
+<main>
+  <div class="top-label">A little piece of my heart</div>
+
+  <article class="letter-card">
+    <!-- PAGE ONE -->
+    <section class="page active" id="page1">
+      <div class="page-number">PAGE ONE · THE BEGINNING</div>
+      <div class="small-heart">♡</div>
+
+      <h2 id="pageOneTitle">To My Favourite Person</h2>
+      <p class="subtitle" id="pageOneSubtitle">If my heart could write, it would write about you...</p>
+
+      <div class="handwriting">
+        <p class="greeting">Hey, <span id="partnerName">my love</span>... 💗</p>
+        <p class="letter-body write-line" id="pageOneBody" style="animation-delay:.3s">
+          There are so many things I wish I could tell you...
+        </p>
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="handwriting" style="text-align:center;color:var(--deep-pink)">
+        But wait... there's something more.
+      </p>
+
+      <div class="next-area">
+        <button class="next-btn" onclick="goToPage(2)">
+          Turn the page 💌 →
+        </button>
+      </div>
+    </section>
+
+    <!-- PAGE TWO -->
+    <section class="page" id="page2">
+      <div class="page-number">PAGE TWO · FROM MY HEART</div>
+      <div class="small-heart">💗</div>
+
+      <h2 id="pageTwoTitle">Things My Heart Wants You To Know</h2>
+      <p class="subtitle" id="pageTwoSubtitle">A little love letter, just for you...</p>
+
+      <div class="handwriting">
+        <p class="greeting">My sweetest love,</p>
+        <p class="letter-body write-line" id="pageTwoBody" style="animation-delay:.3s">
+          If I could give you one thing in this world...
+        </p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="final-heart">♡</div>
+
+      <p class="handwriting" id="finalLine" style="text-align:center;font-size:28px;color:var(--deep-pink)">
+        If I could write a thousand letters,<br>
+        I would still have more love to say.
+      </p>
+
+      <div class="signature">
+        With all the love in my heart,
+        <strong id="senderName">Yours, always. ♡</strong>
+      </div>
+
+      <div class="next-area">
+        <button class="back-btn" onclick="goToPage(1)">← Previous page</button>
+        <button class="next-btn" onclick="celebrate()">Send a little love 💗</button>
+      </div>
+    </section>
+  </article>
+
+  <div class="page-dots">
+    <span class="dot active" id="dot1"></span>
+    <span class="dot" id="dot2"></span>
+  </div>
+
+  <p class="footer-note" id="footerNote">
+    Made with a little love and a whole lot of heart ♡
+  </p>
+</main>
+
+<script>
+"use strict";
+
+/* CONFIG — injected by editor / backend per customer. */
+const CONFIG = {
+  partnerName: "My Favourite Person",
+  senderName: "Yours, always",
+  pageOneTitle: "To My Favourite Person",
+  pageOneSubtitle: "If my heart could write, it would write about you...",
+  pageOneBody:
+    "There are so many things I wish I could tell you, but sometimes words feel too small for what my heart wants to say.\n\n" +
+    "So today, I wanted to give you something a little different. A tiny piece of my heart, written just for you.\n\n" +
+    "If you're reading this, imagine me sitting beside you, holding your hand, smiling at you for no reason at all.\n\n" +
+    "Because honestly, you have become one of my favourite parts of life.\n\n" +
+    "And if there's one thing I hope you never forget, it's this...\n\n" +
+    "You are so, so special to me. More than these little words could ever explain. 🌷",
+  pageTwoTitle: "Things My Heart Wants You To Know",
+  pageTwoSubtitle: "A little love letter, just for you...",
+  pageTwoBody:
+    "If I could give you one thing in this world, I would give you the ability to see yourself through my eyes.\n\n" +
+    "Maybe then, just for a moment, you would understand how precious you are to me, how your smile can make an ordinary day feel beautiful, and how simply having you in my life means more than you know.\n\n" +
+    "I don't need every day to be perfect. I don't need a world full of grand gestures or a thousand beautiful promises.\n\n" +
+    "I just want the little things with you.\n\n" +
+    "And if life ever gets too loud, I hope you remember this little letter.\n\n" +
+    "Somewhere in this big world, there is a heart that is genuinely happy you exist.",
+  finalLine: "If I could write a thousand letters, I would still have more love to say."
+};
+
+/* PERSONALIZATION */
+const setText = (id, text) => {
+  const el = document.getElementById(id);
+  if (el && text) el.textContent = text;
+};
+
+setText("partnerName", CONFIG.partnerName);
+setText("senderName", CONFIG.senderName);
+setText("pageOneTitle", CONFIG.pageOneTitle);
+setText("pageOneSubtitle", CONFIG.pageOneSubtitle);
+setText("pageOneBody", CONFIG.pageOneBody);
+setText("pageTwoTitle", CONFIG.pageTwoTitle);
+setText("pageTwoSubtitle", CONFIG.pageTwoSubtitle);
+setText("pageTwoBody", CONFIG.pageTwoBody);
+setText("finalLine", CONFIG.finalLine);
+
+/* INTRO ENVELOPE */
+const intro = document.getElementById("intro");
+const envelope = document.getElementById("envelopeWrap");
+const openBtn = document.getElementById("openBtn");
+
+let currentPage = 1;
+let opened = false;
+
+openBtn.addEventListener("click", () => {
+  if (opened) return;
+  opened = true;
+  openBtn.disabled = true;
+  envelope.classList.add("opening");
+
+  setTimeout(() => {
+    intro.classList.add("hide");
+    document.body.style.overflowY = "auto";
+    startHearts();
+  }, 1250);
+
+  setTimeout(() => {
+    intro.style.display = "none";
+  }, 2200);
+});
+
+/* PAGE NAVIGATION */
+function goToPage(pageNumber) {
+  if (pageNumber < 1 || pageNumber > 2) return;
+  currentPage = pageNumber;
+
+  document.getElementById("page1").classList.toggle("active", pageNumber === 1);
+  document.getElementById("page2").classList.toggle("active", pageNumber === 2);
+  document.getElementById("dot1").classList.toggle("active", pageNumber === 1);
+  document.getElementById("dot2").classList.toggle("active", pageNumber === 2);
+
+  document.getElementById("footerNote").textContent =
+    pageNumber === 1
+      ? "A little more love is waiting on the next page ♡"
+      : "Keep this little piece of love close to your heart ♡";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+window.goToPage = goToPage;
+
+/* FLOATING HEARTS */
+let heartTimer;
+
+function startHearts() {
+  if (heartTimer) return;
+  heartTimer = setInterval(createHeart, 900);
+  for (let i = 0; i < 8; i++) setTimeout(createHeart, i * 180);
+}
+
+function createHeart() {
+  const container = document.getElementById("hearts");
+  const heart = document.createElement("span");
+  heart.className = "floating-heart";
+
+  const symbols = ["♡", "♥", "💕", "୨୧", "💗"];
+  heart.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+  heart.style.left = Math.random() * 100 + "%";
+  heart.style.fontSize = (12 + Math.random() * 17) + "px";
+  heart.style.animationDuration = (6 + Math.random() * 6) + "s";
+  heart.style.color = ["#e99ab4", "#d981a0", "#edb6c8"][Math.floor(Math.random() * 3)];
+
+  container.appendChild(heart);
+  setTimeout(() => heart.remove(), 12500);
+}
+
+/* FINAL CELEBRATION */
+function celebrate() {
+  for (let i = 0; i < 35; i++) setTimeout(createHeart, i * 75);
+
+  const footer = document.getElementById("footerNote");
+  footer.textContent = "Sending you the biggest hug through this little letter. ♡";
+
+  footer.animate(
+    [{ transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }],
+    { duration: 650, easing: "ease-in-out" }
+  );
+}
+
+window.celebrate = celebrate;
+
+/* LIVE PREVIEW — editor/backend can postMessage updates */
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.data?.type !== "NIVA_PREVIEW_UPDATE") return;
+
+  const data = event.data.data || {};
+  setText("partnerName", data.partnerName);
+  setText("senderName", data.senderName);
+  setText("pageOneTitle", data.pageOneTitle);
+  setText("pageOneSubtitle", data.pageOneSubtitle);
+  setText("pageOneBody", data.pageOneBody);
+  setText("pageTwoTitle", data.pageTwoTitle);
+  setText("pageTwoSubtitle", data.pageTwoSubtitle);
+  setText("pageTwoBody", data.pageTwoBody);
+  setText("finalLine", data.finalLine);
+
+  if (data.themeMode || data.colorPalette) {
+    window.TEMPLATE_THEME = {
+      themeMode: data.themeMode || window.TEMPLATE_THEME.themeMode,
+      colorPalette: data.colorPalette || window.TEMPLATE_THEME.colorPalette
+    };
+    // Re-apply theme values
+    const palettes = {
+      "blush-pink": {
+        light:{pink:"#e98ba8",deepPink:"#c95d82",softPink:"#fff0f4",paper:"#fffaf0",ink:"#765464",rose:"#f5c8d4",bg1:"#fff0f5",bg2:"#fce2e9",bg3:"#fff8f5"},
+        dark:{pink:"#f5a8c2",deepPink:"#ff9dbf",softPink:"#2a1a22",paper:"#22141b",ink:"#f0dae2",rose:"#3a2430",bg1:"#1a1016",bg2:"#241620",bg3:"#0f0a0e"}
+      },
+      "rose-gold": {
+        light:{pink:"#e8a87c",deepPink:"#c97a4a",softPink:"#fde6d6",paper:"#fffaf3",ink:"#5a4234",rose:"#f5d8c4",bg1:"#fff3ea",bg2:"#fde6d6",bg3:"#fffaf3"},
+        dark:{pink:"#f0b98c",deepPink:"#ffc79a",softPink:"#2a1e16",paper:"#241916",ink:"#f5e4d6",rose:"#3a251c",bg1:"#191210",bg2:"#241916",bg3:"#100a08"}
+      },
+      "lavender-dream": {
+        light:{pink:"#b9a6ef",deepPink:"#7c5cd6",softPink:"#ece7ff",paper:"#faf8ff",ink:"#4a4266",rose:"#d4c8ff",bg1:"#f3f0ff",bg2:"#ece7ff",bg3:"#faf8ff"},
+        dark:{pink:"#c7b6ff",deepPink:"#b39dff",softPink:"#1e182b",paper:"#161222",ink:"#e5ddff",rose:"#2c2342",bg1:"#14101e",bg2:"#1e182b",bg3:"#0a0814"}
+      },
+      "peach-cream": {
+        light:{pink:"#f5a97c",deepPink:"#d97b4a",softPink:"#ffe6d2",paper:"#fffaf3",ink:"#5a4432",rose:"#f5d4bc",bg1:"#fff3e6",bg2:"#ffe6d2",bg3:"#fffaf3"},
+        dark:{pink:"#ffbf94",deepPink:"#ffcba6",softPink:"#2a1e16",paper:"#241b16",ink:"#f5e4d6",rose:"#3a2820",bg1:"#1a1310",bg2:"#241b16",bg3:"#100a08"}
+      },
+      "mint-breeze": {
+        light:{pink:"#7fd3b8",deepPink:"#3aa88a",softPink:"#dff5ee",paper:"#f5fdfa",ink:"#3a544c",rose:"#b8e8d8",bg1:"#eafaf4",bg2:"#dff5ee",bg3:"#f5fdfa"},
+        dark:{pink:"#8fe6c8",deepPink:"#a0f0d4",softPink:"#16241f",paper:"#0f1a17",ink:"#dff5ec",rose:"#1f3a30",bg1:"#0a1410",bg2:"#16241f",bg3:"#050c09"}
+      },
+      "midnight-rose": {
+        light:{pink:"#e87a9e",deepPink:"#b84670",softPink:"#fde4ec",paper:"#fffafc",ink:"#4a2c3a",rose:"#f7c4d6",bg1:"#ffe8ef",bg2:"#fde4ec",bg3:"#fff7fa"},
+        dark:{pink:"#ff9dc0",deepPink:"#ffb0cc",softPink:"#20141b",paper:"#160d12",ink:"#f5dce6",rose:"#38202b",bg1:"#160d12",bg2:"#20141b",bg3:"#0a0608"}
+      }
+    };
+    const mode = window.TEMPLATE_THEME.themeMode === "dark" ? "dark" : "light";
+    const key = palettes[window.TEMPLATE_THEME.colorPalette] ? window.TEMPLATE_THEME.colorPalette : "blush-pink";
+    const v = palettes[key][mode];
+    const root = document.documentElement;
+    root.style.setProperty("--pink", v.pink);
+    root.style.setProperty("--deep-pink", v.deepPink);
+    root.style.setProperty("--soft-pink", v.softPink);
+    root.style.setProperty("--paper", v.paper);
+    root.style.setProperty("--ink", v.ink);
+    root.style.setProperty("--rose", v.rose);
+    root.style.setProperty("--bg-1", v.bg1);
+    root.style.setProperty("--bg-2", v.bg2);
+    root.style.setProperty("--bg-3", v.bg3);
+    root.setAttribute("data-theme", mode);
+  }
+});
+
+/* Signal to the editor that we're ready for updates */
+if (window.parent && window.parent !== window) {
+  try { window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin); } catch {}
+}
+</script>
+
+</body>
+</html>

@@ -3,6 +3,8 @@
    - Fixed price from template (incl. Special Letter ₹39)
    - ~1 GB upload limit
    - Cloud drafts (text only) + local draft
+   - Theme mode + colour palette from config.json
+   - Enforces per-template photo slots (templateLimits.photoSlots)
    ========================================================= */
 "use strict";
 
@@ -15,10 +17,10 @@ const PREVIEW_KEY_PREFIX = "niva-preview-";
 
 // Fixed prices per template — kept in sync with server.js TEMPLATE_PRICES.
 const TEMPLATE_PRICES = {
-  "eternal-love": 299,
+  "eternal-love": 599,
   "love-proposal": 599,
   "birthday-magic": 299,
-  "special-letter": 39,
+  "loveletter": 39,
 };
 
 const TEMPLATE_PLAN_NAMES = {
@@ -40,6 +42,7 @@ const context = {
   fields: {},
   user: null,
   cloudDraftId: null,
+  photoSlotLimit: null, // resolved from config.templateLimits.photoSlots
 };
 const DRAFT_KEY = DRAFT_KEY_PREFIX + context.templateId;
 const PREVIEW_KEY = PREVIEW_KEY_PREFIX + context.templateId;
@@ -158,7 +161,7 @@ function initLoginUI(onSuccess) {
     }
   });
 
-  // REGISTER (email only)
+  // REGISTER
   $("#registerForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#registerEmail").value.trim();
@@ -290,7 +293,7 @@ function initLoginUI(onSuccess) {
     }
   });
 
-  // FORGOT — Step 2: verify reset code
+  // FORGOT — Step 2
   $("#verifyResetForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const code = $("#resetCode").value.trim();
@@ -326,7 +329,7 @@ function initLoginUI(onSuccess) {
     } catch { showToast("Could not resend code."); }
   });
 
-  // FORGOT — Step 3: new password
+  // FORGOT — Step 3
   $("#resetForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const pw = $("#resetPassword").value;
@@ -370,6 +373,24 @@ async function loadConfig() {
     throw new Error("Invalid config.json — missing id, name or customization.");
   }
   return config;
+}
+
+/* ---------- 5b. PHOTO SLOT LIMIT RESOLUTION ----------
+   The template enforces a fixed number of photo slots.
+   Order of precedence:
+     1) config.templateLimits.photoSlots  (0 = text-only, hides gallery)
+     2) config.customization.photos.maxFiles
+     3) fallback (5)
+   ---------------------------------------------------- */
+function resolvePhotoSlotLimit(config) {
+  const templateLimit = Number(config?.templateLimits?.photoSlots);
+  // FIX: accept 0 (>= 0) so text-only templates hide the upload field
+  if (Number.isFinite(templateLimit) && templateLimit >= 0) return templateLimit;
+
+  const maxFiles = Number(config?.customization?.photos?.maxFiles);
+  if (Number.isFinite(maxFiles) && maxFiles > 0) return maxFiles;
+
+  return 5;
 }
 
 /* ---------- 6. FIELD ACCESS ---------- */
@@ -460,13 +481,39 @@ function renderField(key, spec) {
         ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
       break;
 
+    case "select": {
+      const opts = Array.isArray(spec.options) ? spec.options : [];
+      const current = spec.default ?? (opts[0]?.value ?? "");
+      wrap.innerHTML = `
+        <label for="${id}">${label}</label>
+        <select id="${id}" data-field-key="${key}" ${required}>
+          ${opts.map(opt => `
+            <option value="${escapeHtml(opt.value)}" ${opt.value === current ? "selected" : ""}>
+              ${escapeHtml(opt.label || opt.value)}
+            </option>`).join("")}
+        </select>
+        ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
+      break;
+    }
+
     case "imageGallery": {
+      const slotLimit = context.photoSlotLimit
+        ?? resolvePhotoSlotLimit(context.config);
+
+      // FIX: hide the field entirely when the template declares 0 photo slots
+      if (slotLimit === 0) {
+        wrap.innerHTML = `<p class="field-help" style="padding:8px 0;color:var(--text-muted);font-style:italic;">
+          This template does not support photo uploads — it's a text-only experience.
+        </p>`;
+        break;
+      }
+
       const mb = spec.maxSizeMB || 800;
       wrap.innerHTML = `
         <label for="${id}" class="upload-box">
           <span class="upload-icon" aria-hidden="true">＋</span>
           <strong>${escapeHtml(spec.label || "Choose photos")}</strong>
-          <span>Up to ${spec.maxFiles || 40} images · ${mb} MB each</span>
+          <span>Up to ${slotLimit} images · ${mb} MB each</span>
           <input id="${id}" data-field-key="${key}" type="file"
                  accept="${escapeHtml(spec.accept || "image/*")}" multiple ${required}>
         </label>
@@ -551,6 +598,12 @@ function bindFieldEvents() {
           updatePreview();
         }
       });
+    } else if (input.tagName === "SELECT") {
+      input.addEventListener("change", e => {
+        setFieldValue(key, e.target.value);
+        scheduleAutosave();
+        updatePreview();
+      });
     } else {
       input.addEventListener("input", e => {
         setFieldValue(key, e.target.value);
@@ -577,7 +630,7 @@ function updateCounter(key) {
   el.textContent = `${String(field.value).length} / ${max}`;
 }
 
-/* ---------- 9. FILE INPUT (with ~1 GB total cap) ---------- */
+/* ---------- 9. FILE INPUT (with ~1 GB total cap + slot limit) ---------- */
 function currentTotalBytes() {
   let total = 0;
   Object.values(context.fields).forEach(f => {
@@ -595,16 +648,34 @@ function handleFileInput(key, event) {
   const remainingTotal = MAX_TOTAL_MEDIA_BYTES - currentTotalBytes();
 
   if (spec.type === "imageGallery") {
-    const maxFiles = spec.maxFiles || 40;
+    const slotLimit = context.photoSlotLimit
+      ?? resolvePhotoSlotLimit(context.config);
+
+    // FIX: text-only templates never accept uploads
+    if (slotLimit === 0) {
+      event.target.value = "";
+      showToast("This template does not support photo uploads.");
+      return;
+    }
+
     const maxSize = (spec.maxSizeMB || 800) * 1024 * 1024;
     const selected = Array.from(event.target.files || []);
     let added = 0;
     let runningTotal = currentTotalBytes();
 
     for (const file of selected) {
-      if (field.files.length >= maxFiles) { showToast(`Max ${maxFiles} photos.`); break; }
-      if (accept.length && !accept.includes(file.type)) { showToast(`${file.name}: unsupported type.`); continue; }
-      if (file.size > maxSize) { showToast(`${file.name}: ${formatBytes(file.size)} exceeds ${formatBytes(maxSize)}.`); continue; }
+      if (field.files.length >= slotLimit) {
+        showToast(`This template supports only ${slotLimit} photo${slotLimit === 1 ? "" : "s"}.`);
+        break;
+      }
+      if (accept.length && !accept.includes(file.type)) {
+        showToast(`${file.name}: unsupported type.`);
+        continue;
+      }
+      if (file.size > maxSize) {
+        showToast(`${file.name}: ${formatBytes(file.size)} exceeds ${formatBytes(maxSize)}.`);
+        continue;
+      }
       if (runningTotal + file.size > MAX_TOTAL_MEDIA_BYTES) {
         showToast(`Total upload limit reached (${formatBytes(MAX_TOTAL_MEDIA_BYTES)}).`);
         break;
@@ -843,6 +914,7 @@ function compressPhoto(file) {
 window.NIVAEditor = {
   get templateId() { return context.templateId; },
   get price() { return TEMPLATE_PRICE; },
+  get photoSlotLimit() { return context.photoSlotLimit; },
   getGiftData, getPhotos, getMediaFiles, getFieldRaw, compressPhoto,
 };
 
@@ -862,7 +934,6 @@ async function saveCloudDraft({ silent = true } = {}) {
   if (!context.user) return;
   try {
     const data = getGiftData();
-    // Byte-length check, not char count.
     const bytes = new TextEncoder().encode(JSON.stringify(data)).length;
     if (bytes > MAX_DRAFT_BYTES) {
       if (!silent) showToast("Draft is too large for cloud save (max 5 MB). Saved locally only.");
@@ -905,7 +976,6 @@ function scheduleAutosave() {
 }
 
 async function loadDraft() {
-  // 1) try cloud draft
   if (context.user) {
     try {
       const res = await fetch(`/api/drafts/${encodeURIComponent(context.templateId)}`, {
@@ -920,7 +990,6 @@ async function loadDraft() {
       }
     } catch {}
   }
-  // 2) local fallback
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return;
@@ -946,8 +1015,9 @@ function applyDraftValues(values) {
 
     if (input.type === "radio") {
       input.checked = input.value === val;
+    } else if (input.tagName === "SELECT") {
+      input.value = val ?? "";
     } else if (field.spec.type === "textArray") {
-      // Server may return array or string; normalise to newline-joined string.
       if (Array.isArray(val)) input.value = val.join("\n");
       else input.value = String(val ?? "");
     } else {
@@ -986,7 +1056,6 @@ function resetEditor() {
     sessionStorage.removeItem(PREVIEW_KEY);
   } catch {}
 
-  // Delete cloud draft too
   if (context.user) {
     fetch(`/api/drafts/${encodeURIComponent(context.templateId)}`, {
       method: "DELETE", credentials: "same-origin",
@@ -1191,7 +1260,6 @@ function updatePlanSummary() {
         step++;
       }
 
-      // Payment — fixed template price
       setProgress("Creating payment order…", 86);
       const orderRes = await fetch("/api/payments/create-order", {
         method: "POST", credentials: "same-origin",
@@ -1269,6 +1337,9 @@ async function initEditor() {
   try {
     context.config = await loadConfig();
 
+    // Resolve template's fixed photo-slot count
+    context.photoSlotLimit = resolvePhotoSlotLimit(context.config);
+
     const nameEl = $("#templateName");
     const metaEl = $("#templateMeta");
     if (nameEl) nameEl.textContent = context.config.name;
@@ -1284,7 +1355,9 @@ async function initEditor() {
     initPreviewIframe();
 
     setSaveStatus("Your changes are local");
-    console.info(`[NIVA] Editor ready: ${context.templateId}`);
+    console.info(
+      `[NIVA] Editor ready: ${context.templateId} · photoSlots=${context.photoSlotLimit}`
+    );
   } catch (err) {
     console.error("[NIVA] Editor init failed:", err);
     setSaveStatus("Failed to load template");

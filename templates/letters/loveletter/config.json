@@ -1,0 +1,136 @@
+{
+  "id": "loveletter",
+  "name": "Love Letter",
+  "category": "letter",
+  "description": "A romantic handwritten letter experience with an opening envelope, two love letter pages, floating hearts, and a little celebration.",
+  "price": 39,
+  "currency": "INR",
+  "version": "1.1.0",
+  "active": true,
+  "templatePath": "/templates/letter/loveletter/template.html",
+  "previewImage": "/templates/letter/loveletter/preview.jpg",
+  "features": [
+    "Animated envelope opening",
+    "Two-page handwritten love letter",
+    "Floating hearts animation",
+    "Final love celebration",
+    "Light / dark theme + colour palette selector",
+    "Responsive on mobile and desktop"
+  ],
+
+  "templateLimits": {
+    "photoSlots": 0,
+    "note": "This template is text-only. No photo uploads. Editor must hide the image gallery field."
+  },
+
+  "customization": {
+    "partnerName": {
+      "label": "Their name",
+      "type": "text",
+      "default": "My Favourite Person",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "e.g. My Favourite Person"
+    },
+    "senderName": {
+      "label": "Your name",
+      "type": "text",
+      "default": "Yours, always",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "e.g. Arjun"
+    },
+    "pageOneTitle": {
+      "label": "Page one title",
+      "type": "text",
+      "default": "To My Favourite Person",
+      "required": false,
+      "maxLength": 80
+    },
+    "pageOneSubtitle": {
+      "label": "Page one subtitle",
+      "type": "text",
+      "default": "If my heart could write, it would write about you...",
+      "required": false,
+      "maxLength": 140
+    },
+    "pageOneBody": {
+      "label": "Page one letter",
+      "type": "textarea",
+      "default": "Hey, my love... 💗\n\nThere are so many things I wish I could tell you, but sometimes words feel too small for what my heart wants to say.\n\nSo today, I wanted to give you something a little different. A tiny piece of my heart, written just for you.\n\nIf you're reading this, imagine me sitting beside you, holding your hand, smiling at you for no reason at all.\n\nBecause honestly, you have become one of my favourite parts of life.\n\nAnd if there's one thing I hope you never forget, it's this...\n\nYou are so, so special to me. More than these little words could ever explain. 🌷",
+      "required": true,
+      "maxLength": 2500
+    },
+    "pageTwoTitle": {
+      "label": "Page two title",
+      "type": "text",
+      "default": "Things My Heart Wants You To Know",
+      "required": false,
+      "maxLength": 80
+    },
+    "pageTwoSubtitle": {
+      "label": "Page two subtitle",
+      "type": "text",
+      "default": "A little love letter, just for you...",
+      "required": false,
+      "maxLength": 140
+    },
+    "pageTwoBody": {
+      "label": "Page two letter",
+      "type": "textarea",
+      "default": "My sweetest love,\n\nIf I could give you one thing in this world, I would give you the ability to see yourself through my eyes.\n\nMaybe then, just for a moment, you would understand how precious you are to me, how your smile can make an ordinary day feel beautiful, and how simply having you in my life means more than you know.\n\nI don't need every day to be perfect. I don't need a world full of grand gestures or a thousand beautiful promises.\n\nI just want the little things with you.\n\nAnd if life ever gets too loud, I hope you remember this little letter.\n\nSomewhere in this big world, there is a heart that is genuinely happy you exist.",
+      "required": true,
+      "maxLength": 3000
+    },
+    "finalLine": {
+      "label": "Final closing line",
+      "type": "text",
+      "default": "If I could write a thousand letters, I would still have more love to say.",
+      "required": false,
+      "maxLength": 200
+    },
+
+    "themeMode": {
+      "label": "Theme mode",
+      "type": "select",
+      "default": "light",
+      "required": false,
+      "options": [
+        { "value": "light", "label": "Light (soft & airy)" },
+        { "value": "dark",  "label": "Dark (cosy & romantic)" }
+      ],
+      "help": "Switches the whole letter between light and dark theme."
+    },
+
+    "colorPalette": {
+      "label": "Colour palette",
+      "type": "select",
+      "default": "blush-pink",
+      "required": false,
+      "options": [
+        { "value": "blush-pink",     "label": "Blush Pink (default)" },
+        { "value": "rose-gold",      "label": "Rose Gold" },
+        { "value": "lavender-dream", "label": "Lavender Dream" },
+        { "value": "peach-cream",    "label": "Peach Cream" },
+        { "value": "mint-breeze",    "label": "Mint Breeze" },
+        { "value": "midnight-rose",  "label": "Midnight Rose (pairs with dark mode)" }
+      ],
+      "help": "Changes ink, paper, buttons and background tint colours."
+    }
+  },
+
+  "sections": [
+    { "title": "The names", "subtitle": "Who is this letter for?", "fields": ["partnerName", "senderName"] },
+    { "title": "Page one — the beginning", "subtitle": "The first page of your letter.", "fields": ["pageOneTitle", "pageOneSubtitle", "pageOneBody"] },
+    { "title": "Page two — from my heart", "subtitle": "The deeper feelings.", "fields": ["pageTwoTitle", "pageTwoSubtitle", "pageTwoBody", "finalLine"] },
+    { "title": "Theme & colours", "subtitle": "Match the mood of your letter.", "fields": ["themeMode", "colorPalette"] }
+  ],
+
+  "preview": {
+    "nameField": "partnerName",
+    "senderField": "senderName",
+    "messageField": "pageOneBody",
+    "themeField": "themeMode",
+    "paletteField": "colorPalette"
+  }
+}

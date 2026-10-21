@@ -576,9 +576,11 @@
           <p>Browse our gift website designs by category or price. Preview the experience, then customise the one you love.</p>
         </div>
 
+        <!-- FIXED: Removed duplicate "Letters" button, added proper "letter" category -->
         <div class="filter-bar reveal" id="filterBar">
           <button class="filter-btn active" data-filter="all" data-type="category">All</button>
           <button class="filter-btn" data-filter="love" data-type="category">Love</button>
+          <button class="filter-btn" data-filter="letter" data-type="category">Letters</button>
           <button class="filter-btn" data-filter="birthday" data-type="category">Birthday</button>
           <button class="filter-btn" data-filter="anniversary" data-type="category">Anniversary</button>
           <button class="filter-btn" data-filter="friendship" data-type="category">Friendship</button>
@@ -856,23 +858,13 @@
         showToast._t = setTimeout(() => toast.classList.remove("show"), ms);
       }
 
+      // FIXED: loveletter entry — path, category, and editor URL all corrected
       const TEMPLATES = [
-        {
-          id: 'special-letter',
-          name: 'Special Letter',
-          category: 'letter',
-          price: 39,
-          badge: '💌 LITTLE GESTURE',
-          description: 'One heartfelt letter, sealed with a beautiful opening animation. Nothing else — just the words that matter.',
-          features: ['Single letter', 'Opening animation', 'Personal message', 'Private link'],
-          preview: '/templates/letter/special-letter/template.html',
-          customize: './editor/editor.html?template=special-letter&category=letter',
-        },
         {
           id: 'eternal-love',
           name: 'Eternal Love',
           category: 'love',
-          price: 299,
+          price: 599,
           badge: '✦ FEATURED DESIGN',
           description: 'A romantic multi-page gift experience for your favourite person, filled with personal notes and memories.',
           features: ['Multi-page experience', 'Love letter', 'Memory gallery', 'Relationship timer'],
@@ -900,6 +892,17 @@
           features: ['Multi-page experience', 'Love letter', 'Photo galleries', 'Video memory', 'Heart-catching game'],
           preview: '/templates/birthday/birthday-magic/template.html',
           customize: './editor/editor.html?template=birthday-magic&category=birthday',
+        },
+        {
+          id: 'loveletter',
+          name: 'Love Letter',
+          category: 'letter',
+          price: 39,
+          badge: '💌 LITTLE GESTURE',
+          description: 'A romantic two-page love letter experience featuring a beautiful envelope-opening animation, handwritten love letters, cute floating hearts, pen-inspired writing effects, and a heartfelt final message.',
+          features: ['Romantic envelope-opening animation','Handwriting-style fonts','Heart-touching romantic messages','Mobile-friendly design'],
+          preview: '/templates/letters/loveletter/template.html',
+          customize: './editor/editor.html?template=loveletter&category=letter',
         },
       ];
 
