@@ -4,11 +4,20 @@
    - Bubble spans full modal-card width below 400px
    - No clipping behind the keyboard
    - Errors always SAD (no angry face, no brackets)
+   - ✅ Runs ONLY on NIVA's own pages — never on customer gift sites (/g/...)
    ========================================================= */
 (() => {
   "use strict";
 
   if (window.__NIVI_LOADED__) return;
+
+  /* =======================================================
+     ✅ FIX: NEVER run on customer gift pages (/g/<id>)
+     Those are the recipient's personal gift websites.
+     NIVI belongs only on NIVA's own pages.
+     ======================================================= */
+  if (/^\/g\//.test(location.pathname)) return;
+
   window.__NIVI_LOADED__ = true;
 
   /* =======================================================
@@ -19,7 +28,6 @@
     if (p.includes("editor")) return "editor";
     if (p.includes("my-gifts")) return "my-gifts";
     if (p.includes("privacy")) return "privacy";
-    if (/^\/g\//.test(p)) return "recipient";
     return "home";
   })();
 
@@ -28,7 +36,6 @@
     editor: "You're in the gift editor — ask 'How to save a draft?' or 'How to publish?'.",
     "my-gifts": "You're in My Gifts — ask 'What is a draft?' or 'How to delete a gift?'.",
     privacy: "You're on Privacy & Safety — ask 'Is my data safe?'.",
-    recipient: "You're opening a gift — enter the password the sender gave you.",
   };
 
   /* =======================================================
@@ -1784,7 +1791,7 @@
     open: openPanel,
     close: closePanel,
     ask: (q) => { openPanel(); respond(q); },
-    version: "3.3.0",
+    version: "3.3.1",
     speak: (text, emotion) => { ensureModalRobot(); speak(text, emotion); },
     narrateError: (paneId, text) => { ensureModalRobot(); narrateError(paneId, text); },
   };
