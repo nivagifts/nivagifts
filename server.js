@@ -3,6 +3,7 @@
    Light Theme · Email Verification · Password Reset
    Reviews · Stats · Payment Gating · Contact
    Drafts · Wishlist · 1GB uploads
+   Bot · Special Letter (₹39)
 
    AUTH FLOW:
    - Register: email only → OTP sent → verify OTP → set password
@@ -148,6 +149,14 @@ const giftFetchLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many requests. Please slow down." },
+});
+
+const botLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, reply: "Too many messages — please wait a moment." },
 });
 
 /* ---------- 9. AUTH HELPERS ---------- */
@@ -397,7 +406,7 @@ async function runMigrations() {
       );
     `);
 
-    /* ---------- NEW: drafts ---------- */
+    /* ---------- drafts ---------- */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.drafts (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -411,7 +420,7 @@ async function runMigrations() {
     `);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_drafts_user ON app.drafts (user_id, updated_at DESC);`);
 
-    /* ---------- NEW: wishlist ---------- */
+    /* ---------- wishlist ---------- */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.wishlist (
         id BIGSERIAL PRIMARY KEY,
@@ -995,12 +1004,14 @@ const ALLOWED_TEMPLATE_IDS = new Set([
   "eternal-love",
   "love-proposal",
   "birthday-magic",
+  "special-letter",
 ]);
 
 const TEMPLATE_PRICES = {
   "eternal-love": 299,
   "love-proposal": 599,
   "birthday-magic": 299,
+  "special-letter": 39,
 };
 
 // ~1 GB encrypted envelope cap.
@@ -1055,7 +1066,7 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid encrypted gift payload." });
     }
 
-    const expectedPrice = TEMPLATE_PRICES[templateId] || 299;
+    const expectedPrice = TEMPLATE_PRICES[templateId] ?? 299;
 
     // Verify a paid order exists for this user + amount
     if (orderId) {
@@ -1442,7 +1453,7 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
       return res.status(400).json({ success: false, message: "Invalid template." });
     }
 
-    const amount = TEMPLATE_PRICES[templateId] || 299;
+    const amount = TEMPLATE_PRICES[templateId] ?? 299;
 
     if (!razorpay) {
       const orderId = "order_mock_" + crypto.randomBytes(8).toString("hex");
@@ -1531,6 +1542,119 @@ app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) =>
   } catch (err) { next(err); }
 });
 
+/* ---------- 19b. NIVA BOT ---------- */
+const BOT_KNOWLEDGE = [
+  {
+    kw: ["what is niva", "about niva", "who are you", "what do you do"],
+    a: "NIVA is a place to create beautiful personalised digital gifts — letters, proposals, birthday surprises and more. Pick a template, add your words, photos and music, then share a private password-protected link with someone special. ✦",
+  },
+  {
+    kw: ["price", "pricing", "cost", "how much", "rate", "₹", "rupee"],
+    a: "Our gifts start at ₹39 for the Special Letter (a single animated letter). Signature gifts are ₹299, and the premium Love Proposal is ₹599. You only pay when you publish.",
+  },
+  {
+    kw: ["special letter", "39", "letter only", "single letter", "cheap"],
+    a: "The Special Letter is our sweetest little gift at just ₹39 — one heartfelt letter with a beautiful opening animation. Nothing else, just pure feeling. Look for the floating card on the home page! 💌",
+  },
+  {
+    kw: ["template", "templates", "design", "theme", "options", "what can i make"],
+    a: "We currently have: ✦ Eternal Love (₹299), ✦ Love Proposal (₹599), ✦ Birthday Magic (₹299) and the ✦ Special Letter (₹39). New templates are being added all the time — check the home page for the latest.",
+  },
+  {
+    kw: ["how to create", "how do i make", "make a gift", "create gift", "start", "begin"],
+    a: "Easy! 1) Pick a template on the home page. 2) Sign in with your email (we'll send a 6-digit code). 3) Fill in your words and photos in the editor — see the live preview update as you type. 4) Set a gift password and pay. 5) Share the private link + password with your person. ♥",
+  },
+  {
+    kw: ["password", "gift password", "protect", "private", "secure", "encrypt"],
+    a: "Every gift is encrypted in your browser with AES-256 before it ever reaches our server. Your recipient needs the gift password you set (8+ characters) to unlock it. We never see your gift content — that's the NIVA promise. 🔒",
+  },
+  {
+    kw: ["payment", "pay", "razorpay", "upi", "card", "how to pay"],
+    a: "Payments are handled securely by Razorpay (UPI, cards, netbanking). In development mode you can test with our mock flow. You only pay once when you publish a gift.",
+  },
+  {
+    kw: ["account", "sign up", "signup", "register", "login", "sign in", "email verify", "otp"],
+    a: "Signing up is just your email — we send a 6-digit code to verify, then you set a password. Forgot it? Use 'Forgot password?' on the sign-in screen and we'll email you a reset code. ♡",
+  },
+  {
+    kw: ["my gifts", "my gifts page", "drafts", "wishlist", "saved"],
+    a: "Head to 'My Gifts' from the home page. There you'll find three tabs: Drafts (your saved works-in-progress), Published (finished gifts + their shareable links), and Wishlist (templates you've hearted). ♥",
+  },
+  {
+    kw: ["draft", "save", "autosave", "unsaved"],
+    a: "Drafts autosave to your browser as you type, and to your account within a couple of seconds (text only — photos/videos are added at publish time). Hit 'Save Draft' any time to force a cloud save.",
+  },
+  {
+    kw: ["delete", "remove", "unpublish", "stop link"],
+    a: "Go to My Gifts → Published and tap Delete on any gift. The private link stops working immediately. You can also delete drafts and wishlist items from their tabs.",
+  },
+  {
+    kw: ["photos", "images", "upload", "pictures", "how many", "size", "limit", "video", "audio", "music"],
+    a: "You can upload photos, video and audio — up to about 1 GB total per gift. Each photo can be up to 800 MB, videos 800 MB and audio 200 MB. Big files are auto-compressed in the browser before publishing. 📸",
+  },
+  {
+    kw: ["privacy", "safe", "data", "gdpr", "security", "do you store"],
+    a: "Your gift content is encrypted in your browser with AES-256-GCM (PBKDF2 key derivation, 310,000 iterations). Our server only ever stores the ciphertext and basic metadata (template id, dates, price paid). Read the full story on our Privacy & Safety page.",
+  },
+  {
+    kw: ["refund", "cancel", "return", "money back"],
+    a: "Because gifts are digital and immediately shareable, we don't offer refunds after publishing. If something goes wrong before publishing, you won't be charged. For anything unusual, please contact us via the privacy page.",
+  },
+  {
+    kw: ["contact", "support", "help", "email you", "reach you"],
+    a: "Reach out through the 'Privacy & Safety' page — the support channel will be listed there before public launch. For now, this little bot can answer most questions. 💕",
+  },
+  {
+    kw: ["recipient", "open gift", "receive", "someone sent", "how does recipient"],
+    a: "Your recipient opens the private link you send them, enters the gift password you gave them, and the gift unlocks in their browser. The decryption happens locally — even we can't see it without the password.",
+  },
+  {
+    kw: ["free", "trial", "demo", "try"],
+    a: "There's no free plan yet — the Special Letter at ₹39 is our most affordable way to try NIVA. Drafts are always free to create and preview.",
+  },
+  {
+    kw: ["hello", "hi", "hey", "namaste", "vanakkam", "sup"],
+    a: "Hi there! ♥ I'm NIVA — I can tell you about our gift templates, pricing, privacy, or how to create a gift. What would you like to know?",
+  },
+  {
+    kw: ["thank", "thanks", "thx", "bye", "goodbye"],
+    a: "Anytime! I hope you make someone's day. ✦ Come back whenever you need me.",
+  },
+];
+
+const BOT_FALLBACKS = [
+  "I'm not sure I got that one. Try asking about pricing, templates, privacy, or how to create a gift. ♡",
+  "Hmm, that's beyond what I know yet. You can ask about our templates, pricing, or the Special Letter at ₹39!",
+  "I'd love to help — try asking something like 'how much does it cost?' or 'how do I make a gift?'",
+];
+
+function botAnswer(message) {
+  const q = String(message || "").toLowerCase().trim();
+  if (!q) return BOT_FALLBACKS[0];
+
+  let best = null;
+  let bestScore = 0;
+  for (const entry of BOT_KNOWLEDGE) {
+    for (const kw of entry.kw) {
+      if (q.includes(kw) && kw.length > bestScore) {
+        bestScore = kw.length;
+        best = entry;
+      }
+    }
+  }
+  if (best) return best.a;
+  return BOT_FALLBACKS[Math.floor(Math.random() * BOT_FALLBACKS.length)];
+}
+
+app.post("/api/niva-bot", botLimiter, (req, res) => {
+  const message = req.body?.message;
+  if (typeof message !== "string" || message.length > 500) {
+    return res.status(400).json({ success: false, reply: "Please send a shorter message." });
+  }
+  const reply = botAnswer(message);
+  res.json({ success: true, reply });
+});
+
 /* ---------- 20. STATIC FILES ---------- */
 
 app.get("/", (req, res) => {
@@ -1555,6 +1679,18 @@ app.get("/g/:publicId", (req, res) => {
   }
 
   res.sendFile(path.join(ROOT, "public", "recipient.html"));
+});
+
+/* Explicit /templates.js and /niva-bot.js — ensures correct MIME type
+   even if a future middleware order changes. */
+app.get("/templates.js", (req, res) => {
+  res.type("application/javascript");
+  res.sendFile(path.join(ROOT, "templates.js"));
+});
+
+app.get("/niva-bot.js", (req, res) => {
+  res.type("application/javascript");
+  res.sendFile(path.join(ROOT, "niva-bot.js"));
 });
 
 app.use("/editor", express.static(path.join(ROOT, "editor"), {
@@ -1603,6 +1739,7 @@ const server = app.listen(PORT, async () => {
   console.log(`   Environment: ${IS_PRODUCTION ? "production" : "development"}`);
   console.log(`   Email:       ${HAS_RESEND ? "✓ Resend API" : "✗ Not configured"}`);
   console.log(`   Payments:    ${razorpay ? "✓ Razorpay" : "✗ Mock mode"}`);
+  console.log(`   Templates:   ${ALLOWED_TEMPLATE_IDS.size} registered`);
   console.log("");
 });
 

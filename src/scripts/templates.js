@@ -1,21 +1,17 @@
 /* =========================================================
-   NIVA TEMPLATE REGISTRY
+   NIVA TEMPLATE REGISTRY  (single source of truth)
    =========================================================
    HOW TO ADD A NEW TEMPLATE
    ──────────────────────────
    1. Create folder: templates/<category>/<id>/
-      ├── config.json     (fields, sections, preview config)
-      ├── template.html   (with NIVA preview bridge at bottom)
-      └── preview.jpg     (1200×900 thumbnail)
+      ├── config.json
+      ├── template.html   (with NIVA preview bridge)
+      └── preview.jpg
+   2. Add ONE entry to TEMPLATE_REGISTRY below.
+   3. Add the id to server.js → ALLOWED_TEMPLATE_IDS
+   4. (optional) index.html marketing card.
 
-   2. Add ONE line to TEMPLATE_REGISTRY below:
-      { id: "<id>", configPath: "/templates/<category>/<id>/config.json" }
-
-   3. Add ONE line to server.js → ALLOWED_TEMPLATE_IDS
-
-   4. Add ONE entry to index.html → categories.<category>.templates[]
-
-   That's it. Editor auto-loads via config.json.
+   Editor, recipient, wishlist, my-gifts all read from here.
    ========================================================= */
 
 const NivaTemplates = (() => {
@@ -34,15 +30,22 @@ const NivaTemplates = (() => {
       id: "birthday-magic",
       configPath: "/templates/birthday/birthday-magic/config.json",
     },
+    {
+      id: "special-letter",
+      configPath: "/templates/letter/special-letter/config.json",
+    },
     // ▼▼▼ ADD NEW TEMPLATES BELOW ▼▼▼
-    // {
-    //   id: "your-new-template",
-    //   configPath: "/templates/your-category/your-new-template/config.json",
-    // },
   ];
+
+  // Category lookup is derived automatically from the path.
+  function categoryFromPath(configPath) {
+    const m = /^\/templates\/([^/]+)\//.exec(configPath || "");
+    return m ? m[1] : null;
+  }
 
   let templates = [];
   let initialized = false;
+  let initPromise = null;
 
   async function loadTemplate(registryItem) {
     try {
@@ -51,23 +54,40 @@ const NivaTemplates = (() => {
         throw new Error(`Unable to load ${registryItem.configPath}: ${response.status}`);
       }
       const config = await response.json();
-      if (!config.id || !config.name || !config.category) {
+      if (!config.id || !config.name) {
         throw new Error(`Invalid config: ${registryItem.configPath}`);
       }
-      return { ...config, configPath: registryItem.configPath };
+      const category = config.category || categoryFromPath(registryItem.configPath);
+      const templatePath =
+        config.templatePath ||
+        `/templates/${category}/${config.id}/template.html`;
+
+      return {
+        ...config,
+        category,
+        templatePath,
+        previewImage:
+          config.previewImage ||
+          `/templates/${category}/${config.id}/preview.jpg`,
+        configPath: registryItem.configPath,
+        active: config.active !== false,
+      };
     } catch (error) {
       console.error(`[NIVA] Failed to load "${registryItem.id}":`, error);
       return null;
     }
   }
 
-  async function initialize() {
-    if (initialized) return getAll();
-    const results = await Promise.all(TEMPLATE_REGISTRY.map(loadTemplate));
-    templates = results.filter(Boolean);
-    initialized = true;
-    console.info(`[NIVA] Loaded ${templates.length} template(s).`);
-    return getAll();
+  function initialize() {
+    if (initialized) return Promise.resolve(getAll());
+    if (initPromise) return initPromise;
+    initPromise = Promise.all(TEMPLATE_REGISTRY.map(loadTemplate)).then(results => {
+      templates = results.filter(Boolean);
+      initialized = true;
+      console.info(`[NIVA] Loaded ${templates.length} template(s).`);
+      return getAll();
+    });
+    return initPromise;
   }
 
   function getAll() {
@@ -90,6 +110,11 @@ const NivaTemplates = (() => {
     return t ? t.templatePath : null;
   }
 
+  function getCategory(templateId) {
+    const t = getById(templateId);
+    return t ? t.category : null;
+  }
+
   function getPreviewImage(templateId) {
     const t = getById(templateId);
     return t ? t.previewImage : null;
@@ -100,17 +125,18 @@ const NivaTemplates = (() => {
   }
 
   function register(templateConfig) {
-    if (!templateConfig?.id || !templateConfig?.name || !templateConfig?.category) {
-      throw new Error("[NIVA] Template needs id, name, category.");
+    if (!templateConfig?.id || !templateConfig?.name) {
+      throw new Error("[NIVA] Template needs id and name.");
     }
     const i = templates.findIndex(t => t.id === templateConfig.id);
-    if (i !== -1) templates[i] = { ...templateConfig };
+    if (i !== -1) templates[i] = { ...templates[i], ...templateConfig };
     else templates.push({ ...templateConfig });
     return getById(templateConfig.id);
   }
 
   async function reload() {
     initialized = false;
+    initPromise = null;
     templates = [];
     return initialize();
   }
@@ -121,6 +147,7 @@ const NivaTemplates = (() => {
     getById,
     getByCategory,
     getTemplatePath,
+    getCategory,
     getPreviewImage,
     getCategoriesWithTemplates,
     register,

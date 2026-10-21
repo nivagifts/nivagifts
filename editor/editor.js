@@ -1,6 +1,6 @@
 ﻿/* =========================================================
    NIVA UNIVERSAL GIFT EDITOR — Light Theme + Payment Gate
-   - Fixed price from template
+   - Fixed price from template (incl. Special Letter ₹39)
    - ~1 GB upload limit
    - Cloud drafts (text only) + local draft
    ========================================================= */
@@ -13,14 +13,16 @@ const MAX_DRAFT_BYTES = 5 * 1024 * 1024;                // 5 MB cloud draft
 const DRAFT_KEY_PREFIX = "niva-draft-";
 const PREVIEW_KEY_PREFIX = "niva-preview-";
 
-// Fixed prices per template — chosen on the marketing site.
+// Fixed prices per template — kept in sync with server.js TEMPLATE_PRICES.
 const TEMPLATE_PRICES = {
   "eternal-love": 299,
   "love-proposal": 599,
   "birthday-magic": 299,
+  "special-letter": 39,
 };
 
 const TEMPLATE_PLAN_NAMES = {
+  39: "Special Letter",
   99: "Essential",
   299: "Signature",
   599: "Evermore",
@@ -42,7 +44,7 @@ const context = {
 const DRAFT_KEY = DRAFT_KEY_PREFIX + context.templateId;
 const PREVIEW_KEY = PREVIEW_KEY_PREFIX + context.templateId;
 
-const TEMPLATE_PRICE = TEMPLATE_PRICES[context.templateId] || 299;
+const TEMPLATE_PRICE = TEMPLATE_PRICES[context.templateId] ?? 299;
 
 /* ---------- 2. UTILITIES ---------- */
 function showToast(message, ms = 3000) {
@@ -380,6 +382,8 @@ function setFieldValue(key, value) {
 /* ---------- 7. FORM RENDERING ---------- */
 function renderForm() {
   const container = $("#dynamicSections");
+  if (!container) return;
+
   const sections = context.config.sections || [];
   const customization = context.config.customization;
 
@@ -704,7 +708,10 @@ function initPreviewIframe() {
   previewIframe = $("#previewIframe");
   if (!previewIframe) return;
 
-  previewIframe.src = context.config.templatePath;
+  const templatePath = context.config?.templatePath;
+  if (templatePath) {
+    previewIframe.src = templatePath;
+  }
 
   previewIframe.addEventListener("load", () => {
     $("#previewFrameWrap")?.classList.add("loaded");
@@ -790,7 +797,8 @@ function getPhotos() {
   const photos = [];
   Object.keys(context.fields).forEach(key => {
     const field = context.fields[key];
-    if (field.spec.type !== "imageGallery") return;
+    if (!field || field.spec.type !== "imageGallery") return;
+    if (!Array.isArray(field.files)) return;
     field.files.forEach(item => photos.push({ name: item.file.name, file: item.file, url: item.url }));
   });
   return photos;
@@ -800,6 +808,7 @@ function getMediaFiles() {
   const media = [];
   Object.keys(context.fields).forEach(key => {
     const field = context.fields[key];
+    if (!field) return;
     if (field.spec.type !== "video" && field.spec.type !== "audio") return;
     const f = field.files[0];
     if (f?.file) media.push({ key, type: field.spec.type, file: f.file, name: f.file.name });
@@ -853,8 +862,9 @@ async function saveCloudDraft({ silent = true } = {}) {
   if (!context.user) return;
   try {
     const data = getGiftData();
-    const json = JSON.stringify(data);
-    if (json.length > MAX_DRAFT_BYTES) {
+    // Byte-length check, not char count.
+    const bytes = new TextEncoder().encode(JSON.stringify(data)).length;
+    if (bytes > MAX_DRAFT_BYTES) {
       if (!silent) showToast("Draft is too large for cloud save (max 5 MB). Saved locally only.");
       return;
     }
@@ -934,9 +944,15 @@ function applyDraftValues(values) {
     const input = $(`[data-field-key="${key}"]`);
     if (!input) return;
 
-    if (input.type === "radio") input.checked = input.value === val;
-    else if (field.spec.type === "textArray" && Array.isArray(val)) input.value = val.join("\n");
-    else input.value = val;
+    if (input.type === "radio") {
+      input.checked = input.value === val;
+    } else if (field.spec.type === "textArray") {
+      // Server may return array or string; normalise to newline-joined string.
+      if (Array.isArray(val)) input.value = val.join("\n");
+      else input.value = String(val ?? "");
+    } else {
+      input.value = val ?? "";
+    }
     updateCounter(key);
   });
   updatePreview();
@@ -1020,6 +1036,7 @@ function updatePlanSummary() {
   const encoder = new TextEncoder();
 
   function setStatus(msg, isError = false) {
+    if (!status) return;
     status.textContent = msg;
     status.style.color = isError ? "var(--danger)" : "inherit";
   }
@@ -1027,9 +1044,9 @@ function updatePlanSummary() {
   function setProgress(msg, pct) {
     if (!progress) return;
     progress.classList.add("show");
-    progressMsg.textContent = msg;
-    progressFill.style.width = Math.min(100, pct) + "%";
-    progressPct.textContent = Math.round(pct) + "%";
+    if (progressMsg) progressMsg.textContent = msg;
+    if (progressFill) progressFill.style.width = Math.min(100, pct) + "%";
+    if (progressPct) progressPct.textContent = Math.round(pct) + "%";
   }
 
   function hideProgress() { progress?.classList.remove("show"); }
@@ -1114,24 +1131,24 @@ function updatePlanSummary() {
 
   button.addEventListener("click", async () => {
     if (button.disabled) return;
-    result.hidden = true;
+    if (result) result.hidden = true;
 
     if (!window.NIVAEditor) {
       setStatus("Editor not ready. Refresh and try again.", true);
       return;
     }
 
-    const password = passwordInput.value;
-    const confirmation = confirmInput.value;
+    const password = passwordInput?.value || "";
+    const confirmation = confirmInput?.value || "";
 
     if (password.length < 8 || password.length > 128) {
       setStatus("Password must be 8–128 characters.", true);
-      passwordInput.focus();
+      passwordInput?.focus();
       return;
     }
     if (password !== confirmation) {
       setStatus("Passwords do not match.", true);
-      confirmInput.focus();
+      confirmInput?.focus();
       return;
     }
 
@@ -1222,11 +1239,11 @@ function updatePlanSummary() {
       }
 
       setProgress("Done!", 100);
-      urlInput.value = new URL(data.gift.url, window.location.origin).href;
-      result.hidden = false;
+      if (urlInput) urlInput.value = new URL(data.gift.url, window.location.origin).href;
+      if (result) result.hidden = false;
       setStatus("Your gift was published successfully!");
-      passwordInput.value = "";
-      confirmInput.value = "";
+      if (passwordInput) passwordInput.value = "";
+      if (confirmInput) confirmInput.value = "";
       setTimeout(hideProgress, 800);
     } catch (err) {
       hideProgress();
@@ -1236,7 +1253,7 @@ function updatePlanSummary() {
     }
   });
 
-  copyButton.addEventListener("click", async () => {
+  copyButton?.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(urlInput.value);
       setStatus("Gift link copied!");
@@ -1252,9 +1269,13 @@ async function initEditor() {
   try {
     context.config = await loadConfig();
 
-    $("#templateName").textContent = context.config.name;
-    $("#templateMeta").textContent =
-      `${(context.config.category || "").toUpperCase()} Collection · Customizable gift`;
+    const nameEl = $("#templateName");
+    const metaEl = $("#templateMeta");
+    if (nameEl) nameEl.textContent = context.config.name;
+    if (metaEl) {
+      metaEl.textContent =
+        `${(context.config.category || "").toUpperCase()} Collection · Customizable gift`;
+    }
     updatePlanSummary();
 
     renderForm();
@@ -1267,13 +1288,16 @@ async function initEditor() {
   } catch (err) {
     console.error("[NIVA] Editor init failed:", err);
     setSaveStatus("Failed to load template");
-    $("#dynamicSections").innerHTML = `
-      <div class="editor-error">
-        <strong>Could not load template.</strong><br>
-        ${escapeHtml(err.message)}<br><br>
-        Expected config at:<br>
-        <code>/templates/${escapeHtml(context.category)}/${escapeHtml(context.templateId)}/config.json</code>
-      </div>`;
+    const container = $("#dynamicSections");
+    if (container) {
+      container.innerHTML = `
+        <div class="editor-error">
+          <strong>Could not load template.</strong><br>
+          ${escapeHtml(err.message)}<br><br>
+          Expected config at:<br>
+          <code>/templates/${escapeHtml(context.category)}/${escapeHtml(context.templateId)}/config.json</code>
+        </div>`;
+    }
   }
 }
 

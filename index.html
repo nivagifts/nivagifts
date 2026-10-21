@@ -11,8 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+  <script src="/templates.js" defer></script>
+
   <style>
-    /* ====== Full CSS preserved from your original theme ====== */
     :root {
       color-scheme: light;
       --bg-cream: #fdf8f3;
@@ -349,9 +350,41 @@
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out); }
     .reveal.visible { opacity: 1; transform: none; }
 
+    /* FLOATING SPECIAL LETTER (₹39) */
+    .special-letter-float {
+      position: fixed;
+      z-index: 8000;
+      left: 18px;
+      bottom: calc(88px + env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px 12px 12px;
+      border: 1px solid var(--line-rose);
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--panel), var(--bg-rose));
+      box-shadow: var(--shadow-md);
+      font-family: var(--sans);
+      text-decoration: none;
+      color: var(--text);
+      animation: slFloat 4s ease-in-out infinite;
+      transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+    }
+    .special-letter-float:hover { transform: translateY(-4px) rotate(-1deg); box-shadow: var(--shadow-lg); }
+    @keyframes slFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .sl-icon { font-size: 22px; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-white); border: 1px solid var(--line-gold); }
+    .sl-copy { display: flex; flex-direction: column; line-height: 1.15; }
+    .sl-copy strong { font-family: var(--display); font-weight: 500; font-size: 14px; }
+    .sl-copy span { font-size: 10.5px; color: var(--text-2); margin-top: 2px; letter-spacing: 0.02em; }
+    .sl-price { margin-left: 6px; padding: 6px 10px; border-radius: 999px; background: var(--rose-deep); color: #fff; font: 600 12px/1 var(--sans); letter-spacing: 0.04em; white-space: nowrap; }
+    @media (max-width: 520px) {
+      .special-letter-float { left: 12px; right: 12px; bottom: calc(80px + env(safe-area-inset-bottom)); }
+      .sl-copy span { display: none; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
       .reveal { opacity: 1; transform: none; }
+      .special-letter-float { animation: none; }
     }
   </style>
 </head>
@@ -361,7 +394,7 @@
   <header class="nav-shell">
     <div class="wrap nav">
       <a class="brand" href="#home" aria-label="NIVA home">
-        <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
+        <img src="public/assets/logo/photo_2026-10-21_07-33-50.jpg" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
         <span class="brand-text">
           <span class="brand-word">NIVA</span>
           <span class="brand-caption">MAKE MOMENTS ETERNAL</span>
@@ -402,7 +435,7 @@
   <div class="modal-overlay" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
     <div class="modal-card">
       <button class="modal-close" id="authClose" aria-label="Close">×</button>
-      <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="modal-logo">
+      <img src="public/assets/logo/photo_2026-10-21_07-33-50.jpg" alt="NIVA Logo" class="modal-logo">
 
       <div id="loginPane">
         <h2 id="authTitle">Welcome back</h2>
@@ -547,7 +580,7 @@
       <div class="wrap">
         <div class="stats-grid" id="statsGrid">
           <div class="stat-item">
-            <div class="stat-number" data-count="3">0</div>
+            <div class="stat-number" data-count="4">0</div>
             <div class="stat-label">Templates</div>
           </div>
           <div class="stat-item">
@@ -586,6 +619,7 @@
 
         <div class="filter-bar reveal" id="priceFilterBar" style="margin-top:-16px">
           <button class="filter-btn" data-filter="all" data-type="price">All prices</button>
+          <button class="filter-btn" data-filter="39" data-type="price">₹39</button>
           <button class="filter-btn" data-filter="99" data-type="price">₹99</button>
           <button class="filter-btn" data-filter="299" data-type="price">₹299</button>
           <button class="filter-btn" data-filter="599" data-type="price">₹599</button>
@@ -731,6 +765,7 @@
           <details class="faq"><summary>Are my photos and memories private?</summary><p>Yes. Your gift is encrypted with a password you choose. Only you and your recipient (who receives the password) can see the content.</p></details>
           <details class="faq"><summary>Can I create multiple gifts?</summary><p>Absolutely. One account allows you to create as many gifts as you like — each with its own unique link and password.</p></details>
           <details class="faq"><summary>How big can my uploads be?</summary><p>Photo galleries, videos and audio combined can be up to ~1 GB per gift. Drafts only store text; uploads are used when publishing.</p></details>
+          <details class="faq"><summary>What is the Special Letter for ₹39?</summary><p>The Special Letter is our most affordable gift — one heartfelt letter with a beautiful opening animation. Nothing else, just pure feeling. Perfect for a small but meaningful gesture.</p></details>
         </div>
       </div>
     </section>
@@ -755,7 +790,7 @@
             <div class="contact-icon">◉</div>
             <div class="contact-info">
               <h3>Instagram</h3>
-              <p><a href="https://instagram.com/nivaheart.craft" target="_blank" rel="noopener">@nivaheart.craft</a></p>
+              <p><a href="https://instagram.com/niva.gifts" target="_blank" rel="noopener">@niva.gifts</a></p>
             </div>
           </div>
         </div>
@@ -779,7 +814,7 @@
     <div class="wrap">
       <div class="footer-main">
         <a href="#home" class="footer-brand">
-          <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
+          <img src="public/assets/logo/photo_2026-10-21_07-33-50.jpg" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
           <span>
             <span class="footer-brand-name">NIVA</span>
             <small>MAKE MOMENTS ETERNAL</small>
@@ -808,7 +843,7 @@
     <div class="preview-dialog">
       <div class="preview-head">
         <div class="preview-head-title">
-          <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="preview-head-logo">
+          <img src="public/assets/logo/photo_2026-10-21_07-33-50.jpg" alt="NIVA Logo" class="preview-head-logo">
           <div>
             <strong id="previewTitle">Template Preview</strong>
             <small>Template preview · sample content</small>
@@ -823,6 +858,18 @@
       </div>
     </div>
   </div>
+
+  <!-- FLOATING SPECIAL LETTER (₹39) -->
+  <a href="./editor/editor.html?template=special-letter&category=letter"
+     class="special-letter-float"
+     aria-label="Special Letter — just ₹39">
+    <span class="sl-icon">💌</span>
+    <span class="sl-copy">
+      <strong>Special Letter</strong>
+      <span>Just a letter & an opening animation</span>
+    </span>
+    <span class="sl-price">₹39</span>
+  </a>
 
   <script>
     (() => {
@@ -840,23 +887,52 @@
         showToast._t = setTimeout(() => toast.classList.remove("show"), ms);
       }
 
-      /* ---------- TEMPLATES ---------- */
+      /* ---------- TEMPLATES (local fallback) ---------- */
       const TEMPLATES = [
-        { id: 'eternal-love', name: 'Eternal Love', category: 'love', price: 299, badge: '✦ FEATURED DESIGN',
+        {
+          id: 'special-letter',
+          name: 'Special Letter',
+          category: 'letter',
+          price: 39,
+          badge: '💌 LITTLE GESTURE',
+          description: 'One heartfelt letter, sealed with a beautiful opening animation. Nothing else — just the words that matter.',
+          features: ['Single letter', 'Opening animation', 'Personal message', 'Private link'],
+          preview: '/templates/letter/special-letter/template.html',
+          customize: './editor/editor.html?template=special-letter&category=letter',
+        },
+        {
+          id: 'eternal-love',
+          name: 'Eternal Love',
+          category: 'love',
+          price: 299,
+          badge: '✦ FEATURED DESIGN',
           description: 'A romantic multi-page gift experience for your favourite person, filled with personal notes and memories.',
           features: ['Multi-page experience', 'Love letter', 'Memory gallery', 'Relationship timer'],
           preview: '/templates/love/eternal-love/template.html',
-          customize: './editor/editor.html?template=eternal-love&category=love' },
-        { id: 'love-proposal', name: 'Love Proposal', category: 'love', price: 599, badge: '♥ ROMANTIC EXPERIENCE',
+          customize: './editor/editor.html?template=eternal-love&category=love',
+        },
+        {
+          id: 'love-proposal',
+          name: 'Love Proposal',
+          category: 'love',
+          price: 599,
+          badge: '♥ ROMANTIC EXPERIENCE',
           description: 'A multi-page proposal journey made for a heartfelt question and a memorable answer.',
           features: ['Multi-page experience', 'Proposal journey', 'Personal messages', 'Romantic moments'],
           preview: '/templates/love/love-proposal/template.html',
-          customize: './editor/editor.html?template=love-proposal&category=love' },
-        { id: 'birthday-magic', name: 'Birthday Magic', category: 'birthday', price: 299, badge: '✦ NEW DESIGN',
+          customize: './editor/editor.html?template=love-proposal&category=love',
+        },
+        {
+          id: 'birthday-magic',
+          name: 'Birthday Magic',
+          category: 'birthday',
+          price: 299,
+          badge: '✦ NEW DESIGN',
           description: 'A joyful multi-page birthday experience filled with wishes, memories, a love letter, a video memory, and a fun game.',
           features: ['Multi-page experience', 'Love letter', 'Photo galleries', 'Video memory', 'Heart-catching game'],
           preview: '/templates/birthday/birthday-magic/template.html',
-          customize: './editor/editor.html?template=birthday-magic&category=birthday' },
+          customize: './editor/editor.html?template=birthday-magic&category=birthday',
+        },
       ];
 
       /* ---------- STATE ---------- */
@@ -868,6 +944,7 @@
         wishlist: new Set(),
         _verifyEmail: "",
         _resetEmail: "",
+        templates: TEMPLATES.slice(),
       };
 
       /* ---------- AUTH ---------- */
@@ -1250,10 +1327,11 @@
         const grid = $("#templateGrid");
         if (!grid) return;
 
-        let filtered = TEMPLATES;
+        const list = state.templates || TEMPLATES;
+        let filtered = list;
         if (state.filter.category !== 'all') filtered = filtered.filter(t => t.category === state.filter.category);
         if (state.filter.price !== 'all') filtered = filtered.filter(t => t.price === Number(state.filter.price));
-        filtered.sort((a, b) => a.price - b.price);
+        filtered = filtered.slice().sort((a, b) => a.price - b.price);
 
         if (!filtered.length) {
           grid.innerHTML = `
@@ -1283,7 +1361,7 @@
               </div>
               <div class="template-info">
                 <div class="template-meta">
-                  <span>${esc(t.category.toUpperCase())} · DIGITAL GIFT</span>
+                  <span>${esc(String(t.category).toUpperCase())} · DIGITAL GIFT</span>
                   <span>₹${t.price}</span>
                 </div>
                 <h3>${esc(t.name)}</h3>
@@ -1301,7 +1379,7 @@
 
         $$('.preview-template', grid).forEach(btn => {
           btn.addEventListener('click', () => {
-            const tpl = TEMPLATES.find(t => t.id === btn.dataset.id);
+            const tpl = (state.templates || TEMPLATES).find(t => t.id === btn.dataset.id);
             if (tpl) openPreview(tpl);
           });
         });
@@ -1315,7 +1393,6 @@
           });
         });
 
-        // Wishlist toggle
         $$('.template-wish', grid).forEach(btn => {
           btn.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -1387,11 +1464,13 @@
               b.classList.toggle('active', b.dataset.filter === price);
             });
             $$('#filterBar .filter-btn').forEach(b => b.classList.remove('active'));
-            $('#filterBar .filter-btn[data-filter="all"]').classList.add('active');
+            const allBtn = $('#filterBar .filter-btn[data-filter="all"]');
+            if (allBtn) allBtn.classList.add('active');
             state.filter.price = price;
             state.filter.category = 'all';
             renderTemplates();
-            $('#templates').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const sec = $('#templates');
+            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
         });
       }
@@ -1465,8 +1544,10 @@
         }
         const count = state.reviews.length;
         const avg = count ? (state.reviews.reduce((s, r) => s + (r.stars || 5), 0) / count).toFixed(1) : 0;
-        $("#avgRating").textContent = avg;
-        $("#reviewCount").textContent = count;
+        const avgEl = $("#avgRating");
+        const cntEl = $("#reviewCount");
+        if (avgEl) avgEl.textContent = avg;
+        if (cntEl) cntEl.textContent = count;
       }
 
       async function loadReviews() {
@@ -1598,9 +1679,61 @@
         closeAuthModal();
       });
 
+      /* ---------- Merge registry templates (if available) ---------- */
+      async function mergeRegistryTemplates() {
+        for (let i = 0; i < 20; i++) {
+          if (window.NivaTemplates && typeof window.NivaTemplates.initialize === "function") break;
+          await new Promise(r => setTimeout(r, 50));
+        }
+        if (!window.NivaTemplates) return;
+
+        try {
+          await window.NivaTemplates.initialize();
+          const registry = window.NivaTemplates.getAll();
+          if (!Array.isArray(registry) || !registry.length) return;
+
+          const localById = new Map(TEMPLATES.map(t => [t.id, t]));
+          const merged = registry.map(r => {
+            const local = localById.get(r.id) || {};
+            return {
+              id: r.id,
+              name: r.name || local.name || r.id,
+              category: r.category || local.category || 'love',
+              price: local.price || r.price || 299,
+              badge: local.badge || '✦ DIGITAL GIFT',
+              description: r.description || local.description || '',
+              features: local.features || ['Personalised gift', 'Private link'],
+              preview: r.templatePath || local.preview,
+              customize: local.customize || `./editor/editor.html?template=${encodeURIComponent(r.id)}&category=${encodeURIComponent(r.category || 'love')}`,
+            };
+          });
+          const regIds = new Set(registry.map(r => r.id));
+          TEMPLATES.forEach(t => { if (!regIds.has(t.id)) merged.push(t); });
+
+          state.templates = merged;
+          renderTemplates();
+        } catch (err) {
+          console.warn("[NIVA] Registry merge failed, using local list:", err);
+        }
+      }
+
+      /* ---------- NIVI INTEGRATION ---------- */
+      // When NIVI signs the user in through chat, update the site without reload.
+      document.addEventListener("nivi:login", (e) => {
+        const user = e.detail;
+        if (!user) return;
+        state.user = user;
+        updateAuthUI();
+        closeAuthModal();
+        fetchWishlist().then(() => renderTemplates());
+        showToast("Welcome, " + (user.email?.split("@")[0] || "friend") + " ✦");
+      });
+
       /* ---------- BOOT ---------- */
       async function boot() {
-        $("#year").textContent = new Date().getFullYear();
+        const yearEl = $("#year");
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+
         initAuth();
         initUserMenu();
         initNav();
@@ -1619,6 +1752,8 @@
         await loadStats();
         setTimeout(animateStats, 500);
 
+        mergeRegistryTemplates();
+
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("login") === "required" && !user) openAuthModal("loginPane");
       }
@@ -1630,5 +1765,8 @@
       }
     })();
   </script>
+
+  <!-- NIVI — global assistant -->
+  <script src="/nivabot.js" defer></script>
 </body>
 </html>

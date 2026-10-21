@@ -133,7 +133,7 @@
   <header class="nav-shell">
     <div class="wrap nav">
       <a class="brand" href="./index.html">
-        <img src="public/assets/logo/NIVA Romantic Glow Logo.png" alt="NIVA Logo" class="brand-logo">
+        <img src="public/assets/logo/photo_2026-10-21_07-33-50.jpg" alt="NIVA Logo" class="brand-logo">
         <span class="brand-text">
           <span class="brand-word">NIVA</span>
           <span class="brand-caption">MAKE MOMENTS ETERNAL</span>
@@ -220,9 +220,12 @@
         showToast._t = setTimeout(() => toast.classList.remove("show"), ms);
       }
 
+      // Includes all four NIVA templates so drafts/published/wishlist always
+      // resolve a friendly name & editor URL. Matches /templates.js registry.
       const TEMPLATE_INFO = {
-        'eternal-love': { name: 'Eternal Love', category: 'love', editUrl: './editor/editor.html?template=eternal-love&category=love', price: 299 },
-        'love-proposal': { name: 'Love Proposal', category: 'love', editUrl: './editor/editor.html?template=love-proposal&category=love', price: 599 },
+        'special-letter': { name: 'Special Letter', category: 'letter', editUrl: './editor/editor.html?template=special-letter&category=letter', price: 39 },
+        'eternal-love':   { name: 'Eternal Love',   category: 'love',    editUrl: './editor/editor.html?template=eternal-love&category=love',       price: 299 },
+        'love-proposal':  { name: 'Love Proposal',  category: 'love',    editUrl: './editor/editor.html?template=love-proposal&category=love',      price: 599 },
         'birthday-magic': { name: 'Birthday Magic', category: 'birthday', editUrl: './editor/editor.html?template=birthday-magic&category=birthday', price: 299 },
       };
 
@@ -241,13 +244,13 @@
           const data = await res.json().catch(() => ({}));
           if (data?.authenticated === true && data.user) return data.user;
         } catch {}
-        window.location.href = './index.html?login=required';
         return null;
       }
 
       /* ---------- DRAFTS ---------- */
       async function loadDrafts() {
         const grid = $('#draftsGrid');
+        if (!grid) return;
         try {
           const res = await fetch('/api/drafts', { credentials: 'same-origin', cache: 'no-store' });
           const data = await res.json().catch(() => ({}));
@@ -305,6 +308,7 @@
       /* ---------- PUBLISHED GIFTS ---------- */
       async function loadGifts() {
         const grid = $('#giftsGrid');
+        if (!grid) return;
         try {
           const res = await fetch('/api/gifts', { credentials: 'same-origin', cache: 'no-store' });
           const data = await res.json().catch(() => ({}));
@@ -369,6 +373,7 @@
       /* ---------- WISHLIST ---------- */
       async function loadWishlist() {
         const grid = $('#wishlistGrid');
+        if (!grid) return;
         try {
           const res = await fetch('/api/wishlist', { credentials: 'same-origin', cache: 'no-store' });
           const data = await res.json().catch(() => ({}));
@@ -452,12 +457,37 @@
       }
       $$('.tab').forEach(t => t.addEventListener('click', () => activateTab(t.dataset.tab)));
 
+      /* ---------- NIVI INTEGRATION ---------- */
+      // When NIVI signs the user in via chat, adopt that session and load data
+      // instead of reloading or bouncing them to index.html.
+      document.addEventListener('nivi:login', () => {
+        const initialTab = (location.hash.replace('#', '') || 'drafts');
+        activateTab(TAB_SECTIONS[initialTab] ? initialTab : 'drafts');
+      });
+
       /* ---------- BOOT ---------- */
       async function boot() {
         const user = await requireUser();
-        if (!user) return;
 
-        const initialTab = (location.hash.replace('#','') || 'drafts');
+        if (!user) {
+          // Not signed in — do NOT bounce. Let NIVI guide them.
+          // Show a friendly prompt in the drafts grid, and open NIVI if present.
+          const drafts = $('#draftsGrid');
+          if (drafts) {
+            drafts.innerHTML = `
+              <div class="empty" style="grid-column:1/-1">
+                <div class="empty-icon">✦</div>
+                <h3>Please sign in to see your gifts.</h3>
+                <p>I can help you sign in right here — just tap the NIVI bubble in the corner, or use Sign In on the home page.</p>
+                <a class="btn btn-primary" href="./index.html?login=required">Go to sign in ↗</a>
+              </div>`;
+          }
+          // Try to open NIVI so they can sign in through chat.
+          try { if (window.NIVI && typeof window.NIVI.open === "function") window.NIVI.open(); } catch {}
+          return;
+        }
+
+        const initialTab = (location.hash.replace('#', '') || 'drafts');
         activateTab(TAB_SECTIONS[initialTab] ? initialTab : 'drafts');
       }
 
@@ -465,5 +495,8 @@
       else boot();
     })();
   </script>
+
+  <!-- NIVI — global assistant -->
+  <script src="/nivabot.js" defer></script>
 </body>
 </html>

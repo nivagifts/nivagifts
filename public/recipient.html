@@ -12,6 +12,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+<script src="/templates.js" defer></script>
+
 <style>
   :root {
     color-scheme: light;
@@ -33,6 +35,7 @@
     --line: #f0dfd8;
     --line-soft: #f7ebe5;
     --line-rose: #e8c4c8;
+    --line-gold: #e8d9b8;
     --danger: #c75b65;
     --display: 'Playfair Display', Georgia, serif;
     --serif: 'Cormorant Garamond', Georgia, serif;
@@ -84,7 +87,7 @@
     margin: 0 auto 22px;
     display: grid;
     place-items: center;
-    border: 1px solid var(--line-gold, #e8d9b8);
+    border: 1px solid var(--line-gold);
     border-radius: 50%;
     background: linear-gradient(145deg, var(--bg-rose), var(--bg-white));
     color: var(--rose-deep);
@@ -130,7 +133,8 @@
     font-weight: 500;
   }
 
-  input[type=password] {
+  input[type=password],
+  input[type=text] {
     width: 100%;
     padding: 14px 16px;
     border: 1px solid var(--line);
@@ -143,8 +147,8 @@
     transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
   }
 
-  input[type=password]::placeholder { color: var(--text-soft); }
-  input[type=password]:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(212, 135, 142, 0.12); }
+  input::placeholder { color: var(--text-soft); }
+  input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(212, 135, 142, 0.12); }
 
   button[type=submit] {
     width: 100%;
@@ -164,7 +168,11 @@
     touch-action: manipulation;
   }
 
-  button[type=submit]:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(183, 110, 121, 0.38); }
+  button[type=submit]:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(183, 110, 121, 0.38);
+  }
+
   button[type=submit]:active:not(:disabled) { transform: scale(0.97); }
   button[type=submit]:disabled { opacity: 0.6; cursor: wait; }
 
@@ -180,9 +188,12 @@
   }
 
   #message:not(:empty) { display: block; }
-
   #message.info { background: var(--bg-rose); border: 1px solid var(--line-rose); color: var(--text-2); }
-  #message.error { background: rgba(199, 91, 101, 0.08); border: 1px solid rgba(199, 91, 101, 0.3); color: var(--danger); }
+  #message.error {
+    background: rgba(199, 91, 101, 0.08);
+    border: 1px solid rgba(199, 91, 101, 0.3);
+    color: var(--danger);
+  }
 
   .footer-note {
     margin: 22px 0 0;
@@ -271,8 +282,9 @@
 
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const publicId = location.pathname.split("/").pop();
+  const publicId = location.pathname.split("/").filter(Boolean).pop() || "";
 
+  // All element lookups run only after DOM is parsed (script is at end of body).
   const form = document.getElementById("unlockForm");
   const input = document.getElementById("giftPassword");
   const button = document.getElementById("unlockButton");
@@ -280,6 +292,11 @@
   const message = document.getElementById("message");
   const gate = document.getElementById("gate");
   const frame = document.getElementById("giftFrame");
+
+  if (!form || !input || !button || !message || !gate || !frame) {
+    console.error("[NIVA] recipient.html: required DOM elements missing.");
+    return;
+  }
 
   function isValidPublicId(id) {
     return typeof id === "string" && /^[A-Za-z0-9_-]{20,80}$/.test(id);
@@ -291,7 +308,9 @@
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       return bytes;
-    } catch { throw new Error("Invalid gift data."); }
+    } catch {
+      throw new Error("Invalid gift data.");
+    }
   }
 
   function showMessage(text, type = "info") {
@@ -304,11 +323,17 @@
     input.type = isPassword ? "text" : "password";
     togglePw.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
     togglePw.textContent = isPassword ? "🙈" : "👁";
+    input.focus();
   });
 
   async function decryptGift(envelope, password) {
-    if (!envelope || typeof envelope !== "object" || envelope.version !== 1 ||
-        envelope.kdf !== "PBKDF2-SHA-256" || envelope.iterations !== 310000) {
+    if (
+      !envelope ||
+      typeof envelope !== "object" ||
+      envelope.version !== 1 ||
+      envelope.kdf !== "PBKDF2-SHA-256" ||
+      envelope.iterations !== 310000
+    ) {
       throw new Error("This gift cannot be unlocked.");
     }
 
@@ -321,7 +346,11 @@
     }
 
     const material = await crypto.subtle.importKey(
-      "raw", encoder.encode(password), "PBKDF2", false, ["deriveKey"]
+      "raw",
+      encoder.encode(password),
+      "PBKDF2",
+      false,
+      ["deriveKey"]
     );
 
     const key = await crypto.subtle.deriveKey(
@@ -332,8 +361,41 @@
       ["decrypt"]
     );
 
-    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+    const plaintext = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv },
+      key,
+      ciphertext
+    );
+
     return JSON.parse(decoder.decode(plaintext));
+  }
+
+  // Wait for NivaTemplates to be available (it uses defer, so might not be ready yet).
+  async function resolveCategory(templateId) {
+    // Give NivaTemplates a moment to load if script is still parsing.
+    for (let i = 0; i < 20; i++) {
+      if (window.NivaTemplates && typeof window.NivaTemplates.initialize === "function") break;
+      await new Promise(r => setTimeout(r, 50));
+    }
+
+    try {
+      if (window.NivaTemplates) {
+        await window.NivaTemplates.initialize();
+        const cat = window.NivaTemplates.getCategory(templateId);
+        if (cat) return cat;
+      }
+    } catch (err) {
+      console.warn("[NIVA] Registry lookup failed, using fallback:", err);
+    }
+
+    // Fallback map — keep in sync with templates.js registry.
+    const fallback = {
+      "eternal-love": "love",
+      "love-proposal": "love",
+      "birthday-magic": "birthday",
+      "special-letter": "letter",
+    };
+    return fallback[templateId] || "love";
   }
 
   form.addEventListener("submit", async (event) => {
@@ -342,54 +404,93 @@
 
     const password = input.value.trim();
 
-    if (!password) { showMessage("Please enter the password.", "error"); input.focus(); return; }
-    if (!isValidPublicId(publicId)) { showMessage("This gift link is not valid.", "error"); return; }
+    if (!password) {
+      showMessage("Please enter the password.", "error");
+      input.focus();
+      return;
+    }
+
+    if (!isValidPublicId(publicId)) {
+      showMessage("This gift link is not valid.", "error");
+      return;
+    }
 
     button.disabled = true;
     showMessage("Unlocking your gift…", "info");
 
     try {
-      const response = await fetch(`/api/gifts/${encodeURIComponent(publicId)}`, { cache: "no-store", credentials: "omit" });
+      const response = await fetch(`/api/gifts/${encodeURIComponent(publicId)}`, {
+        cache: "no-store",
+        credentials: "omit",
+      });
 
-      if (response.status === 404) throw new Error("This gift does not exist or has been removed.");
-      if (!response.ok) throw new Error("We could not reach the gift. Please try again.");
+      if (response.status === 404) {
+        throw new Error("This gift does not exist or has been removed.");
+      }
+      if (!response.ok) {
+        throw new Error("We could not reach the gift. Please try again.");
+      }
 
-      const result = await response.json();
-      if (!result?.gift?.envelope) throw new Error("This gift is unavailable.");
+      const result = await response.json().catch(() => ({}));
+      if (!result?.gift?.envelope) {
+        throw new Error("This gift is unavailable.");
+      }
 
       let gift;
-      try { gift = await decryptGift(result.gift.envelope, password); }
-      catch { throw new Error("Incorrect password. Please try again."); }
+      try {
+        gift = await decryptGift(result.gift.envelope, password);
+      } catch {
+        throw new Error("Incorrect password. Please try again.");
+      }
 
       const templateId = gift.templateId || result.gift.templateId;
-      if (!templateId || typeof templateId !== "string") throw new Error("This gift is missing template information.");
-      if (!/^[a-z0-9-]+$/.test(templateId)) throw new Error("This gift uses an invalid template.");
+      if (
+        !templateId ||
+        typeof templateId !== "string" ||
+        !/^[a-z0-9-]+$/.test(templateId)
+      ) {
+        throw new Error("This gift uses an invalid template.");
+      }
 
+      const category = await resolveCategory(templateId);
+      const templateUrl = `/templates/${category}/${templateId}/template.html`;
+
+      // Cache gift for the template to consume (fallback path).
       const previewKey = "niva-preview-" + templateId;
-      try { sessionStorage.setItem(previewKey, JSON.stringify(gift)); }
-      catch (err) { console.warn("[NIVA] sessionStorage unavailable:", err); }
+      try {
+        sessionStorage.setItem(previewKey, JSON.stringify(gift));
+      } catch {}
 
-      const templateUrl = `/templates/${getCategoryForTemplate(templateId)}/${templateId}/template.html`;
-
-      gate.style.display = "none";
-      frame.style.display = "block";
-      frame.src = templateUrl;
-
+      // Set up message listener BEFORE loading the iframe.
       const onTemplateMessage = (event) => {
         if (event.origin !== window.location.origin) return;
         if (event.source !== frame.contentWindow) return;
         if (event.data?.type === "NIVA_PREVIEW_READY") {
           try {
-            frame.contentWindow.postMessage({ type: "NIVA_PREVIEW_UPDATE", data: gift }, window.location.origin);
-          } catch (err) { console.warn("[NIVA] postMessage failed:", err); }
+            frame.contentWindow.postMessage(
+              { type: "NIVA_PREVIEW_UPDATE", data: gift },
+              window.location.origin
+            );
+          } catch (err) {
+            console.warn("[NIVA] postMessage failed:", err);
+          }
 
-          setTimeout(() => { try { sessionStorage.removeItem(previewKey); } catch {} }, 2000);
+          setTimeout(() => {
+            try { sessionStorage.removeItem(previewKey); } catch {}
+          }, 2000);
+
           window.removeEventListener("message", onTemplateMessage);
         }
       };
 
       window.addEventListener("message", onTemplateMessage);
 
+      // Hide gate, show iframe, load template.
+      gate.style.display = "none";
+      frame.style.display = "block";
+      frame.src = templateUrl;
+
+      // Safety cleanup if the template never posts NIVA_PREVIEW_READY.
       setTimeout(() => {
         window.removeEventListener("message", onTemplateMessage);
         try { sessionStorage.removeItem(previewKey); } catch {}
@@ -402,16 +503,10 @@
       button.disabled = false;
     }
   });
-
-  function getCategoryForTemplate(templateId) {
-    const map = {
-      "eternal-love": "love",
-      "love-proposal": "love",
-      "birthday-magic": "birthday",
-    };
-    return map[templateId] || "love";
-  }
 })();
 </script>
+
+<!-- NIVA bot -->
+  <script src="/nivabot.js" defer></script>
 </body>
 </html>
