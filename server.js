@@ -1542,117 +1542,264 @@ app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) =>
   } catch (err) { next(err); }
 });
 
-/* ---------- 19b. NIVA BOT ---------- */
+/* =========================================================
+   19b. NIVA BOT — integrated, weighted, intent-aware
+   ========================================================= */
+
+/* Knowledge entries. Each has:
+   - id: unique identifier
+   - tag: short label (used only for logs)
+   - kw:  array of lowercase keywords
+   - a:   the answer (plain text; client renders markdown-lite)
+   - next: optional follow-up suggestions (strings)
+*/
 const BOT_KNOWLEDGE = [
   {
-    kw: ["what is niva", "about niva", "who are you", "what do you do"],
-    a: "NIVA is a place to create beautiful personalised digital gifts — letters, proposals, birthday surprises and more. Pick a template, add your words, photos and music, then share a private password-protected link with someone special. ✦",
+    id: "about",
+    tag: "About",
+    kw: ["what is niva","about niva","about","explain niva","what is this","what do you do"],
+    a: "NIVA is a place to create beautiful personalised digital gifts — love letters, proposals, birthday surprises and more. Pick a template, add your words, photos and music, then share a private password-protected link with someone special. ✦",
+    next: ["Pricing?","How to create a gift?","Is it private?"],
   },
   {
-    kw: ["price", "pricing", "cost", "how much", "rate", "₹", "rupee"],
-    a: "Our gifts start at ₹39 for the Special Letter (a single animated letter). Signature gifts are ₹299, and the premium Love Proposal is ₹599. You only pay when you publish.",
+    id: "pricing",
+    tag: "Pricing",
+    kw: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"],
+    a: "Our gifts:\n• Special Letter — ₹39\n• Eternal Love — ₹299\n• Birthday Magic — ₹299\n• Love Proposal — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
+    next: ["What is the Special Letter?","How to create a gift?","Templates"],
   },
   {
-    kw: ["special letter", "39", "letter only", "single letter", "cheap"],
-    a: "The Special Letter is our sweetest little gift at just ₹39 — one heartfelt letter with a beautiful opening animation. Nothing else, just pure feeling. Look for the floating card on the home page! 💌",
+    id: "special-letter",
+    tag: "Special Letter",
+    kw: ["special letter","39","letter only","single letter","cheap","cheapest"],
+    a: "The Special Letter is our sweetest little gift at just ₹39 💌\n\nOne heartfelt letter, sealed with a beautiful opening animation. You'll find it as the first card in the pricing section and in the templates grid.",
+    next: ["Pricing?","How to create a gift?"],
   },
   {
-    kw: ["template", "templates", "design", "theme", "options", "what can i make"],
-    a: "We currently have: ✦ Eternal Love (₹299), ✦ Love Proposal (₹599), ✦ Birthday Magic (₹299) and the ✦ Special Letter (₹39). New templates are being added all the time — check the home page for the latest.",
+    id: "templates",
+    tag: "Templates",
+    kw: ["template","templates","design","designs","theme","options","what can i make","kinds","types"],
+    a: "We have 4 templates right now:\n✦ Eternal Love (₹299)\n✦ Love Proposal (₹599)\n✦ Birthday Magic (₹299)\n✦ Special Letter (₹39)\n\nNew templates are added regularly.",
+    next: ["Pricing?","How to create a gift?"],
   },
   {
-    kw: ["how to create", "how do i make", "make a gift", "create gift", "start", "begin"],
-    a: "Easy! 1) Pick a template on the home page. 2) Sign in with your email (we'll send a 6-digit code). 3) Fill in your words and photos in the editor — see the live preview update as you type. 4) Set a gift password and pay. 5) Share the private link + password with your person. ♥",
+    id: "howto",
+    tag: "How to create",
+    kw: ["how to create","how do i make","make a gift","create gift","start","begin","steps","how does it work"],
+    a: "Making a gift is easy:\n\n1. Pick a template\n2. Sign in (I can help — say \"sign up\")\n3. Fill in your words & photos — live preview updates as you type\n4. Set a gift password and pay\n5. Share the private link ♥",
+    next: ["Sign up","Pricing?","Is it private?"],
   },
   {
-    kw: ["password", "gift password", "protect", "private", "secure", "encrypt"],
-    a: "Every gift is encrypted in your browser with AES-256 before it ever reaches our server. Your recipient needs the gift password you set (8+ characters) to unlock it. We never see your gift content — that's the NIVA promise. 🔒",
+    id: "privacy",
+    tag: "Privacy",
+    kw: ["password","private","secure","encrypt","security","safe","is it private","data"],
+    a: "Your gift is encrypted in your browser with AES-256-GCM before it ever reaches our server. 🔒\n\n• PBKDF2 key derivation (310,000 iterations)\n• Only ciphertext + metadata is stored\n• Recipient needs the password you set\n• We never see your gift content",
+    next: ["How does the recipient open it?","Sign up"],
   },
   {
-    kw: ["payment", "pay", "razorpay", "upi", "card", "how to pay"],
-    a: "Payments are handled securely by Razorpay (UPI, cards, netbanking). In development mode you can test with our mock flow. You only pay once when you publish a gift.",
+    id: "payment",
+    tag: "Payment",
+    kw: ["payment","pay","razorpay","upi","card","how to pay","checkout","billing"],
+    a: "Payments are handled securely by Razorpay — UPI, cards, netbanking.\n\nYou only pay once, at the moment you publish a gift. Drafting & previewing is free.",
+    next: ["Refunds?","Sign up"],
   },
   {
-    kw: ["account", "sign up", "signup", "register", "login", "sign in", "email verify", "otp"],
-    a: "Signing up is just your email — we send a 6-digit code to verify, then you set a password. Forgot it? Use 'Forgot password?' on the sign-in screen and we'll email you a reset code. ♡",
+    id: "account",
+    tag: "Account",
+    kw: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password"],
+    a: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• sign up — to create a new account\n• sign in — to log in\n• forgot password — to reset",
+    next: ["Sign up","Sign in","Forgot password"],
   },
   {
-    kw: ["my gifts", "my gifts page", "drafts", "wishlist", "saved"],
-    a: "Head to 'My Gifts' from the home page. There you'll find three tabs: Drafts (your saved works-in-progress), Published (finished gifts + their shareable links), and Wishlist (templates you've hearted). ♥",
+    id: "mygifts",
+    tag: "My Gifts",
+    kw: ["my gifts","my gifts page","drafts","wishlist","saved","saved gifts","account page"],
+    a: "Head to My Gifts from the home page. You'll find three tabs:\n• Drafts — works in progress\n• Published — finished gifts + shareable links\n• Wishlist — templates you've hearted ♥",
+    next: ["Delete a gift?","What is a draft?"],
   },
   {
-    kw: ["draft", "save", "autosave", "unsaved"],
-    a: "Drafts autosave to your browser as you type, and to your account within a couple of seconds (text only — photos/videos are added at publish time). Hit 'Save Draft' any time to force a cloud save.",
+    id: "draft",
+    tag: "Drafts",
+    kw: ["draft","drafts","save","autosave","unsaved","work in progress"],
+    a: "Drafts autosave to your browser as you type, and to your account within a couple of seconds. Hit \"Save Draft\" any time to force a cloud save.",
+    next: ["My Gifts?","How to create a gift?"],
   },
   {
-    kw: ["delete", "remove", "unpublish", "stop link"],
-    a: "Go to My Gifts → Published and tap Delete on any gift. The private link stops working immediately. You can also delete drafts and wishlist items from their tabs.",
+    id: "delete",
+    tag: "Delete",
+    kw: ["delete","remove","unpublish","stop link","take down","erase"],
+    a: "Go to My Gifts → Published and tap Delete on any gift. The private link stops working immediately.",
+    next: ["Refunds?","My Gifts?"],
   },
   {
-    kw: ["photos", "images", "upload", "pictures", "how many", "size", "limit", "video", "audio", "music"],
-    a: "You can upload photos, video and audio — up to about 1 GB total per gift. Each photo can be up to 800 MB, videos 800 MB and audio 200 MB. Big files are auto-compressed in the browser before publishing. 📸",
+    id: "upload",
+    tag: "Uploads",
+    kw: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"],
+    a: "You can upload photos, video and audio — up to 1 GB total per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB",
+    next: ["How to create a gift?","Is it private?"],
   },
   {
-    kw: ["privacy", "safe", "data", "gdpr", "security", "do you store"],
-    a: "Your gift content is encrypted in your browser with AES-256-GCM (PBKDF2 key derivation, 310,000 iterations). Our server only ever stores the ciphertext and basic metadata (template id, dates, price paid). Read the full story on our Privacy & Safety page.",
+    id: "refund",
+    tag: "Refunds",
+    kw: ["refund","cancel","return","money back","chargeback"],
+    a: "Gifts are digital and shareable, so we don't offer refunds after publishing. If something fails before publishing, you won't be charged.",
+    next: ["Payment?","Contact support?"],
   },
   {
-    kw: ["refund", "cancel", "return", "money back"],
-    a: "Because gifts are digital and immediately shareable, we don't offer refunds after publishing. If something goes wrong before publishing, you won't be charged. For anything unusual, please contact us via the privacy page.",
+    id: "contact",
+    tag: "Contact",
+    kw: ["contact","support","help","email you","reach you","talk to someone"],
+    a: "Reach us through the Privacy & Safety page. Until then, I (NIVI!) can answer most questions. Just ask! 💕",
+    next: ["Pricing?","Sign up"],
   },
   {
-    kw: ["contact", "support", "help", "email you", "reach you"],
-    a: "Reach out through the 'Privacy & Safety' page — the support channel will be listed there before public launch. For now, this little bot can answer most questions. 💕",
+    id: "recipient",
+    tag: "Recipient",
+    kw: ["recipient","open gift","receive","someone sent","unlock","unlock gift"],
+    a: "Your recipient opens the private link, enters the gift password you gave them, and the gift unlocks in their browser. ✦\n\nThe decryption happens locally — even we can't see it without the password.",
+    next: ["Is it private?","Password?"],
   },
   {
-    kw: ["recipient", "open gift", "receive", "someone sent", "how does recipient"],
-    a: "Your recipient opens the private link you send them, enters the gift password you gave them, and the gift unlocks in their browser. The decryption happens locally — even we can't see it without the password.",
+    id: "editor",
+    tag: "Editor",
+    kw: ["editor","edit","live preview","preview","customise","customize","how does the editor"],
+    a: "The editor is where your gift comes alive.\n\n• Left side: your words, photos, music\n• Right side: live preview updating as you type\n• Top right: Save Draft\n• Bottom: set gift password & publish",
+    next: ["How to create a gift?","Save draft"],
+  },
+];
+
+/* Simple intents — matched before KB */
+const BOT_INTENTS = [
+  {
+    id: "greeting",
+    kw: ["hello","hi","hey","namaste","vanakkam","sup","yo","hola"],
+    answers: [
+      "Hi there! ♥ I'm NIVI — NIVA's little robot guide.",
+      "Hello! ✦ Ask about gifts, pricing, or say \"sign up\" / \"sign in\".",
+      "Hey! 💗 I can help with templates, pricing, or signing in.",
+    ],
+    next: ["What is NIVA?","Pricing?","Sign up","Sign in"],
   },
   {
-    kw: ["free", "trial", "demo", "try"],
-    a: "There's no free plan yet — the Special Letter at ₹39 is our most affordable way to try NIVA. Drafts are always free to create and preview.",
+    id: "thanks",
+    kw: ["thank","thanks","thx","ty","appreciate"],
+    answers: ["Anytime! ♥ ✦","You're welcome! ✦","Happy to help! 💕"],
+    next: ["How to create a gift?","Pricing?"],
   },
   {
-    kw: ["hello", "hi", "hey", "namaste", "vanakkam", "sup"],
-    a: "Hi there! ♥ I'm NIVA — I can tell you about our gift templates, pricing, privacy, or how to create a gift. What would you like to know?",
+    id: "bye",
+    kw: ["bye","goodbye","see you","later","cya"],
+    answers: ["Goodbye! ♥ ✦","See you soon! 💕","Bye! ✦"],
+    next: ["What is NIVA?"],
   },
   {
-    kw: ["thank", "thanks", "thx", "bye", "goodbye"],
-    a: "Anytime! I hope you make someone's day. ✦ Come back whenever you need me.",
+    id: "whoami",
+    kw: ["who are you","your name","whats your name","what is your name","are you real","nivi"],
+    answers: ["I'm NIVI — NIVA's little robot guide. ✦\n\nI can help you understand NIVA, or even sign you in / sign you up. Just ask! 💗"],
+    next: ["Sign up","Sign in","What is NIVA?"],
   },
 ];
 
 const BOT_FALLBACKS = [
-  "I'm not sure I got that one. Try asking about pricing, templates, privacy, or how to create a gift. ♡",
-  "Hmm, that's beyond what I know yet. You can ask about our templates, pricing, or the Special Letter at ₹39!",
-  "I'd love to help — try asking something like 'how much does it cost?' or 'how do I make a gift?'",
+  "I'm not sure I got that. Try pricing, templates, privacy, or say \"sign up\" / \"sign in\". ♡",
+  "Hmm, beyond what I know. Try \"how much does it cost?\" or \"sign in\".",
+  "I'd love to help — what would you like to know?",
 ];
 
-function botAnswer(message) {
-  const q = String(message || "").toLowerCase().trim();
-  if (!q) return BOT_FALLBACKS[0];
+function botNormalize(s) {
+  return String(s || "").toLowerCase().trim();
+}
 
-  let best = null;
-  let bestScore = 0;
-  for (const entry of BOT_KNOWLEDGE) {
-    for (const kw of entry.kw) {
-      if (q.includes(kw) && kw.length > bestScore) {
-        bestScore = kw.length;
-        best = entry;
+/* fuzzy-ish token match (simple substring) */
+function botScoreEntry(q, entry) {
+  let best = 0;
+  for (const kw of entry.kw) {
+    if (!kw) continue;
+    if (q === kw) best = Math.max(best, 100 + kw.length);
+    else if (q.includes(kw)) best = Math.max(best, 60 + kw.length);
+  }
+  return best;
+}
+
+function botMatchIntent(q) {
+  for (const intent of BOT_INTENTS) {
+    for (const kw of intent.kw) {
+      if (q === kw || q.startsWith(kw + " ") || q.endsWith(" " + kw) || q.includes(kw)) {
+        return intent;
       }
     }
   }
-  if (best) return best.a;
-  return BOT_FALLBACKS[Math.floor(Math.random() * BOT_FALLBACKS.length)];
+  return null;
+}
+
+function botRankMatches(q) {
+  if (!q) return [];
+  const scored = BOT_KNOWLEDGE
+    .map(e => ({ entry: e, score: botScoreEntry(q, e) }))
+    .filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+  if (!scored.length) return [];
+  const top = scored[0].score;
+  return scored.filter(x => x.score >= top * 0.7).slice(0, 2);
+}
+
+function botAnswer(message) {
+  const q = botNormalize(message);
+  if (!q) return { reply: BOT_FALLBACKS[0], next: [] };
+
+  // Intent first
+  const intent = botMatchIntent(q);
+  if (intent) {
+    const pick = intent.answers[Math.floor(Math.random() * intent.answers.length)];
+    return { reply: pick, next: intent.next || [] };
+  }
+
+  // KB matches (may combine 2)
+  const matches = botRankMatches(q);
+  if (matches.length) {
+    if (matches.length === 1) {
+      return { reply: matches[0].entry.a, next: matches[0].entry.next || [] };
+    }
+    const parts = matches.map(m => m.entry.a);
+    return {
+      reply: parts.join("\n\n──\n\n"),
+      next: matches[0].entry.next || [],
+    };
+  }
+
+  // Fallback
+  return {
+    reply: BOT_FALLBACKS[Math.floor(Math.random() * BOT_FALLBACKS.length)],
+    next: ["What is NIVA?","Pricing?","Sign up","Sign in"],
+  };
 }
 
 app.post("/api/niva-bot", botLimiter, (req, res) => {
-  const message = req.body?.message;
-  if (typeof message !== "string" || message.length > 500) {
-    return res.status(400).json({ success: false, reply: "Please send a shorter message." });
+  try {
+    const message = req.body?.message;
+
+    if (typeof message !== "string") {
+      return res.status(400).json({ success: false, reply: "Please send a valid message." });
+    }
+    if (message.length > 500) {
+      return res.status(400).json({ success: false, reply: "Please send a shorter message (max 500 characters)." });
+    }
+
+    const { reply, next } = botAnswer(message);
+    res.json({
+      success: true,
+      reply,
+      next,
+      version: "3.3.0",
+    });
+  } catch (err) {
+    console.error("Bot error:", err.message);
+    res.status(500).json({
+      success: false,
+      reply: "Oh no, my little brain glitched. Try again in a moment. 🥺",
+      next: [],
+    });
   }
-  const reply = botAnswer(message);
-  res.json({ success: true, reply });
 });
 
 /* ---------- 20. STATIC FILES ---------- */

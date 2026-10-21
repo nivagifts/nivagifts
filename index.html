@@ -291,7 +291,7 @@
     .price-card li { font-size: 0.84rem; color: var(--text-2); }
     .price-card li::before { content: "✦"; color: var(--rose); margin-right: 10px; }
     .price-card .btn { width: 100%; }
-    @media (min-width: 900px) { .pricing-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; } }
+    @media (min-width: 900px) { .pricing-grid { grid-template-columns: repeat(4, 1fr); gap: 22px; } }
 
     .faq-list { max-width: 840px; margin: auto; display: grid; gap: 12px; }
     .faq { border: 1px solid var(--line-soft); border-radius: 16px; background: var(--panel); overflow: hidden; }
@@ -350,41 +350,9 @@
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out); }
     .reveal.visible { opacity: 1; transform: none; }
 
-    /* FLOATING SPECIAL LETTER (₹39) */
-    .special-letter-float {
-      position: fixed;
-      z-index: 8000;
-      left: 18px;
-      bottom: calc(88px + env(safe-area-inset-bottom));
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px 12px 12px;
-      border: 1px solid var(--line-rose);
-      border-radius: 18px;
-      background: linear-gradient(135deg, var(--panel), var(--bg-rose));
-      box-shadow: var(--shadow-md);
-      font-family: var(--sans);
-      text-decoration: none;
-      color: var(--text);
-      animation: slFloat 4s ease-in-out infinite;
-      transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
-    }
-    .special-letter-float:hover { transform: translateY(-4px) rotate(-1deg); box-shadow: var(--shadow-lg); }
-    @keyframes slFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-    .sl-icon { font-size: 22px; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-white); border: 1px solid var(--line-gold); }
-    .sl-copy { display: flex; flex-direction: column; line-height: 1.15; }
-    .sl-copy strong { font-family: var(--display); font-weight: 500; font-size: 14px; }
-    .sl-copy span { font-size: 10.5px; color: var(--text-2); margin-top: 2px; letter-spacing: 0.02em; }
-    .sl-price { margin-left: 6px; padding: 6px 10px; border-radius: 999px; background: var(--rose-deep); color: #fff; font: 600 12px/1 var(--sans); letter-spacing: 0.04em; white-space: nowrap; }
-    @media (max-width: 520px) {
-      .special-letter-float { left: 12px; right: 12px; bottom: calc(80px + env(safe-area-inset-bottom)); }
-      .sl-copy span { display: none; }
-    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
       .reveal { opacity: 1; transform: none; }
-      .special-letter-float { animation: none; }
     }
   </style>
 </head>
@@ -698,7 +666,7 @@
       </div>
     </section>
 
-    <!-- PRICING -->
+    <!-- PRICING (4 cards including ₹39 Special Letter) -->
     <section class="section" id="pricing">
       <div class="wrap">
         <div class="section-head reveal">
@@ -707,6 +675,19 @@
           <p>Choose the plan that fits your story. All plans include a private, encrypted gift website.</p>
         </div>
         <div class="pricing-grid reveal">
+          <article class="price-card">
+            <span class="price-label">The little gesture</span>
+            <h3>Special Letter</h3>
+            <div class="price">₹39 <small>/ gift</small></div>
+            <p class="price-desc">One heartfelt letter, sealed with a beautiful opening animation.</p>
+            <ul>
+              <li>Single animated letter</li>
+              <li>Opening animation</li>
+              <li>Personal message</li>
+              <li>Private encrypted link</li>
+            </ul>
+            <button class="btn btn-quiet plan-btn" data-plan="Special Letter" data-price="39">Choose Special Letter ↗</button>
+          </article>
           <article class="price-card">
             <span class="price-label">The little surprise</span>
             <h3>Essential</h3>
@@ -859,18 +840,6 @@
     </div>
   </div>
 
-  <!-- FLOATING SPECIAL LETTER (₹39) -->
-  <a href="./editor/editor.html?template=special-letter&category=letter"
-     class="special-letter-float"
-     aria-label="Special Letter — just ₹39">
-    <span class="sl-icon">💌</span>
-    <span class="sl-copy">
-      <strong>Special Letter</strong>
-      <span>Just a letter & an opening animation</span>
-    </span>
-    <span class="sl-price">₹39</span>
-  </a>
-
   <script>
     (() => {
       'use strict';
@@ -887,7 +856,6 @@
         showToast._t = setTimeout(() => toast.classList.remove("show"), ms);
       }
 
-      /* ---------- TEMPLATES (local fallback) ---------- */
       const TEMPLATES = [
         {
           id: 'special-letter',
@@ -935,7 +903,6 @@
         },
       ];
 
-      /* ---------- STATE ---------- */
       const state = {
         user: null,
         filter: { category: 'all', price: 'all' },
@@ -947,7 +914,6 @@
         templates: TEMPLATES.slice(),
       };
 
-      /* ---------- AUTH ---------- */
       async function fetchUser() {
         try {
           const res = await fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" });
@@ -991,7 +957,6 @@
         }
       }
 
-      /* ---------- AUTH MODAL ---------- */
       let pendingAction = null;
       const ALL_PANES = ["loginPane","registerPane","verifyPane","setPasswordPane","forgotPane","verifyResetPane","resetPane"];
 
@@ -1050,7 +1015,6 @@
         $("#backToLogin2")?.addEventListener("click", () => showPane("loginPane"));
         $("#backToLogin3")?.addEventListener("click", () => showPane("loginPane"));
 
-        // LOGIN
         $("#loginForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const email = $("#loginEmail").value.trim();
@@ -1091,7 +1055,6 @@
           }
         });
 
-        // REGISTER
         $("#registerForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const email = $("#registerEmail").value.trim();
@@ -1124,7 +1087,6 @@
           }
         });
 
-        // VERIFY
         $("#verifyForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const code = $("#verifyCode").value.trim();
@@ -1160,7 +1122,6 @@
           } catch { showToast("Could not resend code."); }
         });
 
-        // SET PASSWORD
         $("#setPasswordForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const pw = $("#setPassword").value;
@@ -1187,7 +1148,6 @@
           }
         });
 
-        // FORGOT
         $("#forgotForm")?.addEventListener("submit", async (e) => {
           e.preventDefault();
           const email = $("#forgotEmail").value.trim();
@@ -1282,7 +1242,6 @@
         $("#navSignIn")?.addEventListener("click", () => openAuthModal("loginPane"));
       }
 
-      /* ---------- USER MENU ---------- */
       function initUserMenu() {
         const userBtn = $("#navUser");
         const menu = $("#userMenu");
@@ -1322,7 +1281,6 @@
         });
       }
 
-      /* ---------- TEMPLATE RENDERING ---------- */
       function renderTemplates() {
         const grid = $("#templateGrid");
         if (!grid) return;
@@ -1475,7 +1433,6 @@
         });
       }
 
-      /* ---------- PREVIEW ---------- */
       function openPreview(template) {
         const modal = $("#previewModal");
         const frame = $("#previewFrame");
@@ -1511,7 +1468,6 @@
         });
       }
 
-      /* ---------- REVIEWS ---------- */
       function starHTML(n) {
         let s = '';
         for (let i = 1; i <= 5; i++) s += i <= n ? '★' : '☆';
@@ -1600,7 +1556,6 @@
         });
       }
 
-      /* ---------- STATS ---------- */
       async function loadStats() {
         try {
           const res = await fetch("/api/stats", { cache: "no-store" });
@@ -1630,7 +1585,6 @@
         });
       }
 
-      /* ---------- NAV ---------- */
       function initNav() {
         const toggle = $("#menuToggle");
         const links = $("#navLinks");
@@ -1653,7 +1607,6 @@
         window._nivaCloseMenu = closeMenu;
       }
 
-      /* ---------- REVEAL ---------- */
       function initReveal() {
         const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const items = $$(".reveal");
@@ -1679,7 +1632,6 @@
         closeAuthModal();
       });
 
-      /* ---------- Merge registry templates (if available) ---------- */
       async function mergeRegistryTemplates() {
         for (let i = 0; i < 20; i++) {
           if (window.NivaTemplates && typeof window.NivaTemplates.initialize === "function") break;
@@ -1717,8 +1669,6 @@
         }
       }
 
-      /* ---------- NIVI INTEGRATION ---------- */
-      // When NIVI signs the user in through chat, update the site without reload.
       document.addEventListener("nivi:login", (e) => {
         const user = e.detail;
         if (!user) return;
@@ -1729,7 +1679,6 @@
         showToast("Welcome, " + (user.email?.split("@")[0] || "friend") + " ✦");
       });
 
-      /* ---------- BOOT ---------- */
       async function boot() {
         const yearEl = $("#year");
         if (yearEl) yearEl.textContent = new Date().getFullYear();

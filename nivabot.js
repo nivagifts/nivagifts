@@ -1,8 +1,9 @@
 /* =========================================================
-   NIVI — Auth-modal robot pinned to BOTTOM of modal
-   - Errors always use SAD face (no angry, no bracket labels)
-   - After 3 wrong passwords → sad + "forgot password?" hint
-   - Speech bubble ALWAYS visible while modal is open
+   NIVI — Mobile-friendly auth-modal robot
+   - Scales down on small phones
+   - Bubble spans full modal-card width below 400px
+   - No clipping behind the keyboard
+   - Errors always SAD (no angry face, no brackets)
    ========================================================= */
 (() => {
   "use strict";
@@ -256,7 +257,7 @@
   }
 
   /* =======================================================
-     7. STYLES — SAD ONLY (no angry face)
+     7. STYLES — SAD ONLY + MOBILE FRIENDLY
      ======================================================= */
   const style = document.createElement("style");
   style.textContent = `
@@ -631,7 +632,7 @@
     }
 
     /* =====================================================
-       MODAL ROBOT AT BOTTOM
+       MODAL ROBOT AT BOTTOM — MOBILE-FRIENDLY
        ===================================================== */
     .nivi-modal-root {
       position: relative;
@@ -643,6 +644,7 @@
       gap: 8px;
       pointer-events: none;
       width: 100%;
+      max-width: 100%;
       font-family: 'DM Sans', system-ui, sans-serif;
     }
 
@@ -654,6 +656,7 @@
       transform-origin: bottom center;
       animation: niviModalFloat 3s ease-in-out infinite;
       filter: drop-shadow(0 6px 14px rgba(151,116,224,.28));
+      flex-shrink: 0;
     }
     @keyframes niviModalFloat {
       0%,100% { transform: translateY(0); }
@@ -672,7 +675,7 @@
       box-shadow: 0 0 12px rgba(255,143,189,.9);
     }
 
-    /* SAD face — soft purple eyes, small frown, NO angry red */
+    /* SAD face — soft purple eyes, small frown */
     .nivi-modal-root .nivi-modal-robot.sad .nivi-modal-eye {
       background: #c9a0ff;
       box-shadow: 0 0 10px rgba(201,160,255,.75);
@@ -686,8 +689,6 @@
       border-radius: 8px 8px 0 0;
       top: 26px;
     }
-
-    /* Note: NO .angry styles — we removed them entirely. */
 
     .nivi-modal-antenna {
       position: absolute; z-index: 1; width: 3px; height: 10px;
@@ -772,12 +773,15 @@
       line-height: 1.55;
       color: #43334e;
       box-shadow: 0 6px 22px rgba(104,71,145,.15);
-      max-width: 300px;
-      min-width: 160px;
+      max-width: 100%;
+      width: 100%;
       text-align: center;
       position: relative;
       animation: niviBubbleIn .3s ease both;
       transition: background .25s, border-color .25s;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      box-sizing: border-box;
     }
     @keyframes niviBubbleIn {
       from { opacity: 0; transform: translateY(4px) scale(.96); }
@@ -839,6 +843,14 @@
       transform: translateY(-1px);
     }
 
+    /* Tablet and below — bubble can be wider, robot smaller */
+    @media (max-width: 640px) {
+      .nivi-modal-root { margin: 12px auto 2px; gap: 6px; }
+      .nivi-modal-root .nivi-modal-robot { width: 58px; height: 66px; }
+      .nivi-modal-bubble { font-size: 12px; padding: 9px 11px; }
+    }
+
+    /* Phone — shrink robot further, bubble full-width */
     @media (max-width: 520px) {
       .nivi-modal-root { margin: 10px auto 2px; gap: 6px; }
       .nivi-modal-root .nivi-modal-robot { width: 52px; height: 58px; }
@@ -854,10 +866,49 @@
       .nivi-modal-arm { top: 38px; height: 11px; }
       .nivi-modal-arm.left { left: 8px; }
       .nivi-modal-arm.right { right: 8px; }
-      .nivi-modal-bubble { font-size: 11px; padding: 8px 10px; max-width: 260px; }
+      .nivi-modal-bubble { font-size: 11.5px; padding: 8px 10px; }
     }
 
-    .modal-card { position: relative; }
+    /* Extra small phones (iPhone SE etc.) */
+    @media (max-width: 400px) {
+      .nivi-modal-root { margin: 8px auto 2px; gap: 5px; }
+      .nivi-modal-root .nivi-modal-robot { width: 46px; height: 52px; }
+      .nivi-modal-antenna { left: 21px; height: 8px; top: -2px; }
+      .nivi-modal-head { top: 3px; left: 3px; width: 40px; height: 35px; border-radius: 14px 14px 12px 12px; }
+      .nivi-modal-face { inset: 5px 4px 4px; border-radius: 11px; }
+      .nivi-modal-eye { top: 8px; width: 5px; height: 7px; }
+      .nivi-modal-eye.left { left: 6px; }
+      .nivi-modal-eye.right { right: 6px; }
+      .nivi-modal-mouth { top: 18px; width: 7px; height: 3.5px; }
+      .nivi-modal-ear { top: 16px; height: 11px; width: 5px; }
+      .nivi-modal-body { left: 14px; width: 16px; height: 9px; }
+      .nivi-modal-heart { font-size: 6px; top: 1px; left: 5px; }
+      .nivi-modal-arm { top: 33px; height: 10px; width: 6px; }
+      .nivi-modal-arm.left { left: 7px; }
+      .nivi-modal-arm.right { right: 7px; }
+      .nivi-modal-bubble { font-size: 11px; padding: 7px 9px; line-height: 1.5; border-radius: 12px 12px 3px 12px; }
+      .nivi-modal-bubble::after { width: 10px; height: 10px; top: -5px; }
+    }
+
+    /* When the auth modal is open, ensure the card can grow to fit robot + bubble */
+    .modal-card {
+      position: relative;
+      padding-bottom: 8px;
+    }
+    @media (max-width: 520px) {
+      .modal-card {
+        padding: 26px 18px calc(8px + env(safe-area-inset-bottom));
+        max-height: calc(100dvh - 40px);
+      }
+      .modal-card .nivi-modal-bubble {
+        margin-top: 2px;
+      }
+    }
+    @media (max-width: 400px) {
+      .modal-card {
+        padding: 22px 16px calc(6px + env(safe-area-inset-bottom));
+      }
+    }
   `;
   document.head.appendChild(style);
 
@@ -1341,7 +1392,7 @@
   });
 
   /* =======================================================
-     15. MODAL ROBOT (SAD-ONLY errors)
+     15. MODAL ROBOT (SAD-ONLY errors, mobile-friendly)
      ======================================================= */
   const EMOTIONS = {
     neutral:   { emoji: "♥" },
@@ -1398,7 +1449,6 @@
   function setEmotion(emotion) {
     currentEmotion = emotion || "neutral";
     if (!modalRobot) return;
-    // Only happy / sad / neutral now — no angry class
     modalRobot.classList.remove("happy", "sad");
     if (currentEmotion === "happy") modalRobot.classList.add("happy");
     else if (currentEmotion === "sad") modalRobot.classList.add("sad");
@@ -1483,7 +1533,6 @@
   function narrateError(paneId, errorText) {
     const e = String(errorText || "").toLowerCase();
 
-    // Wrong / missing password
     if (e.includes("incorrect email or password") || (e.includes("password") && (e.includes("incorrect") || e.includes("wrong") || e.includes("match") || e.includes("invalid")))) {
       state.loginFailCount += 1;
 
@@ -1503,7 +1552,6 @@
       return;
     }
 
-    // Wrong verification code
     if (e.includes("incorrect code") || (e.includes("invalid") && e.includes("code")) || e.includes("code didn't work")) {
       speak(
         "Ohh... that's not the right code... 🥺 Could you please check your email one more time? I really hope we can get this right... 💗",
@@ -1512,49 +1560,41 @@
       return;
     }
 
-    // Wrong email format
     if (e.includes("enter a valid email") || e.includes("invalid email")) {
       speak("Hmm, that email doesn't look right 🥺 Something like you@example.com works best!", "sad");
       return;
     }
 
-    // Password length
     if (e.includes("at least 8") || e.includes("at most 128") || e.includes("8 and 128") || e.includes("between 8 and 128")) {
       speak("Almost! Your password needs 8–128 characters 💕 Try a slightly longer one!", "sad");
       return;
     }
 
-    // Passwords do not match
     if (e.includes("passwords do not match") || e.includes("do not match")) {
       speak("Oh no — those passwords don't match 🥺 Type them again carefully?", "sad");
       return;
     }
 
-    // Account already exists
     if (e.includes("already exists") || e.includes("already registered")) {
       speak("Ah Ah!, that email already has an account ✦ Try **Sign In** instead — or reset your password!", "sad");
       return;
     }
 
-    // Unverified email
     if (e.includes("verify your email") || e.includes("needs verification")) {
       speak("Almost there! Check your email — I just sent a fresh code ♥", "sad");
       return;
     }
 
-    // Rate limit
     if (e.includes("too many")) {
       speak("Oh no... too many tries. 😔 Give it a few minutes and try again — I'll be right here.", "sad");
       return;
     }
 
-    // Code expired
     if (e.includes("expired")) {
       speak("Oh no, that code expired 🥺 Say **resend** and I'll get you a new one!", "sad");
       return;
     }
 
-    // Fallback
     speak("Hmm, something went wrong: " + (errorText || "try again") + " 🥺", "sad");
   }
 
@@ -1744,7 +1784,7 @@
     open: openPanel,
     close: closePanel,
     ask: (q) => { openPanel(); respond(q); },
-    version: "3.2.0",
+    version: "3.3.0",
     speak: (text, emotion) => { ensureModalRobot(); speak(text, emotion); },
     narrateError: (paneId, text) => { ensureModalRobot(); narrateError(paneId, text); },
   };
