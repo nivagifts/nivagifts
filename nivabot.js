@@ -1532,7 +1532,7 @@
 
     // Account already exists
     if (e.includes("already exists") || e.includes("already registered")) {
-      speak("Ah, that email already has an account ✦ Try **Sign In** instead — or reset your password!", "sad");
+      speak("Ah Ah!, that email already has an account ✦ Try **Sign In** instead — or reset your password!", "sad");
       return;
     }
 
