@@ -1969,7 +1969,7 @@ app.get("/templates.js", (req, res) => {
 });
 
 app.get("/nivabot.js", (req, res) => {
-  const botPath = path.join(ROOT, "src", "scripts", "nivabot.js");
+  const botPath = path.join(ROOT, "nivabot.js");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   if (!fs.existsSync(botPath)) {
