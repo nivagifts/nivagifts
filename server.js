@@ -1965,11 +1965,11 @@ app.get("/g/:publicId", (req, res) => {
 
 app.get("/templates.js", (req, res) => {
   res.type("application/javascript");
-  res.sendFile(path.join(ROOT, "templates.js"));
+  res.sendFile(path.join(ROOT, "src", "scripts", "templates.js"));
 });
 
 app.get("/nivabot.js", (req, res) => {
-  const botPath = path.join(ROOT, "nivabot.js");
+  const botPath = path.join(ROOT, "src", "scripts", "nivabot.js");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   if (!fs.existsSync(botPath)) {
