@@ -1,10 +1,10 @@
 {
   "id": "eternal-anniversary",
   "name": "Eternal Anniversary",
-  "category": "love",
+  "category": "anniversary",
   "description": "A romantic seven-chapter journey: hero cover, handwritten letter, story timeline, memory gallery, anniversary countdown, heart-catching game, and a forever finale.",
-  "templatePath": "/templates/love/eternal-anniversary/template.html",
-  "thumbnail": "/templates/love/eternal-anniversary/thumb.jpg",
+  "templatePath": "/templates/anniversary/eternal-anniversary/template.html",
+  "previewImage": "/templates/anniversary/eternal-anniversary/preview.jpg",
 
   "templateLimits": {
     "photoSlots": 10

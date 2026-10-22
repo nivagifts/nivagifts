@@ -3,8 +3,8 @@
   "name": "Besties",
   "category": "friendship",
   "description": "A friendship time capsule — gift box opening, live counter, chapter story, mood-board photos, hidden messages, memory game, and a star-filled finale.",
-  "templatePath": "/templates/friendship/besties/template.html",
-  "thumbnail": "/templates/friendship/besties/thumb.jpg",
+  "templatePath": "/templates/friedship/besties/template.html",
+  "thumbnail": "/templates/friedship/besties/thumb.jpg",
 
   "templateLimits": {
     "photoSlots": 5

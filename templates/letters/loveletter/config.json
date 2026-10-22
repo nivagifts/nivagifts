@@ -7,8 +7,8 @@
   "currency": "INR",
   "version": "1.1.0",
   "active": true,
-  "templatePath": "/templates/letter/loveletter/template.html",
-  "previewImage": "/templates/letter/loveletter/preview.jpg",
+  "templatePath": "/templates/letters/loveletter/template.html",
+  "previewImage": "/templates/letters/loveletter/preview.jpg",
   "features": [
     "Animated envelope opening",
     "Two-page handwritten love letter",
