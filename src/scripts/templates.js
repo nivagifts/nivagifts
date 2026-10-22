@@ -20,15 +20,15 @@ const NivaTemplates = (() => {
     },
     {
       id: "loveletter",
-      configPath: "/templates/letter/loveletter/config.json",   // FIXED
+      configPath: "/templates/letters/loveletter/config.json",   // FIXED
     },
     {
       id: "eternal-anniversary",
-      configPath: "/templates/love/eternal-anniversary/config.json",   // FIXED
+      configPath: "/templates/anniversary/eternal-anniversary/config.json",   // FIXED
     },
     {
       id: "besties",
-      configPath: "/templates/friendship/besties/config.json",
+      configPath: "/templates/friedship/besties/config.json",
     },
     // ▼▼▼ ADD NEW TEMPLATES BELOW ▼▼▼
   ];
