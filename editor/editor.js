@@ -1,12 +1,12 @@
-﻿﻿/* =========================================================
+﻿﻿﻿/* =========================================================
    NIVA UNIVERSAL GIFT EDITOR — Payment-Gated Publishing
    
    ⚠️ CRITICAL FLOW ⚠️
    1. User fills form
-   2. User clicks "Pay & Publish"
+   2. User clicks "Pay & Create My Gift"
    3. → create-order (server records pending payment)
    4. → confirm/verify (server marks payment PAID)
-   5. → POST /api/gifts with orderId
+   5. → POST /api/gifts with orderId + envelope
    6. Server verifies payment is PAID + not consumed
    7. ONLY THEN generates gift link
    
@@ -1022,19 +1022,21 @@ function updatePlanSummary() {
 }
 
 /* =========================================================
-   15. PUBLISH — PAYMENT GATE
+   15. PUBLISH — PAYMENT GATE (FIXED)
    
    Sequence (in order — any failure aborts and no link appears):
      1. Validate password
      2. Build encrypted envelope locally
      3. POST /api/payments/create-order  → get orderId
-     4. POST /api/payments/confirm       → server marks PAID
-     5. POST /api/gifts {orderId,...}    → server verifies PAID
-                                           then generates link
+     4. POST /api/payments/confirm/verify → server marks PAID
+     5. POST /api/gifts {orderId, envelope} → server verifies PAID
+                                              then generates link
      6. Display link (only now)
    
-   The button is disabled between step 3 and step 6 so the
-   user cannot double-pay or spam-create orders.
+   FIX: The envelope is now passed DIRECTLY into publishGift()
+   instead of relying on window._lastEnvelope (which was never set)
+   or rebuildEnvelope() (which could fail if the password field
+   was already cleared).
    ========================================================= */
 (() => {
   const button = document.getElementById("publishGiftButton");
@@ -1052,6 +1054,10 @@ function updatePlanSummary() {
   const progressPct = document.getElementById("progressPercent");
 
   const encoder = new TextEncoder();
+
+  // Persist envelope/orderId across the async Razorpay callback
+  let pendingEnvelope = null;
+  let pendingOrderId = null;
 
   function setStatus(msg, isError = false) {
     if (!status) return;
@@ -1139,6 +1145,53 @@ function updatePlanSummary() {
     return envelope;
   }
 
+  /**
+   * Shared publish step — receives the ALREADY-BUILT envelope and the
+   * orderId whose payment is already marked paid on the server.
+   * Server verifies the payment is PAID + not consumed before returning
+   * a gift URL. On success shows the link. On error, throws.
+   */
+  async function publishGift(orderId, envelope) {
+    setProgress("Publishing your gift…", 95);
+
+    const response = await fetch("/api/gifts", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        templateId: window.NIVAEditor.templateId,
+        envelope,
+        orderId,
+      }),
+      cache: "no-store",
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.status === 401) throw new Error("Please log in before publishing.");
+    if (response.status === 402) throw new Error(data.message || "Payment required.");
+    if (response.status === 409) throw new Error(data.message || "This payment has already been used.");
+    if (response.status === 413) throw new Error("Gift too large. Use smaller files.");
+    if (!response.ok || !data.success || !data.gift?.url) {
+      throw new Error(data.message || "Publishing failed.");
+    }
+
+    const fullUrl = new URL(data.gift.url, window.location.origin).href;
+    if (urlInput) urlInput.value = fullUrl;
+    if (result) result.hidden = false;
+    setProgress("Done!", 100);
+    setStatus("Your gift was published successfully! ♥");
+    if (passwordInput) passwordInput.value = "";
+    if (confirmInput) confirmInput.value = "";
+    setTimeout(hideProgress, 800);
+    button.disabled = false;
+
+    try { result?.scrollIntoView({ behavior: "smooth", block: "center" }); } catch {}
+
+    pendingEnvelope = null;
+    pendingOrderId = null;
+  }
+
   button.addEventListener("click", async () => {
     if (button.disabled) return;
 
@@ -1164,12 +1217,14 @@ function updatePlanSummary() {
       return;
     }
 
-    // ---- Disable button now — it stays disabled until link is shown or error occurs ----
     button.disabled = true;
     setStatus("Preparing your gift…");
 
+    // Capture envelope in a local variable so it survives the async flow
+    let builtEnvelope = null;
+
     try {
-      // ---- Step 1: build payload ----
+      // ---- Step 1: build payload (photos + media) ----
       const gift = window.NIVAEditor.getGiftData();
       const photos = window.NIVAEditor.getPhotos();
       const media = window.NIVAEditor.getMediaFiles();
@@ -1206,7 +1261,7 @@ function updatePlanSummary() {
       // ---- Step 2: encrypt locally ----
       setProgress("Encrypting gift…", 60);
       const payload = { ...gift, ...mediaPayload, photos: photoPayload };
-      const envelope = await encryptGift(payload, password);
+      builtEnvelope = await encryptGift(payload, password);
 
       // ---- Step 3: create payment order ----
       setProgress("Creating payment order…", 70);
@@ -1222,12 +1277,10 @@ function updatePlanSummary() {
       const orderId = orderData.orderId;
       if (!orderId) throw new Error("Payment order missing ID.");
 
-      // ---- Step 4: confirm payment ----
-      // In mock mode: POST /api/payments/confirm
-      // In Razorpay mode: the checkout SDK would run here and then
-      // POST /api/payments/verify with the signature.
+      // ---- Step 4: confirm payment (mock) or verify (razorpay) ----
       setProgress("Confirming payment…", 85);
       if (orderData.mock) {
+        // Mock mode — mark order paid immediately
         const confirmRes = await fetch("/api/payments/confirm", {
           method: "POST", credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
@@ -1237,114 +1290,86 @@ function updatePlanSummary() {
         if (!confirmRes.ok || !confirmData.success) {
           throw new Error(confirmData.message || "Payment failed.");
         }
-      } else {
-        // Real Razorpay flow — requires Razorpay checkout JS in editor.html.
-        // If you haven't wired the SDK yet, this branch will fail cleanly
-        // and no gift link will be generated.
-        if (typeof window.Razorpay === "function") {
-          const rzp = new window.Razorpay({
-            key: orderData.keyId,
-            amount: orderData.amount * 100,
-            currency: orderData.currency,
-            order_id: orderId,
-            name: "NIVA",
-            description: "Gift publishing",
-            handler: async (response) => {
-              // Verify signature server-side
-              const vRes = await fetch("/api/payments/verify", {
-                method: "POST", credentials: "same-origin",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  orderId,
-                  paymentId: response.razorpay_payment_id,
-                  signature: response.razorpay_signature,
-                }),
-              });
-              const vData = await vRes.json().catch(() => ({}));
-              if (!vRes.ok || !vData.success) {
-                setStatus(vData.message || "Payment verification failed.", true);
-                button.disabled = false;
-                hideProgress();
-                return;
-              }
-              try {
-                await publishGift(orderId);
-              } catch (err) {
-                setStatus(err.message || "Publishing failed.", true);
-                button.disabled = false;
-                hideProgress();
-              }
-            },
-          });
-          rzp.open();
-          setProgress("Awaiting payment…", 85);
-          return; // handler continues the flow
-        }
+
+        // ---- Step 5: publish — pass envelope directly ----
+        await publishGift(orderId, builtEnvelope);
+        return;
+      }
+
+      // Real Razorpay flow
+      if (typeof window.Razorpay !== "function") {
         throw new Error("Payment SDK not loaded. Please refresh and try again.");
       }
 
-      // ---- Step 5: publish gift (server verifies PAID) ----
-      await publishGift(orderId);
+      // Save across the Razorpay callback
+      pendingEnvelope = builtEnvelope;
+      pendingOrderId = orderId;
+
+      const rzp = new window.Razorpay({
+        key: orderData.keyId,
+        amount: orderData.amount * 100,
+        currency: orderData.currency,
+        order_id: orderId,
+        name: "NIVA",
+        description: "Gift publishing",
+        handler: async (response) => {
+          try {
+            const vRes = await fetch("/api/payments/verify", {
+              method: "POST", credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: pendingOrderId,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              }),
+            });
+            const vData = await vRes.json().catch(() => ({}));
+            if (!vRes.ok || !vData.success) {
+              setStatus(vData.message || "Payment verification failed.", true);
+              button.disabled = false;
+              hideProgress();
+              pendingEnvelope = null;
+              pendingOrderId = null;
+              return;
+            }
+
+            // Publish using the SAME envelope built before payment
+            await publishGift(pendingOrderId, pendingEnvelope);
+          } catch (err) {
+            setStatus(err.message || "Publishing failed.", true);
+            button.disabled = false;
+            hideProgress();
+            pendingEnvelope = null;
+            pendingOrderId = null;
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setStatus("Payment cancelled. You can try again.", true);
+            button.disabled = false;
+            hideProgress();
+            pendingEnvelope = null;
+            pendingOrderId = null;
+          },
+        },
+      });
+
+      setProgress("Awaiting payment…", 85);
+      rzp.open();
+      return; // flow continues in the handler callback
     } catch (err) {
       hideProgress();
       setStatus(err.message || "Something went wrong.", true);
       button.disabled = false;
+      pendingEnvelope = null;
+      pendingOrderId = null;
     }
   });
-
-  async function publishGift(orderId) {
-    setProgress("Publishing…", 95);
-    const response = await fetch("/api/gifts", {
-      method: "POST", credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        templateId: window.NIVAEditor.templateId,
-        envelope: window._lastEnvelope || await buildEnvelopeSafe(),
-        orderId,
-      }),
-      cache: "no-store",
-    });
-    const data = await response.json().catch(() => ({}));
-    if (response.status === 401) throw new Error("Please log in before publishing.");
-    if (response.status === 402) throw new Error(data.message || "Payment required.");
-    if (response.status === 413) throw new Error("Gift too large. Use smaller files.");
-    if (!response.ok || !data.success || !data.gift?.url) {
-      throw new Error(data.message || "Publishing failed.");
-    }
-    const fullUrl = new URL(data.gift.url, window.location.origin).href;
-    if (urlInput) urlInput.value = fullUrl;
-    if (result) result.hidden = false;
-    setProgress("Done!", 100);
-    setStatus("Your gift was published successfully!");
-    if (passwordInput) passwordInput.value = "";
-    if (confirmInput) confirmInput.value = "";
-    setTimeout(hideProgress, 800);
-    button.disabled = false;
-  }
-
-  async function buildEnvelopeSafe() {
-    // Fallback — normally envelope is built before payment.
-    // If somehow we reach here without it, rebuild it.
-    const gift = window.NIVAEditor.getGiftData();
-    const photos = window.NIVAEditor.getPhotos();
-    const media = window.NIVAEditor.getMediaFiles();
-    const password = passwordInput?.value || "";
-    const photoPayload = [];
-    for (const photo of photos) {
-      photoPayload.push({ name: String(photo.name || "Memory").slice(0, 120), dataUrl: await fileAsCompressedDataUrl(photo.file) });
-    }
-    const mediaPayload = {};
-    for (const item of media) {
-      try { mediaPayload[item.key] = await fileAsDataUrl(item.file); } catch { mediaPayload[item.key] = ""; }
-    }
-    const payload = { ...gift, ...mediaPayload, photos: photoPayload };
-    return await encryptGift(payload, password);
-  }
 
   copyButton?.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(urlInput.value);
-      setStatus("Gift link copied!");
+      setStatus("Gift link copied! ♥");
     } catch {
       urlInput.focus(); urlInput.select();
       setStatus("Select and copy manually.");

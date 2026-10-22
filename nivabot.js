@@ -44,7 +44,7 @@
       next: ["Pricing?","How to create a gift?","Is it private?"] },
     { id: "pricing", tag: "Pricing",
       keywords: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"],
-      answer: "Our gifts:\n• **Love Letter** — ₹39\n• **Eternal Love** — ₹599\n• **Birthday Magic** — ₹299\n• **Love Proposal** — ₹599\n• **Eternal Anniversary** — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
+      answer: "Our gifts:\n• **Special Letter** — ₹39\n• **Essential** — ₹99\n• **Signature** — ₹299\n• **Evermore** — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
       next: ["What is the Love Letter?","How to create a gift?","Templates"] },
     { id: "special-letter", tag: "Love Letter",
       keywords: ["special letter","love letter","loveletter","39","letter only","single letter","cheap","cheapest"],
