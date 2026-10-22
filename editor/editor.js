@@ -1,21 +1,26 @@
-﻿/* =========================================================
-   NIVA UNIVERSAL GIFT EDITOR — Light Theme + Payment Gate
-   - Fixed price from template (incl. Special Letter ₹39)
-   - ~1 GB upload limit
-   - Cloud drafts (text only) + local draft
-   - Theme mode + colour palette from config.json
-   - Enforces per-template photo slots (templateLimits.photoSlots)
+﻿﻿/* =========================================================
+   NIVA UNIVERSAL GIFT EDITOR — Payment-Gated Publishing
+   
+   ⚠️ CRITICAL FLOW ⚠️
+   1. User fills form
+   2. User clicks "Pay & Publish"
+   3. → create-order (server records pending payment)
+   4. → confirm/verify (server marks payment PAID)
+   5. → POST /api/gifts with orderId
+   6. Server verifies payment is PAID + not consumed
+   7. ONLY THEN generates gift link
+   
+   The gift link is NEVER shown until step 6 succeeds.
    ========================================================= */
 "use strict";
 
 const MAX_PREVIEW_IMAGE_SIZE = 1600;
-const MAX_ENVELOPE_BYTES = 1024 * 1024 * 1024;          // ~1 GB encrypted gift
-const MAX_TOTAL_MEDIA_BYTES = 1000 * 1024 * 1024;       // ~1000 MB raw media
-const MAX_DRAFT_BYTES = 5 * 1024 * 1024;                // 5 MB cloud draft
+const MAX_ENVELOPE_BYTES = 1024 * 1024 * 1024;
+const MAX_TOTAL_MEDIA_BYTES = 1000 * 1024 * 1024;
+const MAX_DRAFT_BYTES = 5 * 1024 * 1024;
 const DRAFT_KEY_PREFIX = "niva-draft-";
 const PREVIEW_KEY_PREFIX = "niva-preview-";
 
-// Fixed prices per template — kept in sync with server.js TEMPLATE_PRICES.
 const TEMPLATE_PRICES = {
   "eternal-love": 599,
   "love-proposal": 599,
@@ -45,11 +50,10 @@ const context = {
   fields: {},
   user: null,
   cloudDraftId: null,
-  photoSlotLimit: null, // resolved from config.templateLimits.photoSlots
+  photoSlotLimit: null,
 };
 const DRAFT_KEY = DRAFT_KEY_PREFIX + context.templateId;
 const PREVIEW_KEY = PREVIEW_KEY_PREFIX + context.templateId;
-
 const TEMPLATE_PRICE = TEMPLATE_PRICES[context.templateId] ?? 299;
 
 /* ---------- 2. UTILITIES ---------- */
@@ -109,7 +113,7 @@ function showEditor() {
 /* ---------- 4. LOGIN UI ---------- */
 function initLoginUI(onSuccess) {
   const showPane = (id) => {
-    ["loginPane", "registerPane", "verifyPane", "setPasswordPane", "forgotPane", "verifyResetPane", "resetPane"].forEach(p => {
+    ["loginPane","registerPane","verifyPane","setPasswordPane","forgotPane","verifyResetPane","resetPane"].forEach(p => {
       const el = $("#" + p);
       if (el) el.hidden = true;
     });
@@ -126,7 +130,6 @@ function initLoginUI(onSuccess) {
   $("#backToLogin2")?.addEventListener("click", () => showPane("loginPane"));
   $("#backToLogin3")?.addEventListener("click", () => showPane("loginPane"));
 
-  // LOGIN
   $("#loginForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#loginEmail").value.trim();
@@ -164,20 +167,21 @@ function initLoginUI(onSuccess) {
     }
   });
 
-  // REGISTER
   $("#registerForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#registerEmail").value.trim();
+    const username = $("#registerUsername")?.value.trim() || "";
     const btn = $("#registerSubmit");
     const err = $("#registerError");
     err.textContent = "";
     if (!email) { err.textContent = "Please enter your email."; return; }
+    if (!username) { err.textContent = "Please choose a username."; return; }
     btn.disabled = true; btn.textContent = "Sending…";
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, username }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
@@ -198,7 +202,6 @@ function initLoginUI(onSuccess) {
     }
   });
 
-  // VERIFY
   $("#verifyForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const code = $("#verifyCode").value.trim();
@@ -239,7 +242,6 @@ function initLoginUI(onSuccess) {
     } catch { showToast("Could not resend code."); }
   });
 
-  // SET PASSWORD
   $("#setPasswordForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const pw = $("#setPassword").value;
@@ -268,7 +270,6 @@ function initLoginUI(onSuccess) {
     }
   });
 
-  // FORGOT — Step 1
   $("#forgotForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#forgotEmail").value.trim();
@@ -296,7 +297,6 @@ function initLoginUI(onSuccess) {
     }
   });
 
-  // FORGOT — Step 2
   $("#verifyResetForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const code = $("#resetCode").value.trim();
@@ -332,7 +332,6 @@ function initLoginUI(onSuccess) {
     } catch { showToast("Could not resend code."); }
   });
 
-  // FORGOT — Step 3
   $("#resetForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const pw = $("#resetPassword").value;
@@ -368,9 +367,9 @@ function initLoginUI(onSuccess) {
 
 /* ---------- 5. CONFIG ---------- */
 async function loadConfig() {
-  const path = `/templates/${context.category}/${context.templateId}/config.json`;
-  const res = await fetch(path, { cache: "no-cache" });
-  if (!res.ok) throw new Error(`Config not found: ${path} (HTTP ${res.status})`);
+  const p = `/templates/${context.category}/${context.templateId}/config.json`;
+  const res = await fetch(p, { cache: "no-cache" });
+  if (!res.ok) throw new Error(`Config not found: ${p} (HTTP ${res.status})`);
   const config = await res.json();
   if (!config.id || !config.name || !config.customization) {
     throw new Error("Invalid config.json — missing id, name or customization.");
@@ -378,21 +377,11 @@ async function loadConfig() {
   return config;
 }
 
-/* ---------- 5b. PHOTO SLOT LIMIT RESOLUTION ----------
-   The template enforces a fixed number of photo slots.
-   Order of precedence:
-     1) config.templateLimits.photoSlots  (0 = text-only, hides gallery)
-     2) config.customization.photos.maxFiles
-     3) fallback (5)
-   ---------------------------------------------------- */
 function resolvePhotoSlotLimit(config) {
   const templateLimit = Number(config?.templateLimits?.photoSlots);
-  // FIX: accept 0 (>= 0) so text-only templates hide the upload field
   if (Number.isFinite(templateLimit) && templateLimit >= 0) return templateLimit;
-
   const maxFiles = Number(config?.customization?.photos?.maxFiles);
   if (Number.isFinite(maxFiles) && maxFiles > 0) return maxFiles;
-
   return 5;
 }
 
@@ -407,23 +396,18 @@ function setFieldValue(key, value) {
 function renderForm() {
   const container = $("#dynamicSections");
   if (!container) return;
-
   const sections = context.config.sections || [];
   const customization = context.config.customization;
-
   if (!sections.length) {
     container.innerHTML = `<div class="editor-error">No sections defined in config.json.</div>`;
     return;
   }
-
   container.innerHTML = "";
   let step = 0;
-
   sections.forEach(section => {
     step++;
     const block = document.createElement("section");
     block.className = "form-section";
-
     const header = document.createElement("div");
     header.className = "section-title";
     header.innerHTML = `
@@ -433,30 +417,24 @@ function renderForm() {
         ${section.subtitle ? `<p>${escapeHtml(section.subtitle)}</p>` : ""}
       </div>`;
     block.appendChild(header);
-
     (section.fields || []).forEach(key => {
       const spec = customization[key];
       if (spec) block.appendChild(renderField(key, spec));
     });
-
     container.appendChild(block);
   });
-
   const pubStep = $("[data-step-no]");
   if (pubStep) pubStep.textContent = String(step + 1).padStart(2, "0");
-
   bindFieldEvents();
 }
 
 function renderField(key, spec) {
   const wrap = document.createElement("div");
   wrap.dataset.fieldWrap = key;
-
   const id = `field-${key}`;
   const label = escapeHtml(spec.label || key);
   const required = spec.required ? "required" : "";
   const placeholder = spec.placeholder ? `placeholder="${escapeHtml(spec.placeholder)}"` : "";
-
   context.fields[key] = { spec, value: spec.default ?? "", files: [] };
 
   switch (spec.type) {
@@ -471,7 +449,6 @@ function renderField(key, spec) {
         ${spec.maxLength ? `<div class="field-footer"><span>${label}</span><span data-counter="${key}">0 / ${spec.maxLength}</span></div>` : ""}
         ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
       break;
-
     case "textarea":
       wrap.innerHTML = `
         <label for="${id}">${label}</label>
@@ -483,7 +460,6 @@ function renderField(key, spec) {
         </div>
         ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
       break;
-
     case "select": {
       const opts = Array.isArray(spec.options) ? spec.options : [];
       const current = spec.default ?? (opts[0]?.value ?? "");
@@ -498,19 +474,14 @@ function renderField(key, spec) {
         ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
       break;
     }
-
     case "imageGallery": {
-      const slotLimit = context.photoSlotLimit
-        ?? resolvePhotoSlotLimit(context.config);
-
-      // FIX: hide the field entirely when the template declares 0 photo slots
+      const slotLimit = context.photoSlotLimit ?? resolvePhotoSlotLimit(context.config);
       if (slotLimit === 0) {
         wrap.innerHTML = `<p class="field-help" style="padding:8px 0;color:var(--text-muted);font-style:italic;">
           This template does not support photo uploads — it's a text-only experience.
         </p>`;
         break;
       }
-
       const mb = spec.maxSizeMB || 800;
       wrap.innerHTML = `
         <label for="${id}" class="upload-box">
@@ -524,7 +495,6 @@ function renderField(key, spec) {
         ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
       break;
     }
-
     case "textArray": {
       const text = Array.isArray(spec.default) ? spec.default.join("\n") : (spec.default || "");
       wrap.innerHTML = `
@@ -533,7 +503,6 @@ function renderField(key, spec) {
         <p class="field-help">${escapeHtml(spec.help || "One item per line.")}</p>`;
       break;
     }
-
     case "audio": {
       const mb = spec.maxSizeMB || 200;
       wrap.innerHTML = `
@@ -548,7 +517,6 @@ function renderField(key, spec) {
         ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
       break;
     }
-
     case "video": {
       const mb = spec.maxSizeMB || 800;
       wrap.innerHTML = `
@@ -563,7 +531,6 @@ function renderField(key, spec) {
         ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
       break;
     }
-
     case "theme": {
       const opts = spec.options || [];
       wrap.innerHTML = `
@@ -578,19 +545,16 @@ function renderField(key, spec) {
         </div>`;
       break;
     }
-
     default:
       wrap.innerHTML = `<p class="editor-error">Unknown field type: ${escapeHtml(spec.type)}</p>`;
   }
-
   return wrap;
 }
 
-/* ---------- 8. EVENT BINDING ---------- */
+/* ---------- 8. EVENTS ---------- */
 function bindFieldEvents() {
   $$("[data-field-key]").forEach(input => {
     const key = input.dataset.fieldKey;
-
     if (input.type === "file") {
       input.addEventListener("change", e => handleFileInput(key, e));
     } else if (input.type === "radio") {
@@ -620,7 +584,6 @@ function bindFieldEvents() {
       });
     }
   });
-
   Object.keys(context.fields).forEach(updateCounter);
 }
 
@@ -633,7 +596,7 @@ function updateCounter(key) {
   el.textContent = `${String(field.value).length} / ${max}`;
 }
 
-/* ---------- 9. FILE INPUT (with ~1 GB total cap + slot limit) ---------- */
+/* ---------- 9. FILE INPUT ---------- */
 function currentTotalBytes() {
   let total = 0;
   Object.values(context.fields).forEach(f => {
@@ -645,27 +608,21 @@ function currentTotalBytes() {
 function handleFileInput(key, event) {
   const field = context.fields[key];
   if (!field) return;
-
   const spec = field.spec;
   const accept = (spec.accept || "").split(",").map(s => s.trim()).filter(Boolean);
   const remainingTotal = MAX_TOTAL_MEDIA_BYTES - currentTotalBytes();
 
   if (spec.type === "imageGallery") {
-    const slotLimit = context.photoSlotLimit
-      ?? resolvePhotoSlotLimit(context.config);
-
-    // FIX: text-only templates never accept uploads
+    const slotLimit = context.photoSlotLimit ?? resolvePhotoSlotLimit(context.config);
     if (slotLimit === 0) {
       event.target.value = "";
       showToast("This template does not support photo uploads.");
       return;
     }
-
     const maxSize = (spec.maxSizeMB || 800) * 1024 * 1024;
     const selected = Array.from(event.target.files || []);
     let added = 0;
     let runningTotal = currentTotalBytes();
-
     for (const file of selected) {
       if (field.files.length >= slotLimit) {
         showToast(`This template supports only ${slotLimit} photo${slotLimit === 1 ? "" : "s"}.`);
@@ -687,7 +644,6 @@ function handleFileInput(key, event) {
       runningTotal += file.size;
       added++;
     }
-
     event.target.value = "";
     renderFileGrid(key);
     updatePreview();
@@ -728,18 +684,14 @@ function renderFileGrid(key) {
   if (!grid) return;
   const field = context.fields[key];
   grid.innerHTML = "";
-
   field.files.forEach((item, i) => {
     const isVideo = field.spec.type === "video";
     const isAudio = field.spec.type === "audio";
-
     const card = document.createElement("div");
     card.style.cssText = "position:relative;aspect-ratio:1;overflow:hidden;border:1px solid var(--line-rose);border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--bg-rose);";
-
     if (isVideo) {
       const vid = document.createElement("video");
-      vid.src = item.url;
-      vid.muted = true;
+      vid.src = item.url; vid.muted = true;
       vid.style.cssText = "width:100%;height:100%;object-fit:cover;";
       card.appendChild(vid);
     } else if (isAudio) {
@@ -754,7 +706,6 @@ function renderFileGrid(key) {
       img.style.cssText = "width:100%;height:100%;object-fit:cover;";
       card.appendChild(img);
     }
-
     const remove = document.createElement("button");
     remove.type = "button";
     remove.textContent = "×";
@@ -772,7 +723,7 @@ function renderFileGrid(key) {
   });
 }
 
-/* ---------- 10. LIVE PREVIEW ---------- */
+/* ---------- 10. PREVIEW ---------- */
 let previewIframe = null;
 let previewReady = false;
 let lastPreviewData = null;
@@ -781,16 +732,11 @@ let retryTimer = null;
 function initPreviewIframe() {
   previewIframe = $("#previewIframe");
   if (!previewIframe) return;
-
   const templatePath = context.config?.templatePath;
-  if (templatePath) {
-    previewIframe.src = templatePath;
-  }
-
+  if (templatePath) previewIframe.src = templatePath;
   previewIframe.addEventListener("load", () => {
     $("#previewFrameWrap")?.classList.add("loaded");
   });
-
   window.addEventListener("message", (event) => {
     if (event.origin !== window.location.origin) return;
     if (event.data?.type === "NIVA_PREVIEW_READY") {
@@ -802,11 +748,7 @@ function initPreviewIframe() {
 }
 
 function collectPreviewData() {
-  const data = {
-    templateId: context.templateId,
-    category: context.category,
-  };
-
+  const data = { templateId: context.templateId, category: context.category };
   Object.entries(context.fields).forEach(([key, field]) => {
     const spec = field.spec;
     if (spec.type === "imageGallery") { data[key] = field.files.map(f => f.url); return; }
@@ -817,7 +759,6 @@ function collectPreviewData() {
     }
     data[key] = field.value;
   });
-
   return data;
 }
 
@@ -921,7 +862,7 @@ window.NIVAEditor = {
   getGiftData, getPhotos, getMediaFiles, getFieldRaw, compressPhoto,
 };
 
-/* ---------- 12. DRAFT (local + cloud) ---------- */
+/* ---------- 12. DRAFT ---------- */
 let autosaveTimer;
 let cloudSaveTimer;
 
@@ -1011,16 +952,12 @@ function applyDraftValues(values) {
     const field = context.fields[key];
     if (!field) return;
     if (field.spec.type === "imageGallery" || field.spec.type === "audio" || field.spec.type === "video") return;
-
     field.value = val;
     const input = $(`[data-field-key="${key}"]`);
     if (!input) return;
-
-    if (input.type === "radio") {
-      input.checked = input.value === val;
-    } else if (input.tagName === "SELECT") {
-      input.value = val ?? "";
-    } else if (field.spec.type === "textArray") {
+    if (input.type === "radio") input.checked = input.value === val;
+    else if (input.tagName === "SELECT") input.value = val ?? "";
+    else if (field.spec.type === "textArray") {
       if (Array.isArray(val)) input.value = val.join("\n");
       else input.value = String(val ?? "");
     } else {
@@ -1034,7 +971,6 @@ function applyDraftValues(values) {
 /* ---------- 13. RESET ---------- */
 function resetEditor() {
   if (!confirm("Reset all fields to template defaults? Selected media will be removed.")) return;
-
   Object.keys(context.fields).forEach(key => {
     const field = context.fields[key];
     field.files.forEach(f => URL.revokeObjectURL(f.url));
@@ -1043,7 +979,6 @@ function resetEditor() {
     field.value = spec.type === "textArray"
       ? (Array.isArray(spec.default) ? spec.default.join("\n") : (spec.default || ""))
       : (spec.default ?? "");
-
     const input = $(`[data-field-key="${key}"]`);
     if (input) {
       if (input.type === "radio") input.checked = input.value === (spec.default ?? "");
@@ -1053,18 +988,15 @@ function resetEditor() {
     if (spec.type === "imageGallery" || spec.type === "video" || spec.type === "audio") renderFileGrid(key);
     updateCounter(key);
   });
-
   try {
     localStorage.removeItem(DRAFT_KEY);
     sessionStorage.removeItem(PREVIEW_KEY);
   } catch {}
-
   if (context.user) {
     fetch(`/api/drafts/${encodeURIComponent(context.templateId)}`, {
       method: "DELETE", credentials: "same-origin",
     }).catch(() => {});
   }
-
   updatePreview();
   setSaveStatus("Template defaults restored");
   showToast("Editor reset to defaults.");
@@ -1089,7 +1021,21 @@ function updatePlanSummary() {
   if (badge) badge.textContent = `₹${TEMPLATE_PRICE}`;
 }
 
-/* ---------- 15. PUBLISH WITH FIXED PRICE + PAYMENT ---------- */
+/* =========================================================
+   15. PUBLISH — PAYMENT GATE
+   
+   Sequence (in order — any failure aborts and no link appears):
+     1. Validate password
+     2. Build encrypted envelope locally
+     3. POST /api/payments/create-order  → get orderId
+     4. POST /api/payments/confirm       → server marks PAID
+     5. POST /api/gifts {orderId,...}    → server verifies PAID
+                                           then generates link
+     6. Display link (only now)
+   
+   The button is disabled between step 3 and step 6 so the
+   user cannot double-pay or spam-create orders.
+   ========================================================= */
 (() => {
   const button = document.getElementById("publishGiftButton");
   if (!button) return;
@@ -1166,11 +1112,9 @@ function updatePlanSummary() {
   async function encryptGift(payload, password) {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
-
     const material = await crypto.subtle.importKey(
       "raw", encoder.encode(password), "PBKDF2", false, ["deriveKey"]
     );
-
     const key = await crypto.subtle.deriveKey(
       { name: "PBKDF2", salt, iterations: 310000, hash: "SHA-256" },
       material,
@@ -1178,22 +1122,16 @@ function updatePlanSummary() {
       false,
       ["encrypt"]
     );
-
     const encrypted = await crypto.subtle.encrypt(
       { name: "AES-GCM", iv },
       key,
       encoder.encode(JSON.stringify(payload))
     );
-
     const envelope = {
-      version: 1,
-      kdf: "PBKDF2-SHA-256",
-      iterations: 310000,
-      salt: toBase64(salt),
-      iv: toBase64(iv),
+      version: 1, kdf: "PBKDF2-SHA-256", iterations: 310000,
+      salt: toBase64(salt), iv: toBase64(iv),
       ciphertext: toBase64(new Uint8Array(encrypted)),
     };
-
     const size = encoder.encode(JSON.stringify(envelope)).length;
     if (size > MAX_ENVELOPE_BYTES) {
       throw new Error(`Gift is ${formatBytes(size)} — exceeds ${formatBytes(MAX_ENVELOPE_BYTES)} limit.`);
@@ -1203,8 +1141,10 @@ function updatePlanSummary() {
 
   button.addEventListener("click", async () => {
     if (button.disabled) return;
-    if (result) result.hidden = true;
 
+    // ---- Step 0: reset UI ----
+    if (result) result.hidden = true;
+    if (urlInput) urlInput.value = "";
     if (!window.NIVAEditor) {
       setStatus("Editor not ready. Refresh and try again.", true);
       return;
@@ -1224,10 +1164,12 @@ function updatePlanSummary() {
       return;
     }
 
+    // ---- Disable button now — it stays disabled until link is shown or error occurs ----
     button.disabled = true;
     setStatus("Preparing your gift…");
 
     try {
+      // ---- Step 1: build payload ----
       const gift = window.NIVAEditor.getGiftData();
       const photos = window.NIVAEditor.getPhotos();
       const media = window.NIVAEditor.getMediaFiles();
@@ -1237,9 +1179,7 @@ function updatePlanSummary() {
         media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
 
       if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
-        throw new Error(
-          `Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`
-        );
+        throw new Error(`Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`);
       }
 
       const totalSteps = photos.length + media.length + 4;
@@ -1263,7 +1203,13 @@ function updatePlanSummary() {
         step++;
       }
 
-      setProgress("Creating payment order…", 86);
+      // ---- Step 2: encrypt locally ----
+      setProgress("Encrypting gift…", 60);
+      const payload = { ...gift, ...mediaPayload, photos: photoPayload };
+      const envelope = await encryptGift(payload, password);
+
+      // ---- Step 3: create payment order ----
+      setProgress("Creating payment order…", 70);
       const orderRes = await fetch("/api/payments/create-order", {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -1273,56 +1219,127 @@ function updatePlanSummary() {
       if (!orderRes.ok || !orderData.success) {
         throw new Error(orderData.message || "Could not create payment order.");
       }
+      const orderId = orderData.orderId;
+      if (!orderId) throw new Error("Payment order missing ID.");
 
-      setProgress("Confirming payment…", 90);
-      const confirmRes = await fetch("/api/payments/confirm", {
-        method: "POST", credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: orderData.orderId, paymentId: "mock_" + Date.now() }),
-      });
-      const confirmData = await confirmRes.json().catch(() => ({}));
-      if (!confirmRes.ok || !confirmData.success) {
-        throw new Error(confirmData.message || "Payment failed.");
+      // ---- Step 4: confirm payment ----
+      // In mock mode: POST /api/payments/confirm
+      // In Razorpay mode: the checkout SDK would run here and then
+      // POST /api/payments/verify with the signature.
+      setProgress("Confirming payment…", 85);
+      if (orderData.mock) {
+        const confirmRes = await fetch("/api/payments/confirm", {
+          method: "POST", credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, paymentId: "mock_" + Date.now() }),
+        });
+        const confirmData = await confirmRes.json().catch(() => ({}));
+        if (!confirmRes.ok || !confirmData.success) {
+          throw new Error(confirmData.message || "Payment failed.");
+        }
+      } else {
+        // Real Razorpay flow — requires Razorpay checkout JS in editor.html.
+        // If you haven't wired the SDK yet, this branch will fail cleanly
+        // and no gift link will be generated.
+        if (typeof window.Razorpay === "function") {
+          const rzp = new window.Razorpay({
+            key: orderData.keyId,
+            amount: orderData.amount * 100,
+            currency: orderData.currency,
+            order_id: orderId,
+            name: "NIVA",
+            description: "Gift publishing",
+            handler: async (response) => {
+              // Verify signature server-side
+              const vRes = await fetch("/api/payments/verify", {
+                method: "POST", credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  orderId,
+                  paymentId: response.razorpay_payment_id,
+                  signature: response.razorpay_signature,
+                }),
+              });
+              const vData = await vRes.json().catch(() => ({}));
+              if (!vRes.ok || !vData.success) {
+                setStatus(vData.message || "Payment verification failed.", true);
+                button.disabled = false;
+                hideProgress();
+                return;
+              }
+              try {
+                await publishGift(orderId);
+              } catch (err) {
+                setStatus(err.message || "Publishing failed.", true);
+                button.disabled = false;
+                hideProgress();
+              }
+            },
+          });
+          rzp.open();
+          setProgress("Awaiting payment…", 85);
+          return; // handler continues the flow
+        }
+        throw new Error("Payment SDK not loaded. Please refresh and try again.");
       }
 
-      setProgress("Encrypting gift…", 94);
-      const payload = { ...gift, ...mediaPayload, photos: photoPayload };
-      const envelope = await encryptGift(payload, password);
-
-      setProgress("Publishing…", 98);
-      const response = await fetch("/api/gifts", {
-        method: "POST", credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          templateId: window.NIVAEditor.templateId,
-          envelope,
-          orderId: orderData.orderId,
-        }),
-        cache: "no-store",
-      });
-
-      const data = await response.json().catch(() => ({}));
-      if (response.status === 401) throw new Error("Please log in before publishing.");
-      if (response.status === 402) throw new Error(data.message || "Payment required.");
-      if (response.status === 413) throw new Error("Gift too large. Use smaller files.");
-      if (!response.ok || !data.success || !data.gift?.url) {
-        throw new Error(data.message || "Publishing failed.");
-      }
-
-      setProgress("Done!", 100);
-      if (urlInput) urlInput.value = new URL(data.gift.url, window.location.origin).href;
-      if (result) result.hidden = false;
-      setStatus("Your gift was published successfully!");
-      if (passwordInput) passwordInput.value = "";
-      if (confirmInput) confirmInput.value = "";
-      setTimeout(hideProgress, 800);
+      // ---- Step 5: publish gift (server verifies PAID) ----
+      await publishGift(orderId);
     } catch (err) {
       hideProgress();
       setStatus(err.message || "Something went wrong.", true);
-    } finally {
       button.disabled = false;
     }
   });
+
+  async function publishGift(orderId) {
+    setProgress("Publishing…", 95);
+    const response = await fetch("/api/gifts", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        templateId: window.NIVAEditor.templateId,
+        envelope: window._lastEnvelope || await buildEnvelopeSafe(),
+        orderId,
+      }),
+      cache: "no-store",
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) throw new Error("Please log in before publishing.");
+    if (response.status === 402) throw new Error(data.message || "Payment required.");
+    if (response.status === 413) throw new Error("Gift too large. Use smaller files.");
+    if (!response.ok || !data.success || !data.gift?.url) {
+      throw new Error(data.message || "Publishing failed.");
+    }
+    const fullUrl = new URL(data.gift.url, window.location.origin).href;
+    if (urlInput) urlInput.value = fullUrl;
+    if (result) result.hidden = false;
+    setProgress("Done!", 100);
+    setStatus("Your gift was published successfully!");
+    if (passwordInput) passwordInput.value = "";
+    if (confirmInput) confirmInput.value = "";
+    setTimeout(hideProgress, 800);
+    button.disabled = false;
+  }
+
+  async function buildEnvelopeSafe() {
+    // Fallback — normally envelope is built before payment.
+    // If somehow we reach here without it, rebuild it.
+    const gift = window.NIVAEditor.getGiftData();
+    const photos = window.NIVAEditor.getPhotos();
+    const media = window.NIVAEditor.getMediaFiles();
+    const password = passwordInput?.value || "";
+    const photoPayload = [];
+    for (const photo of photos) {
+      photoPayload.push({ name: String(photo.name || "Memory").slice(0, 120), dataUrl: await fileAsCompressedDataUrl(photo.file) });
+    }
+    const mediaPayload = {};
+    for (const item of media) {
+      try { mediaPayload[item.key] = await fileAsDataUrl(item.file); } catch { mediaPayload[item.key] = ""; }
+    }
+    const payload = { ...gift, ...mediaPayload, photos: photoPayload };
+    return await encryptGift(payload, password);
+  }
 
   copyButton?.addEventListener("click", async () => {
     try {
@@ -1339,28 +1356,20 @@ function updatePlanSummary() {
 async function initEditor() {
   try {
     context.config = await loadConfig();
-
-    // Resolve template's fixed photo-slot count
     context.photoSlotLimit = resolvePhotoSlotLimit(context.config);
-
     const nameEl = $("#templateName");
     const metaEl = $("#templateMeta");
     if (nameEl) nameEl.textContent = context.config.name;
     if (metaEl) {
-      metaEl.textContent =
-        `${(context.config.category || "").toUpperCase()} Collection · Customizable gift`;
+      metaEl.textContent = `${(context.config.category || "").toUpperCase()} Collection · Customizable gift`;
     }
     updatePlanSummary();
-
     renderForm();
     await loadDraft();
     bindStaticEvents();
     initPreviewIframe();
-
     setSaveStatus("Your changes are local");
-    console.info(
-      `[NIVA] Editor ready: ${context.templateId} · photoSlots=${context.photoSlotLimit}`
-    );
+    console.info(`[NIVA] Editor ready: ${context.templateId} · photoSlots=${context.photoSlotLimit} · price=₹${TEMPLATE_PRICE}`);
   } catch (err) {
     console.error("[NIVA] Editor init failed:", err);
     setSaveStatus("Failed to load template");
@@ -1381,9 +1390,7 @@ async function initEditor() {
 async function bootApp() {
   showEditor();
   showLoginGate();
-
   const user = await checkAuth();
-
   if (user) {
     context.user = user;
     showEditor();

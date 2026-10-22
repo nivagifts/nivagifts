@@ -1,17 +1,9 @@
-﻿﻿﻿﻿/* =========================================================
-   NIVA SERVER — Complete Production-Ready Version
-   Light Theme · Email Verification · Password Reset
-   Reviews · Stats · Payment Gating · Contact
-   Drafts · Wishlist · 1GB uploads
-   Bot · Special Letter (₹39)
-
-   AUTH FLOW:
-   - Register: email + username → OTP sent → verify OTP → set password
-   - Login: email (or username) + password
-   - Reset: email → OTP sent → verify OTP → set new password
-
-   EMAIL: Resend API (RESEND_API_KEY + RESEND_FROM_EMAIL)
-   PAYMENTS: Razorpay (auto-detected) or mock mode
+﻿﻿﻿/* =========================================================
+   NIVA SERVER — Production Version
+   PAYMENT-GATED GIFT PUBLISHING
+   
+   KEY RULE: A gift link is generated ONLY after a payment
+   order is verified as PAID. There is no bypass path.
    ========================================================= */
 
 require("dotenv").config();
@@ -42,34 +34,25 @@ const REQUIRED_ENV = ["DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD",
 const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
 if (missingEnv.length) {
   console.error("❌ Missing required env vars:", missingEnv.join(", "));
-  console.error("Create a .env file with these variables. See .env.example");
   process.exit(1);
 }
-
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
   console.error("❌ PORT must be a valid port number.");
   process.exit(1);
 }
-
 const DB_PORT = Number(process.env.DB_PORT);
 if (!Number.isInteger(DB_PORT) || DB_PORT < 1 || DB_PORT > 65535) {
   console.error("❌ DB_PORT must be a valid port number.");
   process.exit(1);
 }
-
 if (process.env.SESSION_SECRET.length < 32) {
   console.error("❌ SESSION_SECRET must be at least 32 characters.");
   process.exit(1);
 }
 
-const HAS_RESEND = Boolean(
-  process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL
-);
-
+const HAS_RESEND = Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL);
 if (!HAS_RESEND) {
-  console.error(
-    "❌ Email is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL."
-  );
+  console.error("❌ Email is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL.");
 }
 
 /* ---------- 3. POSTGRES POOL ---------- */
@@ -84,12 +67,11 @@ const pool = new Pool({
   max: 5,
   application_name: "NIVA",
 });
-
 pool.on("error", err => {
   console.error("Unexpected DB error:", { message: err.message, code: err.code });
 });
 
-/* ---------- 4. HTTPS REDIRECT (production only) ---------- */
+/* ---------- 4. HTTPS REDIRECT ---------- */
 if (IS_PRODUCTION) {
   app.use((req, res, next) => {
     if (req.header("x-forwarded-proto") !== "https") {
@@ -99,7 +81,7 @@ if (IS_PRODUCTION) {
   });
 }
 
-/* ---------- 5. SECURITY HEADERS ---------- */
+/* ---------- 5. SECURITY ---------- */
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
@@ -143,7 +125,6 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: "Too many attempts. Please try again later." },
 });
-
 const giftFetchLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 30,
@@ -151,7 +132,6 @@ const giftFetchLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: "Too many requests. Please slow down." },
 });
-
 const botLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 40,
@@ -166,47 +146,32 @@ function regenerateSession(req) {
     req.session.regenerate(err => (err ? reject(err) : resolve()));
   });
 }
-
 function saveSession(req) {
   return new Promise((resolve, reject) => {
     req.session.save(err => (err ? reject(err) : resolve()));
   });
 }
-
 function destroySession(req) {
   return new Promise((resolve, reject) => {
     req.session.destroy(err => (err ? reject(err) : resolve()));
   });
 }
-
-function normalizeEmail(email) {
-  return email.trim().toLowerCase();
-}
-
+function normalizeEmail(email) { return email.trim().toLowerCase(); }
 function isValidEmail(email) {
   return typeof email === "string" && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-
 function isValidPassword(pw) {
   return typeof pw === "string" && pw.length >= 8 && pw.length <= 128;
 }
-
-/* ---------- USERNAME HELPERS ---------- */
-function normalizeUsername(name) {
-  return String(name || "").trim().toLowerCase();
-}
-
+function normalizeUsername(name) { return String(name || "").trim().toLowerCase(); }
 function isValidUsername(name) {
   if (typeof name !== "string") return false;
   const trimmed = name.trim();
   if (trimmed.length < 3 || trimmed.length > 30) return false;
-  // letters, numbers, underscore, dot — no spaces, no weird symbols
   if (!/^[A-Za-z0-9_.]+$/.test(trimmed)) return false;
-  // must start with a letter
   if (!/^[A-Za-z]/.test(trimmed)) return false;
   return true;
 }
-
 function usernameErrorMessage(name) {
   if (!name || typeof name !== "string") return "Please choose a username.";
   const t = name.trim();
@@ -216,7 +181,6 @@ function usernameErrorMessage(name) {
   if (!/^[A-Za-z0-9_.]+$/.test(t)) return "Username can only use letters, numbers, underscore (_) and dot (.).";
   return null;
 }
-
 async function isUsernameTaken(name) {
   const normalized = normalizeUsername(name);
   if (!normalized) return false;
@@ -226,14 +190,12 @@ async function isUsernameTaken(name) {
   );
   return result.rows.length > 0;
 }
-
 function requireAuthenticated(req, res, next) {
   if (!req.session?.userId) {
     return res.status(401).json({ success: false, message: "Please log in to continue." });
   }
   next();
 }
-
 function clearSessionCookie(res) {
   res.clearCookie("niva.sid", {
     httpOnly: true,
@@ -242,54 +204,32 @@ function clearSessionCookie(res) {
     path: "/",
   });
 }
-
-function generateCode() {
-  return String(crypto.randomInt(100000, 999999));
-}
-
-async function hashCode(code) {
-  return argon2.hash(code, { type: argon2.argon2id });
-}
-
+function generateCode() { return String(crypto.randomInt(100000, 999999)); }
+async function hashCode(code) { return argon2.hash(code, { type: argon2.argon2id }); }
 async function verifyCode(hash, code) {
-  try {
-    return await argon2.verify(hash, code);
-  } catch {
-    return false;
-  }
+  try { return await argon2.verify(hash, code); } catch { return false; }
 }
 
-/* ---------- 10. EMAIL SENDER (Resend API) ---------- */
+/* ---------- 10. EMAIL ---------- */
 async function sendEmail({ to, subject, html }) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
-
   if (!apiKey || !from) {
     console.error("❌ Email unavailable: Resend configuration is missing.");
     return false;
   }
-
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from, to: [to], subject, html }),
       signal: AbortSignal.timeout(10000),
     });
-
     const result = await response.json().catch(() => ({}));
-
     if (!response.ok) {
-      console.error(
-        `❌ Resend email failed (${response.status}):`,
-        result.message || result.name || "Unknown API error"
-      );
+      console.error(`❌ Resend email failed (${response.status}):`, result.message || result.name || "Unknown API error");
       return false;
     }
-
     console.log(`📧 Resend accepted email request: ${subject}`);
     return true;
   } catch (err) {
@@ -297,7 +237,6 @@ async function sendEmail({ to, subject, html }) {
     return false;
   }
 }
-
 function verificationEmailHTML(code, username) {
   const greeting = username ? `Hi ${username},` : "Hi there,";
   return `
@@ -312,10 +251,8 @@ function verificationEmailHTML(code, username) {
       </div>
       <p style="color: #6b5557; font-size: 14px; text-align: center;">This code expires in 10 minutes.</p>
       <p style="color: #9e8588; font-size: 12px; text-align: center; font-style: italic; margin-top: 28px; padding-top: 20px; border-top: 1px solid #f0dfd8;">Make moments eternal ✦</p>
-    </div>
-  `;
+    </div>`;
 }
-
 function resetEmailHTML(code, username) {
   const greeting = username ? `Hi ${username},` : "Hi there,";
   return `
@@ -327,16 +264,14 @@ function resetEmailHTML(code, username) {
       </div>
       <p style="color: #6b5557; font-size: 14px; text-align: center;">This code expires in 15 minutes.</p>
       <p style="color: #9e8588; font-size: 12px; text-align: center; font-style: italic; margin-top: 28px;">If you didn't request this, ignore this email.</p>
-    </div>
-  `;
+    </div>`;
 }
 
-/* ---------- 11. DATABASE MIGRATIONS ---------- */
+/* ---------- 11. MIGRATIONS ---------- */
 async function runMigrations() {
   try {
     await pool.query(`CREATE SCHEMA IF NOT EXISTS app;`);
 
-    // Create users table (with username) — legacy-safe
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.users (
         id BIGSERIAL PRIMARY KEY,
@@ -345,31 +280,24 @@ async function runMigrations() {
         password_hash TEXT,
         email_verified BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT NOW()
-      );
-    `);
+      );`);
 
-    // Add username column if upgrading from an older schema
     await pool.query(`
       DO $$
       BEGIN
         IF NOT EXISTS (
           SELECT 1 FROM information_schema.columns
-          WHERE table_schema = 'app' AND table_name = 'users'
-            AND column_name = 'username'
+          WHERE table_schema = 'app' AND table_name = 'users' AND column_name = 'username'
         ) THEN
           ALTER TABLE app.users ADD COLUMN username TEXT;
         END IF;
-      END $$;
-    `);
+      END $$;`);
 
-    // Add case-insensitive unique index for usernames
     await pool.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS IDX_users_username_lower
         ON app.users (LOWER(username))
-        WHERE username IS NOT NULL;
-    `);
+        WHERE username IS NOT NULL;`);
 
-    // Allow NULL password_hash (email-only accounts before setting password)
     await pool.query(`
       DO $$
       BEGIN
@@ -380,16 +308,14 @@ async function runMigrations() {
         ) THEN
           ALTER TABLE app.users ALTER COLUMN password_hash DROP NOT NULL;
         END IF;
-      END $$;
-    `);
+      END $$;`);
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.sessions (
         sid VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
         sess JSON NOT NULL,
         expire TIMESTAMP(6) NOT NULL
-      );
-    `);
+      );`);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_sessions_expire ON app.sessions (expire);`);
 
     await pool.query(`
@@ -403,12 +329,12 @@ async function runMigrations() {
         gift_password_hash TEXT,
         paid BOOLEAN DEFAULT FALSE,
         amount_inr INTEGER,
+        payment_id BIGINT REFERENCES app.payments(id),
         published BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW(),
         published_at TIMESTAMPTZ
-      );
-    `);
+      );`);
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.email_codes (
@@ -419,26 +345,20 @@ async function runMigrations() {
         expires_at TIMESTAMPTZ NOT NULL,
         used BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT NOW()
-      );
-    `);
+      );`);
     await pool.query(`
       DO $$
       BEGIN
-        IF EXISTS (
-          SELECT 1 FROM pg_constraint WHERE conname = 'email_codes_type_check'
-        ) THEN
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'email_codes_type_check') THEN
           ALTER TABLE app.email_codes DROP CONSTRAINT email_codes_type_check;
         END IF;
-      END $$;
-    `);
+      END $$;`);
     try {
       await pool.query(`
         ALTER TABLE app.email_codes
         ADD CONSTRAINT email_codes_type_check
-        CHECK (type IN ('verify', 'reset'));
-      `);
-    } catch (_) { /* already exists */ }
-
+        CHECK (type IN ('verify', 'reset'));`);
+    } catch (_) {}
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_email_codes_lookup ON app.email_codes (email, type, used);`);
 
     await pool.query(`
@@ -451,22 +371,55 @@ async function runMigrations() {
         text TEXT NOT NULL CHECK (char_length(text) <= 500),
         tag TEXT DEFAULT 'NIVA gift',
         created_at TIMESTAMPTZ DEFAULT NOW()
-      );
-    `);
+      );`);
 
+    // payments table — must exist BEFORE gifts FK (gifts references payments)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.payments (
         id BIGSERIAL PRIMARY KEY,
         user_id BIGINT REFERENCES app.users(id) ON DELETE CASCADE,
-        gift_id UUID REFERENCES app.gifts(id) ON DELETE CASCADE,
+        gift_id UUID,
         amount_inr INTEGER NOT NULL,
         status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'failed')),
         provider TEXT DEFAULT 'razorpay',
         provider_order_id TEXT,
         provider_payment_id TEXT,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      );
-    `);
+        template_id TEXT,
+        consumed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        paid_at TIMESTAMPTZ
+      );`);
+
+    // Add missing columns to legacy payments table if it exists
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='template_id') THEN
+          ALTER TABLE app.payments ADD COLUMN template_id TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='consumed') THEN
+          ALTER TABLE app.payments ADD COLUMN consumed BOOLEAN DEFAULT FALSE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='paid_at') THEN
+          ALTER TABLE app.payments ADD COLUMN paid_at TIMESTAMPTZ;
+        END IF;
+      END $$;`);
+
+    // Now add the FK on gifts -> payments (after both exist)
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'gifts_payment_id_fkey'
+        ) THEN
+          ALTER TABLE app.gifts
+          ADD CONSTRAINT gifts_payment_id_fkey
+          FOREIGN KEY (payment_id) REFERENCES app.payments(id);
+        END IF;
+      END $$;`);
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.drafts (
@@ -477,8 +430,7 @@ async function runMigrations() {
         updated_at TIMESTAMPTZ DEFAULT NOW(),
         created_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE (user_id, template_id)
-      );
-    `);
+      );`);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_drafts_user ON app.drafts (user_id, updated_at DESC);`);
 
     await pool.query(`
@@ -488,8 +440,7 @@ async function runMigrations() {
         template_id TEXT NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE (user_id, template_id)
-      );
-    `);
+      );`);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_wishlist_user ON app.wishlist (user_id, created_at DESC);`);
 
     console.log("✅ Database migrations complete.");
@@ -499,7 +450,7 @@ async function runMigrations() {
   }
 }
 
-/* ---------- 12. HEALTH CHECK ---------- */
+/* ---------- 12. HEALTH ---------- */
 app.get("/api/health", async (req, res) => {
   try {
     await pool.query("SELECT 1");
@@ -511,22 +462,18 @@ app.get("/api/health", async (req, res) => {
 });
 
 /* =========================================================
-   13. AUTH ROUTES (with username)
+   13. AUTH ROUTES
    ========================================================= */
 
-/* --- 13a. Check username availability --- */
 app.post("/api/auth/check-username", authLimiter, async (req, res, next) => {
   try {
     const { username } = req.body || {};
     const err = usernameErrorMessage(username);
-    if (err) {
-      return res.status(400).json({ success: false, available: false, message: err });
-    }
+    if (err) return res.status(400).json({ success: false, available: false, message: err });
     const taken = await isUsernameTaken(username);
     if (taken) {
       return res.status(200).json({
-        success: true,
-        available: false,
+        success: true, available: false,
         message: "That username is already taken. Please pick another.",
       });
     }
@@ -534,28 +481,21 @@ app.post("/api/auth/check-username", authLimiter, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/* --- 13b. Register (email + username) --- */
 app.post("/api/auth/register", authLimiter, async (req, res, next) => {
   try {
     const { email, username } = req.body || {};
-
     if (typeof email !== "string" || !isValidEmail(email)) {
       return res.status(400).json({ success: false, message: "Please enter a valid email address." });
     }
-
     const unameError = usernameErrorMessage(username);
-    if (unameError) {
-      return res.status(400).json({ success: false, message: unameError });
-    }
+    if (unameError) return res.status(400).json({ success: false, message: unameError });
 
     const normalized = normalizeEmail(email);
     const cleanUsername = String(username).trim();
 
-    // Check username uniqueness FIRST (before inserting)
     if (await isUsernameTaken(cleanUsername)) {
       return res.status(409).json({
-        success: false,
-        usernameTaken: true,
+        success: false, usernameTaken: true,
         message: "That username is already taken. Please choose another.",
       });
     }
@@ -567,24 +507,15 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
 
     if (existing.rows.length) {
       const user = existing.rows[0];
-
       if (user.password_hash) {
         return res.status(409).json({
-          success: false,
-          alreadyRegistered: true,
+          success: false, alreadyRegistered: true,
           message: "An account with this email already exists. Please sign in instead.",
         });
       }
-
-      // Email exists but no password yet — update username & resend code
-      await pool.query(
-        `UPDATE app.users SET username = $1 WHERE id = $2`,
-        [cleanUsername, user.id]
-      );
-
+      await pool.query(`UPDATE app.users SET username = $1 WHERE id = $2`, [cleanUsername, user.id]);
       const code = generateCode();
       const codeHash = await hashCode(code);
-
       await pool.query(
         `UPDATE app.email_codes SET used = TRUE WHERE email = $1 AND type = 'verify' AND used = FALSE`,
         [normalized]
@@ -594,40 +525,31 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
          VALUES ($1, $2, 'verify', NOW() + INTERVAL '10 minutes')`,
         [normalized, codeHash]
       );
-
       const emailSent = await sendEmail({
         to: normalized,
         subject: "Your NIVA verification code",
         html: verificationEmailHTML(code, cleanUsername),
       });
-
       if (!emailSent) {
         return res.status(503).json({
           success: false,
           message: "We couldn't send your verification email right now. Please try again later.",
         });
       }
-
       return res.status(200).json({
-        success: true,
-        requiresVerification: true,
-        email: normalized,
-        username: cleanUsername,
+        success: true, requiresVerification: true, email: normalized, username: cleanUsername,
         message: "A verification code has been sent to your email.",
       });
     }
 
-    // New user
     const result = await pool.query(
       `INSERT INTO app.users (email, username, password_hash, email_verified)
-       VALUES ($1, $2, NULL, FALSE)
-       RETURNING id, email, username`,
+       VALUES ($1, $2, NULL, FALSE) RETURNING id, email, username`,
       [normalized, cleanUsername]
     );
 
     const code = generateCode();
     const codeHash = await hashCode(code);
-
     await pool.query(
       `INSERT INTO app.email_codes (email, code_hash, type, expires_at)
        VALUES ($1, $2, 'verify', NOW() + INTERVAL '10 minutes')`,
@@ -639,35 +561,28 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
       subject: "Your NIVA verification code",
       html: verificationEmailHTML(code, cleanUsername),
     });
-
     if (!emailSent) {
       return res.status(503).json({
         success: false,
         message: "We couldn't send your verification email right now. Please try again later.",
       });
     }
-
     res.status(201).json({
       success: true,
       message: "Verification code sent. Check your email.",
-      requiresVerification: true,
-      email: normalized,
-      username: cleanUsername,
+      requiresVerification: true, email: normalized, username: cleanUsername,
       userId: String(result.rows[0].id),
     });
   } catch (err) {
-    // Unique constraint on username (race condition)
     if (err.code === "23505" && String(err.constraint || "").includes("username")) {
       return res.status(409).json({
-        success: false,
-        usernameTaken: true,
+        success: false, usernameTaken: true,
         message: "That username is already taken. Please choose another.",
       });
     }
     if (err.code === "23505") {
       return res.status(409).json({
-        success: false,
-        alreadyRegistered: true,
+        success: false, alreadyRegistered: true,
         message: "An account with this email already exists. Please sign in instead.",
       });
     }
@@ -682,40 +597,32 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid email or code." });
     }
     const normalized = normalizeEmail(email);
-
     const result = await pool.query(
       `SELECT id, code_hash, expires_at FROM app.email_codes
        WHERE email = $1 AND type = 'verify' AND used = FALSE
        ORDER BY created_at DESC LIMIT 1`,
       [normalized]
     );
-
     if (!result.rows.length) {
       return res.status(400).json({ success: false, message: "No active verification code. Please request a new one." });
     }
-
     const record = result.rows[0];
     if (new Date(record.expires_at) < new Date()) {
       return res.status(400).json({ success: false, message: "Code expired. Please request a new one." });
     }
-
     const match = await verifyCode(record.code_hash, String(code));
     if (!match) {
       return res.status(400).json({ success: false, message: "Incorrect code. Please check and try again." });
     }
-
     await pool.query(`UPDATE app.email_codes SET used = TRUE WHERE id = $1`, [record.id]);
-
     const userResult = await pool.query(
       `UPDATE app.users SET email_verified = TRUE WHERE email = $1
        RETURNING id, email, username, password_hash, created_at`,
       [normalized]
     );
-
     if (!userResult.rows.length) {
       return res.status(400).json({ success: false, message: "Account not found." });
     }
-
     const user = userResult.rows[0];
     const hasPassword = Boolean(user.password_hash);
 
@@ -725,30 +632,18 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
       req.session.userEmail = user.email;
       req.session.userName = user.username || null;
       await saveSession(req);
-
       return res.json({
-        success: true,
-        verified: true,
-        hasPassword: true,
-        authenticated: true,
+        success: true, verified: true, hasPassword: true, authenticated: true,
         message: "Email verified. Welcome to NIVA.",
         user: {
-          id: String(user.id),
-          email: user.email,
-          username: user.username || null,
-          displayName: user.username || (user.email.split("@")[0]),
-          createdAt: user.created_at,
+          id: String(user.id), email: user.email, username: user.username || null,
+          displayName: user.username || (user.email.split("@")[0]), createdAt: user.created_at,
         },
       });
     }
-
     res.json({
-      success: true,
-      verified: true,
-      hasPassword: false,
-      authenticated: false,
-      email: user.email,
-      username: user.username || null,
+      success: true, verified: true, hasPassword: false, authenticated: false,
+      email: user.email, username: user.username || null,
       message: "Email verified. Now set your password.",
     });
   } catch (err) { next(err); }
@@ -757,57 +652,35 @@ app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
 app.post("/api/auth/set-password", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
-
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ success: false, message: "Invalid email." });
-    }
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Invalid email." });
     if (!isValidPassword(password)) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be between 8 and 128 characters.",
-      });
+      return res.status(400).json({ success: false, message: "Password must be between 8 and 128 characters." });
     }
-
     const normalized = normalizeEmail(email);
-
     const result = await pool.query(
       `SELECT id, email, username, password_hash, email_verified FROM app.users WHERE email = $1 LIMIT 1`,
       [normalized]
     );
-
-    if (!result.rows.length) {
-      return res.status(400).json({ success: false, message: "Account not found." });
-    }
-
+    if (!result.rows.length) return res.status(400).json({ success: false, message: "Account not found." });
     const user = result.rows[0];
-
     if (!user.email_verified) {
       return res.status(400).json({ success: false, message: "Please verify your email first." });
     }
-
     if (user.password_hash) {
       return res.status(400).json({ success: false, message: "Password is already set. Please sign in." });
     }
-
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
-
     await pool.query(`UPDATE app.users SET password_hash = $1 WHERE id = $2`, [passwordHash, user.id]);
-
     await regenerateSession(req);
     req.session.userId = String(user.id);
     req.session.userEmail = user.email;
     req.session.userName = user.username || null;
     await saveSession(req);
-
     res.json({
-      success: true,
-      message: "Password set. Welcome to NIVA.",
+      success: true, message: "Password set. Welcome to NIVA.",
       user: {
-        id: String(user.id),
-        email: user.email,
-        username: user.username || null,
-        displayName: user.username || (user.email.split("@")[0]),
-        createdAt: user.created_at,
+        id: String(user.id), email: user.email, username: user.username || null,
+        displayName: user.username || (user.email.split("@")[0]), createdAt: user.created_at,
       },
     });
   } catch (err) { next(err); }
@@ -816,12 +689,9 @@ app.post("/api/auth/set-password", authLimiter, async (req, res, next) => {
 app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
   try {
     const { email, purpose } = req.body || {};
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ success: false, message: "Invalid email." });
-    }
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Invalid email." });
     const normalized = normalizeEmail(email);
     const codeType = purpose === "reset" ? "reset" : "verify";
-
     const userCheck = await pool.query(
       `SELECT id, username, email_verified, password_hash FROM app.users WHERE email = $1`,
       [normalized]
@@ -829,16 +699,12 @@ app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
     if (!userCheck.rows.length) {
       return res.status(404).json({ success: false, message: "No account with this email." });
     }
-
     const username = userCheck.rows[0].username || null;
-
     if (codeType === "verify" && userCheck.rows[0].email_verified) {
       return res.status(400).json({ success: false, message: "This email is already verified." });
     }
-
     const code = generateCode();
     const codeHash = await hashCode(code);
-
     await pool.query(
       `UPDATE app.email_codes SET used = TRUE WHERE email = $1 AND type = $2 AND used = FALSE`,
       [normalized, codeType]
@@ -848,22 +714,17 @@ app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
        VALUES ($1, $2, $3, NOW() + INTERVAL '15 minutes')`,
       [normalized, codeHash, codeType]
     );
-
     const emailSent = await sendEmail({
       to: normalized,
       subject: codeType === "reset" ? "Reset your NIVA password" : "Your new NIVA verification code",
-      html: codeType === "reset"
-        ? resetEmailHTML(code, username)
-        : verificationEmailHTML(code, username),
+      html: codeType === "reset" ? resetEmailHTML(code, username) : verificationEmailHTML(code, username),
     });
-
     if (!emailSent) {
       return res.status(503).json({
         success: false,
         message: "We couldn't send your email right now. Please try again later.",
       });
     }
-
     return res.json({ success: true, message: "New code sent." });
   } catch (err) { next(err); }
 });
@@ -871,19 +732,15 @@ app.post("/api/auth/resend-code", authLimiter, async (req, res, next) => {
 app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
-
-    // Allow login with email OR username
     if (typeof email !== "string" || !email.trim()) {
       return res.status(400).json({ success: false, message: "Please enter your email or username." });
     }
     if (typeof password !== "string" || password.length === 0 || password.length > 128) {
       return res.status(400).json({ success: false, message: "Please enter your password." });
     }
-
     const identifier = email.trim();
     const isEmail = identifier.includes("@");
     let result;
-
     if (isEmail) {
       result = await pool.query(
         `SELECT id, email, username, password_hash, email_verified, created_at
@@ -897,34 +754,24 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
         [normalizeUsername(identifier)]
       );
     }
-
     const user = result.rows[0];
-
     if (!user) {
       return res.status(401).json({ success: false, message: "Incorrect email/username or password." });
     }
-
     if (!user.password_hash) {
       return res.status(403).json({
-        success: false,
-        needsPasswordSetup: true,
-        needsVerification: !user.email_verified,
-        email: user.email,
-        username: user.username || null,
+        success: false, needsPasswordSetup: true, needsVerification: !user.email_verified,
+        email: user.email, username: user.username || null,
         message: user.email_verified
           ? "Your account has no password yet. Please set a password."
           : "Please verify your email first.",
       });
     }
-
     let match = false;
-    try { match = await argon2.verify(user.password_hash, password); }
-    catch { match = false; }
-
+    try { match = await argon2.verify(user.password_hash, password); } catch { match = false; }
     if (!match) {
       return res.status(401).json({ success: false, message: "Incorrect email/username or password." });
     }
-
     if (!user.email_verified) {
       const code = generateCode();
       const codeHash = await hashCode(code);
@@ -937,43 +784,32 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
          VALUES ($1, $2, 'verify', NOW() + INTERVAL '10 minutes')`,
         [user.email, codeHash]
       );
-
       const emailSent = await sendEmail({
         to: user.email,
         subject: "Your NIVA verification code",
         html: verificationEmailHTML(code, user.username || null),
       });
-
       if (!emailSent) {
         return res.status(503).json({
           success: false,
           message: "We couldn't send your verification email right now. Please try again later.",
         });
       }
-
       return res.status(403).json({
-        success: false,
-        needsVerification: true,
-        email: user.email,
+        success: false, needsVerification: true, email: user.email,
         message: "Please verify your email first. A new code has been sent.",
       });
     }
-
     await regenerateSession(req);
     req.session.userId = String(user.id);
     req.session.userEmail = user.email;
     req.session.userName = user.username || null;
     await saveSession(req);
-
     res.json({
-      success: true,
-      message: "Login successful.",
+      success: true, message: "Login successful.",
       user: {
-        id: String(user.id),
-        email: user.email,
-        username: user.username || null,
-        displayName: user.username || (user.email.split("@")[0]),
-        createdAt: user.created_at,
+        id: String(user.id), email: user.email, username: user.username || null,
+        displayName: user.username || (user.email.split("@")[0]), createdAt: user.created_at,
       },
     });
   } catch (err) { next(err); }
@@ -985,12 +821,9 @@ app.get("/api/auth/me", (req, res) => {
   }
   const username = req.session.userName || null;
   res.json({
-    success: true,
-    authenticated: true,
+    success: true, authenticated: true,
     user: {
-      id: req.session.userId,
-      email: req.session.userEmail,
-      username: username,
+      id: req.session.userId, email: req.session.userEmail, username,
       displayName: username || (req.session.userEmail ? req.session.userEmail.split("@")[0] : "friend"),
     },
   });
@@ -1007,21 +840,15 @@ app.post("/api/auth/logout", async (req, res, next) => {
 app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
   try {
     const { email } = req.body || {};
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ success: false, message: "Invalid email." });
-    }
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Invalid email." });
     const normalized = normalizeEmail(email);
-
     const userCheck = await pool.query(`SELECT id, username FROM app.users WHERE email = $1`, [normalized]);
     if (!userCheck.rows.length) {
       return res.json({ success: true, message: "If an account exists, a reset code has been sent." });
     }
-
     const username = userCheck.rows[0].username || null;
-
     const code = generateCode();
     const codeHash = await hashCode(code);
-
     await pool.query(
       `UPDATE app.email_codes SET used = TRUE WHERE email = $1 AND type = 'reset' AND used = FALSE`,
       [normalized]
@@ -1031,20 +858,16 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
        VALUES ($1, $2, 'reset', NOW() + INTERVAL '15 minutes')`,
       [normalized, codeHash]
     );
-
     const emailSent = await sendEmail({
-      to: normalized,
-      subject: "Reset your NIVA password",
+      to: normalized, subject: "Reset your NIVA password",
       html: resetEmailHTML(code, username),
     });
-
     if (!emailSent) {
       return res.status(503).json({
         success: false,
         message: "We couldn't send your email right now. Please try again later.",
       });
     }
-
     return res.json({ success: true, message: "If an account exists, a reset code has been sent." });
   } catch (err) { next(err); }
 });
@@ -1056,59 +879,39 @@ app.post("/api/auth/verify-reset-code", authLimiter, async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid email or code." });
     }
     const normalized = normalizeEmail(email);
-
     const result = await pool.query(
       `SELECT id, code_hash, expires_at FROM app.email_codes
        WHERE email = $1 AND type = 'reset' AND used = FALSE
        ORDER BY created_at DESC LIMIT 1`,
       [normalized]
     );
-
     if (!result.rows.length) {
       return res.status(400).json({ success: false, message: "No active reset code. Please request a new one." });
     }
-
     const record = result.rows[0];
     if (new Date(record.expires_at) < new Date()) {
       return res.status(400).json({ success: false, message: "Code expired. Please request a new one." });
     }
-
     const match = await verifyCode(record.code_hash, String(code));
     if (!match) {
       return res.status(400).json({ success: false, message: "Incorrect code. Please check and try again." });
     }
-
     await pool.query(`UPDATE app.email_codes SET used = TRUE WHERE id = $1`, [record.id]);
-
     req.session.resetEmail = normalized;
     req.session.resetVerifiedAt = Date.now();
     await saveSession(req);
-
-    res.json({
-      success: true,
-      verified: true,
-      email: normalized,
-      message: "Code verified. Now set your new password.",
-    });
+    res.json({ success: true, verified: true, email: normalized, message: "Code verified. Now set your new password." });
   } catch (err) { next(err); }
 });
 
 app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
-
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ success: false, message: "Invalid email." });
-    }
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Invalid email." });
     if (!isValidPassword(password)) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be between 8 and 128 characters.",
-      });
+      return res.status(400).json({ success: false, message: "Password must be between 8 and 128 characters." });
     }
-
     const normalized = normalizeEmail(email);
-
     if (
       req.session?.resetEmail !== normalized ||
       !req.session?.resetVerifiedAt ||
@@ -1119,22 +922,15 @@ app.post("/api/auth/reset-password", authLimiter, async (req, res, next) => {
         message: "Reset session expired. Please verify the code again.",
       });
     }
-
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
-
     const result = await pool.query(
       `UPDATE app.users SET password_hash = $1 WHERE email = $2 RETURNING id, email, username`,
       [passwordHash, normalized]
     );
-
-    if (!result.rows.length) {
-      return res.status(400).json({ success: false, message: "Account not found." });
-    }
-
+    if (!result.rows.length) return res.status(400).json({ success: false, message: "Account not found." });
     delete req.session.resetEmail;
     delete req.session.resetVerifiedAt;
     await saveSession(req);
-
     res.json({ success: true, message: "Password reset successful. You can now sign in." });
   } catch (err) { next(err); }
 });
@@ -1145,22 +941,17 @@ app.get("/api/account", requireAuthenticated, async (req, res, next) => {
       `SELECT id, email, username, created_at FROM app.users WHERE id = $1 LIMIT 1`,
       [req.session.userId]
     );
-
     if (!result.rows.length) {
       await destroySession(req);
       clearSessionCookie(res);
       return res.status(401).json({ success: false, message: "Please log in again." });
     }
-
     const user = result.rows[0];
     res.json({
       success: true,
       user: {
-        id: String(user.id),
-        email: user.email,
-        username: user.username || null,
-        displayName: user.username || user.email.split("@")[0],
-        createdAt: user.created_at,
+        id: String(user.id), email: user.email, username: user.username || null,
+        displayName: user.username || user.email.split("@")[0], createdAt: user.created_at,
       },
     });
   } catch (err) { next(err); }
@@ -1169,13 +960,8 @@ app.get("/api/account", requireAuthenticated, async (req, res, next) => {
 /* ---------- 14. GIFT STORAGE ---------- */
 
 const ALLOWED_TEMPLATE_IDS = new Set([
-  "eternal-love",
-  "love-proposal",
-  "birthday-magic",
-  "loveletter",
-  "eternal-anniversary",
-  "besties",
-  "memory-box",
+  "eternal-love", "love-proposal", "birthday-magic", "loveletter",
+  "eternal-anniversary", "besties", "memory-box",
 ]);
 
 const TEMPLATE_PRICES = {
@@ -1196,95 +982,164 @@ function isValidPublicId(value) {
 
 function validateEncryptedEnvelope(envelope) {
   if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) return false;
-
-  if (envelope.version !== 1 ||
-      envelope.kdf !== "PBKDF2-SHA-256" ||
-      envelope.iterations !== 310000) {
-    return false;
-  }
-
+  if (envelope.version !== 1 || envelope.kdf !== "PBKDF2-SHA-256" || envelope.iterations !== 310000) return false;
   const b64 = /^[A-Za-z0-9+/]+={0,2}$/;
   if (typeof envelope.salt !== "string" || !b64.test(envelope.salt) ||
       typeof envelope.iv !== "string" || !b64.test(envelope.iv) ||
       typeof envelope.ciphertext !== "string" || !b64.test(envelope.ciphertext)) {
     return false;
   }
-
   try {
     const salt = Buffer.from(envelope.salt, "base64");
     const iv = Buffer.from(envelope.iv, "base64");
     const ciphertext = Buffer.from(envelope.ciphertext, "base64");
-
     if (salt.length !== 16 || iv.length !== 12 ||
         ciphertext.length < 17 || ciphertext.length > MAX_ENVELOPE_BYTES) {
       return false;
     }
-
     return salt.toString("base64") === envelope.salt &&
            iv.toString("base64") === envelope.iv &&
            ciphertext.toString("base64") === envelope.ciphertext;
   } catch { return false; }
 }
 
+/* =========================================================
+   ⚠️  CRITICAL PAYMENT GATE ⚠️
+   This is the ONLY endpoint that creates gift links.
+   It requires:
+     1) orderId referencing an app.payments row
+     2) that row has status = 'paid'
+     3) that row belongs to the current user
+     4) that row's template_id matches the requested template
+     5) that row's amount_inr matches the fixed price
+     6) that row hasn't already been consumed (one gift per payment)
+   
+   If ANY check fails → gift link is NOT generated.
+   ========================================================= */
 app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
+  const client = await pool.connect();
   try {
     const { templateId, envelope, orderId } = req.body || {};
 
+    // 1. Template must be valid
     if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
       return res.status(400).json({ success: false, message: "Unsupported gift template." });
     }
 
+    // 2. Encrypted envelope must be well-formed
     if (!validateEncryptedEnvelope(envelope)) {
       return res.status(400).json({ success: false, message: "Invalid encrypted gift payload." });
     }
 
-    const expectedPrice = TEMPLATE_PRICES[templateId] ?? 299;
-
-    if (orderId) {
-      const payCheck = await pool.query(
-        `SELECT id, amount_inr FROM app.payments
-         WHERE provider_order_id = $1 AND user_id = $2 AND status = 'paid' LIMIT 1`,
-        [orderId, req.session.userId]
-      );
-      if (!payCheck.rows.length) {
-        return res.status(402).json({
-          success: false,
-          message: "Payment not confirmed for this order.",
-        });
-      }
-      if (Number(payCheck.rows[0].amount_inr) !== expectedPrice) {
-        return res.status(402).json({
-          success: false,
-          message: `Paid amount does not match template price ₹${expectedPrice}.`,
-        });
-      }
+    // 3. orderId is REQUIRED — no payment = no gift link
+    if (!orderId || typeof orderId !== "string") {
+      return res.status(402).json({
+        success: false,
+        code: "PAYMENT_REQUIRED",
+        message: "Payment is required before generating a gift link.",
+      });
     }
 
+    const expectedPrice = TEMPLATE_PRICES[templateId];
+    if (!expectedPrice) {
+      return res.status(400).json({ success: false, message: "Unknown template price." });
+    }
+
+    await client.query("BEGIN");
+
+    // 4. Lock the payment row and verify everything
+    const payResult = await client.query(
+      `SELECT id, amount_inr, status, template_id, consumed, user_id
+       FROM app.payments
+       WHERE provider_order_id = $1 AND user_id = $2
+       FOR UPDATE`,
+      [orderId, req.session.userId]
+    );
+
+    if (!payResult.rows.length) {
+      await client.query("ROLLBACK");
+      return res.status(402).json({
+        success: false,
+        code: "PAYMENT_NOT_FOUND",
+        message: "No payment found for this order. Please pay first.",
+      });
+    }
+
+    const pay = payResult.rows[0];
+
+    if (pay.status !== "paid") {
+      await client.query("ROLLBACK");
+      return res.status(402).json({
+        success: false,
+        code: "PAYMENT_NOT_PAID",
+        message: "Payment has not been completed. Please complete payment first.",
+      });
+    }
+
+    if (pay.consumed) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({
+        success: false,
+        code: "PAYMENT_ALREADY_USED",
+        message: "This payment has already been used to create a gift. Please make a new payment.",
+      });
+    }
+
+    if (Number(pay.amount_inr) !== expectedPrice) {
+      await client.query("ROLLBACK");
+      return res.status(402).json({
+        success: false,
+        code: "AMOUNT_MISMATCH",
+        message: `Paid amount ₹${pay.amount_inr} does not match template price ₹${expectedPrice}.`,
+      });
+    }
+
+    if (pay.template_id && pay.template_id !== templateId) {
+      await client.query("ROLLBACK");
+      return res.status(402).json({
+        success: false,
+        code: "TEMPLATE_MISMATCH",
+        message: `Payment was made for template "${pay.template_id}" but gift is for "${templateId}".`,
+      });
+    }
+
+    // 5. Mark payment as consumed (single-use)
+    await client.query(
+      `UPDATE app.payments SET consumed = TRUE WHERE id = $1`,
+      [pay.id]
+    );
+
+    // 6. Build the encrypted payload
     const encryptedPayload = Buffer.from(JSON.stringify(envelope), "utf8");
     if (encryptedPayload.length > MAX_ENVELOPE_BYTES) {
+      await client.query("ROLLBACK");
       return res.status(413).json({ success: false, message: "The encrypted gift is too large." });
     }
 
+    // 7. Generate the public ID (THE GIFT LINK)
     const publicId = crypto.randomBytes(24).toString("base64url");
 
-    const result = await pool.query(
+    const result = await client.query(
       `INSERT INTO app.gifts
         (owner_user_id, public_id, template_id, status,
          encrypted_payload, gift_password_hash,
          created_at, updated_at, published_at,
-         paid, amount_inr, published)
+         paid, amount_inr, payment_id, published)
        VALUES ($1, $2, $3, 'published', $4, NULL, NOW(), NOW(), NOW(),
-               TRUE, $5, TRUE)
+               TRUE, $5, $6, TRUE)
        RETURNING public_id, template_id, status, created_at`,
-      [req.session.userId, publicId, templateId, encryptedPayload, expectedPrice]
+      [req.session.userId, publicId, templateId, encryptedPayload, expectedPrice, pay.id]
     );
 
     const gift = result.rows[0];
 
-    await pool.query(
+    // 8. Clear the draft — the gift is now real
+    await client.query(
       `DELETE FROM app.drafts WHERE user_id = $1 AND template_id = $2`,
       [req.session.userId, templateId]
     );
+
+    await client.query("COMMIT");
 
     res.status(201).json({
       success: true,
@@ -1296,17 +1151,20 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
         url: "/g/" + gift.public_id,
       },
     });
-  } catch (err) { next(err); }
+  } catch (err) {
+    try { await client.query("ROLLBACK"); } catch {}
+    next(err);
+  } finally {
+    client.release();
+  }
 });
 
 app.get("/api/gifts/:publicId", giftFetchLimiter, async (req, res, next) => {
   try {
     const { publicId } = req.params;
-
     if (!isValidPublicId(publicId)) {
       return res.status(404).json({ success: false, message: "Gift not found." });
     }
-
     const result = await pool.query(
       `SELECT template_id, encrypted_payload
        FROM app.gifts
@@ -1314,23 +1172,17 @@ app.get("/api/gifts/:publicId", giftFetchLimiter, async (req, res, next) => {
        LIMIT 1`,
       [publicId]
     );
-
     if (!result.rows.length || !result.rows[0].encrypted_payload) {
       return res.status(404).json({ success: false, message: "Gift not found." });
     }
-
     let envelope;
     try {
       envelope = JSON.parse(Buffer.from(result.rows[0].encrypted_payload).toString("utf8"));
     } catch {
       return res.status(500).json({ success: false, message: "Gift data unavailable." });
     }
-
     res.set("Cache-Control", "no-store");
-    res.json({
-      success: true,
-      gift: { templateId: result.rows[0].template_id, envelope },
-    });
+    res.json({ success: true, gift: { templateId: result.rows[0].template_id, envelope } });
   } catch (err) { next(err); }
 });
 
@@ -1340,16 +1192,13 @@ app.delete("/api/gifts/:publicId", requireAuthenticated, async (req, res, next) 
     if (!isValidPublicId(publicId)) {
       return res.status(404).json({ success: false, message: "Gift not found." });
     }
-
     const result = await pool.query(
       `DELETE FROM app.gifts WHERE public_id = $1 AND owner_user_id = $2 RETURNING public_id`,
       [publicId, req.session.userId]
     );
-
     if (!result.rows.length) {
       return res.status(404).json({ success: false, message: "Gift not found or not yours." });
     }
-
     res.json({ success: true, message: "Gift deleted.", publicId });
   } catch (err) { next(err); }
 });
@@ -1358,22 +1207,15 @@ app.get("/api/gifts", requireAuthenticated, async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT public_id, template_id, status, created_at, paid
-       FROM app.gifts
-       WHERE owner_user_id = $1
-       ORDER BY created_at DESC
-       LIMIT 100`,
+       FROM app.gifts WHERE owner_user_id = $1
+       ORDER BY created_at DESC LIMIT 100`,
       [req.session.userId]
     );
-
     res.json({
       success: true,
       gifts: result.rows.map(g => ({
-        publicId: g.public_id,
-        templateId: g.template_id,
-        status: g.status,
-        paid: g.paid,
-        createdAt: g.created_at,
-        url: "/g/" + g.public_id,
+        publicId: g.public_id, templateId: g.template_id, status: g.status,
+        paid: g.paid, createdAt: g.created_at, url: "/g/" + g.public_id,
       })),
     });
   } catch (err) { next(err); }
@@ -1388,15 +1230,11 @@ app.get("/api/drafts", requireAuthenticated, async (req, res, next) => {
        ORDER BY updated_at DESC LIMIT 100`,
       [req.session.userId]
     );
-
     res.json({
       success: true,
       drafts: result.rows.map(d => ({
-        id: d.id,
-        templateId: d.template_id,
-        data: d.data,
-        updatedAt: d.updated_at,
-        createdAt: d.created_at,
+        id: d.id, templateId: d.template_id, data: d.data,
+        updatedAt: d.updated_at, createdAt: d.created_at,
       })),
     });
   } catch (err) { next(err); }
@@ -1413,9 +1251,7 @@ app.get("/api/drafts/:templateId", requireAuthenticated, async (req, res, next) 
        WHERE user_id = $1 AND template_id = $2 LIMIT 1`,
       [req.session.userId, templateId]
     );
-    if (!result.rows.length) {
-      return res.json({ success: true, draft: null });
-    }
+    if (!result.rows.length) return res.json({ success: true, draft: null });
     const d = result.rows[0];
     res.json({
       success: true,
@@ -1433,12 +1269,10 @@ app.post("/api/drafts", requireAuthenticated, async (req, res, next) => {
     if (!data || typeof data !== "object") {
       return res.status(400).json({ success: false, message: "Draft data must be an object." });
     }
-
     const json = JSON.stringify(data);
     if (Buffer.byteLength(json, "utf8") > 5 * 1024 * 1024) {
       return res.status(413).json({ success: false, message: "Draft is too large (max 5 MB)." });
     }
-
     const result = await pool.query(
       `INSERT INTO app.drafts (user_id, template_id, data, updated_at)
        VALUES ($1, $2, $3::jsonb, NOW())
@@ -1447,7 +1281,6 @@ app.post("/api/drafts", requireAuthenticated, async (req, res, next) => {
        RETURNING id, template_id, data, updated_at`,
       [req.session.userId, templateId, json]
     );
-
     const d = result.rows[0];
     res.json({
       success: true,
@@ -1477,10 +1310,7 @@ app.get("/api/wishlist", requireAuthenticated, async (req, res, next) => {
     );
     res.json({
       success: true,
-      wishlist: result.rows.map(w => ({
-        templateId: w.template_id,
-        createdAt: w.created_at,
-      })),
+      wishlist: result.rows.map(w => ({ templateId: w.template_id, createdAt: w.created_at })),
     });
   } catch (err) { next(err); }
 });
@@ -1518,7 +1348,6 @@ app.get("/api/stats", async (req, res) => {
       pool.query(`SELECT COUNT(*)::int AS count FROM app.gifts WHERE published = TRUE`),
       pool.query(`SELECT COUNT(*)::int AS count FROM app.users`),
     ]);
-
     res.json({
       success: true,
       templates: ALLOWED_TEMPLATE_IDS.size,
@@ -1528,11 +1357,8 @@ app.get("/api/stats", async (req, res) => {
     });
   } catch (err) {
     res.json({
-      success: true,
-      templates: ALLOWED_TEMPLATE_IDS.size,
-      giftsSent: 0,
-      happyRecipients: 0,
-      uptime: 99,
+      success: true, templates: ALLOWED_TEMPLATE_IDS.size,
+      giftsSent: 0, happyRecipients: 0, uptime: 99,
     });
   }
 });
@@ -1541,23 +1367,16 @@ app.get("/api/stats", async (req, res) => {
 app.get("/api/reviews", async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT r.id, r.name, r.role, r.stars, r.text, r.tag, r.created_at,
-              u.username
+      `SELECT r.id, r.name, r.role, r.stars, r.text, r.tag, r.created_at, u.username
        FROM app.reviews r
        LEFT JOIN app.users u ON u.id = r.user_id
        ORDER BY r.created_at DESC LIMIT 30`
     );
-
     res.json({
       success: true,
       reviews: result.rows.map((r, i) => ({
-        id: r.id,
-        name: r.username || r.name,
-        role: r.role,
-        stars: r.stars,
-        text: r.text,
-        tag: r.tag,
-        avatarNum: (i % 6) + 1,
+        id: r.id, name: r.username || r.name, role: r.role, stars: r.stars,
+        text: r.text, tag: r.tag, avatarNum: (i % 6) + 1,
         date: new Date(r.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
       })),
     });
@@ -1569,14 +1388,12 @@ app.get("/api/reviews", async (req, res) => {
 app.post("/api/reviews", requireAuthenticated, async (req, res, next) => {
   try {
     const { stars, text } = req.body || {};
-
     if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
       return res.status(400).json({ success: false, message: "Rating must be between 1 and 5 stars." });
     }
     if (typeof text !== "string" || text.trim().length < 10 || text.length > 500) {
       return res.status(400).json({ success: false, message: "Review must be 10–500 characters." });
     }
-
     const existing = await pool.query(
       `SELECT id FROM app.reviews WHERE user_id = $1 LIMIT 1`,
       [req.session.userId]
@@ -1584,25 +1401,26 @@ app.post("/api/reviews", requireAuthenticated, async (req, res, next) => {
     if (existing.rows.length) {
       return res.status(409).json({ success: false, message: "You've already submitted a review." });
     }
-
     const userResult = await pool.query(
       `SELECT email, username FROM app.users WHERE id = $1 LIMIT 1`,
       [req.session.userId]
     );
     const user = userResult.rows[0] || {};
     const displayName = user.username || (user.email ? user.email.split("@")[0] : "A NIVA user");
-
     await pool.query(
       `INSERT INTO app.reviews (user_id, name, role, stars, text, tag)
        VALUES ($1, $2, 'Verified customer', $3, $4, 'NIVA gift')`,
       [req.session.userId, displayName, stars, text.trim()]
     );
-
     res.status(201).json({ success: true, message: "Review posted. Thank you!" });
   } catch (err) { next(err); }
 });
 
-/* ---------- 19. PAYMENTS ---------- */
+/* =========================================================
+   19. PAYMENTS — creates an order + confirms it as PAID.
+   No gift is created here. Gift creation happens ONLY in
+   /api/gifts above, which requires a paid, unconsumed order.
+   ========================================================= */
 let razorpay = null;
 try {
   if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
@@ -1625,23 +1443,21 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
     if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
       return res.status(400).json({ success: false, message: "Invalid template." });
     }
-
-    const amount = TEMPLATE_PRICES[templateId] ?? 299;
+    const amount = TEMPLATE_PRICES[templateId];
+    if (!amount) {
+      return res.status(400).json({ success: false, message: "Unknown template price." });
+    }
 
     if (!razorpay) {
       const orderId = "order_mock_" + crypto.randomBytes(8).toString("hex");
       await pool.query(
-        `INSERT INTO app.payments (user_id, amount_inr, status, provider, provider_order_id)
-         VALUES ($1, $2, 'pending', 'mock', $3)`,
-        [req.session.userId, amount, orderId]
+        `INSERT INTO app.payments (user_id, amount_inr, status, provider, provider_order_id, template_id)
+         VALUES ($1, $2, 'pending', 'mock', $3, $4)`,
+        [req.session.userId, amount, orderId, templateId]
       );
       return res.json({
-        success: true,
-        orderId,
-        amount,
-        currency: "INR",
-        templateId,
-        mock: true,
+        success: true, orderId, amount, currency: "INR",
+        templateId, mock: true,
       });
     }
 
@@ -1653,29 +1469,23 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
     });
 
     await pool.query(
-      `INSERT INTO app.payments (user_id, amount_inr, status, provider, provider_order_id)
-       VALUES ($1, $2, 'pending', 'razorpay', $3)`,
-      [req.session.userId, amount, order.id]
+      `INSERT INTO app.payments (user_id, amount_inr, status, provider, provider_order_id, template_id)
+       VALUES ($1, $2, 'pending', 'razorpay', $3, $4)`,
+      [req.session.userId, amount, order.id, templateId]
     );
 
     res.json({
-      success: true,
-      orderId: order.id,
-      amount,
-      currency: "INR",
-      templateId,
-      keyId: process.env.RAZORPAY_KEY_ID,
-      mock: false,
+      success: true, orderId: order.id, amount, currency: "INR",
+      templateId, keyId: process.env.RAZORPAY_KEY_ID, mock: false,
     });
   } catch (err) { next(err); }
 });
 
+/* Mock-mode confirm — marks order paid. */
 app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) => {
   try {
     const { orderId, paymentId } = req.body || {};
-    if (!orderId) {
-      return res.status(400).json({ success: false, message: "Missing order ID." });
-    }
+    if (!orderId) return res.status(400).json({ success: false, message: "Missing order ID." });
 
     const orderCheck = await pool.query(
       `SELECT provider FROM app.payments
@@ -1694,7 +1504,7 @@ app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) =
 
     const result = await pool.query(
       `UPDATE app.payments
-       SET status = 'paid', provider_payment_id = $1
+       SET status = 'paid', provider_payment_id = $1, paid_at = NOW()
        WHERE provider_order_id = $2 AND user_id = $3 AND status = 'pending'
        RETURNING id, amount_inr`,
       [paymentId || "mock_" + Date.now(), orderId, req.session.userId]
@@ -1703,160 +1513,39 @@ app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) =
     if (!result.rows.length) {
       return res.status(404).json({ success: false, message: "Order not found or already paid." });
     }
-
-    res.json({ success: true, message: "Payment confirmed.", amount: result.rows[0].amount_inr });
+    res.json({
+      success: true, message: "Payment confirmed.",
+      amount: result.rows[0].amount_inr,
+    });
   } catch (err) { next(err); }
 });
 
+/* Real Razorpay verify — verifies signature then marks paid. */
 app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) => {
   try {
     const { orderId, paymentId, signature } = req.body || {};
     if (!orderId || !paymentId || !signature) {
       return res.status(400).json({ success: false, message: "Missing payment details." });
     }
-
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${orderId}|${paymentId}`)
       .digest("hex");
-
     if (expectedSignature !== signature) {
       return res.status(400).json({ success: false, message: "Invalid payment signature." });
     }
-
     const result = await pool.query(
       `UPDATE app.payments
-       SET status = 'paid', provider_payment_id = $1
+       SET status = 'paid', provider_payment_id = $1, paid_at = NOW()
        WHERE provider_order_id = $2 AND user_id = $3 AND status = 'pending'
        RETURNING id, amount_inr`,
       [paymentId, orderId, req.session.userId]
     );
-
     if (!result.rows.length) {
       return res.status(404).json({ success: false, message: "Order not found." });
     }
-
     res.json({ success: true, message: "Payment verified.", amount: result.rows[0].amount_inr });
   } catch (err) { next(err); }
-});
-
-app.post("/api/gifts/publish", requireAuthenticated, async (req, res, next) => {
-  const client = await pool.connect();
-  try {
-    const { templateId, envelope, orderId, paymentId, signature } = req.body || {};
-
-    if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
-      return res.status(400).json({ success: false, message: "Unsupported gift template." });
-    }
-    if (!validateEncryptedEnvelope(envelope)) {
-      return res.status(400).json({ success: false, message: "Invalid encrypted gift payload." });
-    }
-    if (!orderId) {
-      return res.status(400).json({ success: false, message: "Missing payment order." });
-    }
-
-    const expectedPrice = TEMPLATE_PRICES[templateId] ?? 299;
-
-    await client.query("BEGIN");
-
-    const payResult = await client.query(
-      `SELECT id, amount_inr, status, provider
-       FROM app.payments
-       WHERE provider_order_id = $1 AND user_id = $2
-       FOR UPDATE`,
-      [orderId, req.session.userId]
-    );
-
-    if (!payResult.rows.length) {
-      await client.query("ROLLBACK");
-      return res.status(404).json({ success: false, message: "Payment order not found." });
-    }
-
-    const pay = payResult.rows[0];
-
-    if (pay.status !== "paid") {
-      if (pay.provider === "mock") {
-        await client.query(
-          `UPDATE app.payments
-           SET status = 'paid', provider_payment_id = $1
-           WHERE id = $2`,
-          [paymentId || "mock_" + Date.now(), pay.id]
-        );
-      } else {
-        if (!paymentId || !signature) {
-          await client.query("ROLLBACK");
-          return res.status(400).json({ success: false, message: "Missing payment details." });
-        }
-        const expectedSignature = crypto
-          .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-          .update(`${orderId}|${paymentId}`)
-          .digest("hex");
-        if (expectedSignature !== signature) {
-          await client.query("ROLLBACK");
-          return res.status(400).json({ success: false, message: "Invalid payment signature." });
-        }
-        await client.query(
-          `UPDATE app.payments
-           SET status = 'paid', provider_payment_id = $1
-           WHERE id = $2`,
-          [paymentId, pay.id]
-        );
-      }
-    }
-
-    if (Number(pay.amount_inr) !== expectedPrice) {
-      await client.query("ROLLBACK");
-      return res.status(402).json({
-        success: false,
-        message: `Paid amount ₹${pay.amount_inr} does not match template price ₹${expectedPrice}.`,
-      });
-    }
-
-    const encryptedPayload = Buffer.from(JSON.stringify(envelope), "utf8");
-    if (encryptedPayload.length > MAX_ENVELOPE_BYTES) {
-      await client.query("ROLLBACK");
-      return res.status(413).json({ success: false, message: "The encrypted gift is too large." });
-    }
-
-    const publicId = crypto.randomBytes(24).toString("base64url");
-
-    const giftResult = await client.query(
-      `INSERT INTO app.gifts
-        (owner_user_id, public_id, template_id, status,
-         encrypted_payload, gift_password_hash,
-         created_at, updated_at, published_at,
-         paid, amount_inr, published)
-       VALUES ($1, $2, $3, 'published', $4, NULL, NOW(), NOW(), NOW(),
-               TRUE, $5, TRUE)
-       RETURNING public_id, template_id, status, created_at`,
-      [req.session.userId, publicId, templateId, encryptedPayload, expectedPrice]
-    );
-
-    const gift = giftResult.rows[0];
-
-    await client.query(
-      `DELETE FROM app.drafts WHERE user_id = $1 AND template_id = $2`,
-      [req.session.userId, templateId]
-    );
-
-    await client.query("COMMIT");
-
-    res.status(201).json({
-      success: true,
-      gift: {
-        publicId: gift.public_id,
-        templateId: gift.template_id,
-        status: gift.status,
-        createdAt: gift.created_at,
-        url: "/g/" + gift.public_id,
-      },
-    });
-  } catch (err) {
-    try { await client.query("ROLLBACK"); } catch {}
-    next(err);
-  } finally {
-    client.release();
-  }
 });
 
 /* =========================================================
