@@ -1,0 +1,221 @@
+{
+  "id": "apologyletter",
+  "name": "Apology Letter",
+  "category": "letter",
+  "description": "A heartfelt multi-language apology letter with an opening envelope, handwritten typing animation, floating petals/rain, and theme + animation controls.",
+  "price": 39,
+  "currency": "INR",
+  "version": "1.0.0",
+  "active": true,
+  "templatePath": "/templates/letters/apologyletter/template.html",
+  "previewImage": "/templates/letters/apologyletter/preview.jpg",
+  "features": [
+    "Animated envelope opening",
+    "Handwritten typing animation for any language",
+    "Rain / petals / particle animation toggles",
+    "Light / dark theme + 6 colour palettes",
+    "Adjustable writing speed",
+    "Responsive on mobile and desktop"
+  ],
+  "templateLimits": {
+    "photoSlots": 0,
+    "note": "Text-only template. No photo uploads."
+  },
+  "customization": {
+    "language": {
+      "label": "Letter language",
+      "type": "select",
+      "default": "malayalam",
+      "required": true,
+      "options": [
+        { "value": "malayalam", "label": "Malayalam (മലയാളം)" },
+        { "value": "hindi",     "label": "Hindi (हिन्दी)" },
+        { "value": "english",   "label": "English" },
+        { "value": "kannada",   "label": "Kannada (ಕನ್ನಡ)" },
+        { "value": "tamil",     "label": "Tamil (தமிழ்)" },
+        { "value": "telugu",    "label": "Telugu (తెలుగు)" },
+        { "value": "bengali",   "label": "Bengali (বাংলা)" },
+        { "value": "marathi",   "label": "Marathi (मराठी)" },
+        { "value": "gujarati",  "label": "Gujarati (ગુજરાતી)" },
+        { "value": "punjabi",   "label": "Punjabi (ਪੰਜਾਬੀ)" }
+      ],
+      "help": "Picks the correct handwriting font and script direction for the letter."
+    },
+
+    "partnerName": {
+      "label": "Their name",
+      "type": "text",
+      "default": "എന്റെ പ്രിയപ്പെട്ടവൾ",
+      "required": true,
+      "maxLength": 60
+    },
+
+    "senderName": {
+      "label": "Your name / signature",
+      "type": "text",
+      "default": "നിനക്കായി ഈ കത്ത് എഴുതിയ ആൾ",
+      "required": true,
+      "maxLength": 80
+    },
+
+    "envelopeTitle": {
+      "label": "Envelope page title",
+      "type": "text",
+      "default": "എന്നോട് ക്ഷമിക്കുമോ?",
+      "required": true,
+      "maxLength": 100
+    },
+
+    "envelopeSubtitle": {
+      "label": "Envelope page subtitle",
+      "type": "text",
+      "default": "പറയാൻ ഒരുപാട് കാര്യങ്ങളുണ്ട്... അതെല്ലാം ഈ ചെറിയ കത്തിൽ എഴുതിയിട്ടുണ്ട്. ❤️",
+      "required": false,
+      "maxLength": 200
+    },
+
+    "openButtonText": {
+      "label": "Open button text",
+      "type": "text",
+      "default": "എന്റെ കത്ത് തുറക്കൂ 💌",
+      "required": false,
+      "maxLength": 60
+    },
+
+    "letterHeading": {
+      "label": "Letter page heading",
+      "type": "text",
+      "default": "എന്റെ ഹൃദയത്തിൽ നിന്ന്...",
+      "required": false,
+      "maxLength": 100
+    },
+
+    "letterEyebrow": {
+      "label": "Letter page small label",
+      "type": "text",
+      "default": "Every word comes from my heart",
+      "required": false,
+      "maxLength": 100
+    },
+
+    "paperTopLabel": {
+      "label": "Paper top label",
+      "type": "text",
+      "default": "♡ നിനക്കായി എഴുതിയ ഒരു കത്ത് ♡",
+      "required": false,
+      "maxLength": 100
+    },
+
+    "letterBody": {
+      "label": "Letter body (your apology message)",
+      "type": "textarea",
+      "default": "എന്റെ പ്രിയപ്പെട്ടവളേ,\n\nനിന്നോട് കുറച്ച് കാര്യങ്ങൾ പറയാനുണ്ട്.\nഅതെല്ലാം എങ്ങനെ തുടങ്ങണമെന്ന് എനിക്കറിയില്ല.\nഎങ്കിലും എന്റെ മനസ്സിലുള്ളത് നിന്നോട് പറയണം.\n\nഎന്റെ വാക്കുകളോ പ്രവൃത്തികളോ നിന്നെ\nവിഷമിപ്പിച്ചിട്ടുണ്ടെങ്കിൽ എന്നോട് ക്ഷമിക്കണം.\nനിന്റെ മനസ്സ് വേദനിപ്പിക്കണമെന്ന്\nഞാൻ ഒരിക്കലും ആഗ്രഹിച്ചിട്ടില്ല.\n\nഎന്റെ ഭാഗത്തെ തെറ്റുകൾ മനസ്സിലാക്കി\nഅവ തിരുത്താൻ ഞാൻ ആഗ്രഹിക്കുന്നു.\nക്ഷമ ചോദിക്കുന്നത് മാത്രം പോരാ,\nഎന്റെ പ്രവൃത്തികളിലൂടെ അത് തെളിയിക്കാനും\nഞാൻ ശ്രമിക്കും.\n\nനിനക്ക് വിഷമമുണ്ടെങ്കിൽ അത് എന്നോട് പറയണം.\nനിന്റെ മനസ്സ് കേൾക്കാനും\nനിന്നെ മനസ്സിലാക്കാനും ഞാൻ തയ്യാറാണ്.\n\nസ്നേഹത്തോടെ,\nനിനക്കായി ഈ കത്ത് എഴുതിയ ആൾ. ❤️",
+      "required": true,
+      "maxLength": 4000
+    },
+
+    "signatureLine": {
+      "label": "Signature line",
+      "type": "text",
+      "default": "സ്നേഹത്തോടെ, നിന്റെ സ്വന്തം... ❤️",
+      "required": false,
+      "maxLength": 120
+    },
+
+    "endingText": {
+      "label": "Final closing paragraph",
+      "type": "textarea",
+      "default": "നിന്നെ വിഷമിപ്പിച്ചിട്ടുണ്ടെങ്കിൽ എന്നോട് ക്ഷമിക്കണം.\nഎന്റെ തെറ്റുകൾ മനസ്സിലാക്കി തിരുത്താൻ ഞാൻ ശ്രമിക്കും.\nനമുക്ക് പരസ്പരം മനസ്സിലാക്കി മുന്നോട്ട് പോകാം. ❤️",
+      "required": false,
+      "maxLength": 800
+    },
+
+    "themeMode": {
+      "label": "Theme mode",
+      "type": "select",
+      "default": "light",
+      "required": false,
+      "options": [
+        { "value": "light", "label": "Light (soft & warm)" },
+        { "value": "dark",  "label": "Dark (cosy & romantic)" }
+      ]
+    },
+
+    "colorPalette": {
+      "label": "Colour palette",
+      "type": "select",
+      "default": "rose-blush",
+      "required": false,
+      "options": [
+        { "value": "rose-blush",      "label": "Rose Blush (default)" },
+        { "value": "peach-cream",     "label": "Peach Cream" },
+        { "value": "lavender-dream",  "label": "Lavender Dream" },
+        { "value": "mint-breeze",     "label": "Mint Breeze" },
+        { "value": "midnight-rose",   "label": "Midnight Rose" },
+        { "value": "golden-amber",    "label": "Golden Amber" }
+      ]
+    },
+
+    "animationStyle": {
+      "label": "Background animation",
+      "type": "select",
+      "default": "petals",
+      "required": false,
+      "options": [
+        { "value": "petals", "label": "Floating petals & hearts" },
+        { "value": "rain",   "label": "Gentle rain" },
+        { "value": "both",   "label": "Petals + rain" },
+        { "value": "none",   "label": "None (calm)" }
+      ],
+      "help": "Choose the mood — petals for soft, rain for emotional."
+    },
+
+    "animationIntensity": {
+      "label": "Animation intensity",
+      "type": "select",
+      "default": "medium",
+      "required": false,
+      "options": [
+        { "value": "low",    "label": "Low (subtle)" },
+        { "value": "medium", "label": "Medium (balanced)" },
+        { "value": "high",   "label": "High (lively)" }
+      ]
+    },
+
+    "writingSpeed": {
+      "label": "Writing speed",
+      "type": "select",
+      "default": "normal",
+      "required": false,
+      "options": [
+        { "value": "slow",   "label": "Slow (romantic)" },
+        { "value": "normal", "label": "Normal" },
+        { "value": "fast",   "label": "Fast" },
+        { "value": "instant","label": "Instant (no typing)" }
+      ]
+    },
+
+    "showPen": {
+      "label": "Show pen animation",
+      "type": "boolean",
+      "default": true,
+      "required": false
+    }
+  },
+
+  "sections": [
+    { "title": "Language & names", "subtitle": "Who is this letter for?", "fields": ["language", "partnerName", "senderName"] },
+    { "title": "Envelope screen", "subtitle": "The first thing they see.", "fields": ["envelopeTitle", "envelopeSubtitle", "openButtonText"] },
+    { "title": "Letter content", "subtitle": "Your heartfelt apology.", "fields": ["letterEyebrow", "letterHeading", "paperTopLabel", "letterBody", "signatureLine", "endingText"] },
+    { "title": "Theme & colours", "subtitle": "Match the mood.", "fields": ["themeMode", "colorPalette"] },
+    { "title": "Animations", "subtitle": "Rain, petals, speed.", "fields": ["animationStyle", "animationIntensity", "writingSpeed", "showPen"] }
+  ],
+
+  "preview": {
+    "nameField": "partnerName",
+    "senderField": "senderName",
+    "messageField": "letterBody",
+    "themeField": "themeMode",
+    "paletteField": "colorPalette"
+  }
+}

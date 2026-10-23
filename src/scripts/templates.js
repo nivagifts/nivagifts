@@ -30,6 +30,14 @@ const NivaTemplates = (() => {
       id: "besties",
       configPath: "/templates/friedship/besties/config.json",
     },
+    {
+      id: "apologyletter",
+      configPath: "/templates/letters/apologyletter/config.json",
+    },
+    {
+      id: "memory-box",
+      configPath: "/templates/friedship/memory-box/config.json",
+    },
     // ▼▼▼ ADD NEW TEMPLATES BELOW ▼▼▼
   ];
 

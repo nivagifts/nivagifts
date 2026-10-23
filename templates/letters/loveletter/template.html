@@ -65,7 +65,6 @@ button {
   100% { transform: translateY(-115vh) rotate(35deg) scale(1.2); opacity: 0; }
 }
 
-/* INTRO SCREEN */
 .intro {
   position: fixed;
   inset: 0;
@@ -123,11 +122,7 @@ button {
 }
 
 .envelope::before,
-.envelope::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-}
+.envelope::after { content: ""; position: absolute; inset: 0; }
 
 .envelope::before {
   background: #e9a8bd;
@@ -194,11 +189,7 @@ button {
   transition: opacity .3s;
 }
 
-.envelope-wrap.opening .envelope::before {
-  transform: rotateX(180deg);
-  z-index: 1;
-}
-
+.envelope-wrap.opening .envelope::before { transform: rotateX(180deg); z-index: 1; }
 .envelope-wrap.opening .letter-peek { transform: translateY(-100px); }
 .envelope-wrap.opening .seal { opacity: 0; }
 
@@ -218,9 +209,7 @@ button {
   margin-bottom: 28px;
 }
 
-.open-btn,
-.next-btn,
-.back-btn {
+.open-btn, .next-btn, .back-btn {
   padding: 14px 27px;
   border-radius: 50px;
   background: linear-gradient(135deg, var(--pink), var(--deep-pink));
@@ -229,16 +218,13 @@ button {
   transition: transform .25s, box-shadow .25s;
 }
 
-.open-btn:hover,
-.next-btn:hover,
-.back-btn:hover {
+.open-btn:hover, .next-btn:hover, .back-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 13px 28px rgba(215,126,157,.35);
 }
 
 .open-btn span { margin-left: 8px; }
 
-/* MAIN LETTER */
 main {
   width: 100%;
   padding: 35px 16px 55px;
@@ -485,93 +471,12 @@ main {
   }
 }
 </style>
-
-<!-- THEME ENGINE -->
-<script>
-window.TEMPLATE_THEME = window.TEMPLATE_THEME || {
-  themeMode: "light",
-  colorPalette: "blush-pink"
-};
-
-(function applyTheme() {
-  const PALETTES = {
-    "blush-pink": {
-      light: { pink:"#e98ba8", deepPink:"#c95d82", softPink:"#fff0f4",
-               paper:"#fffaf0", ink:"#765464", rose:"#f5c8d4",
-               bg1:"#fff0f5", bg2:"#fce2e9", bg3:"#fff8f5" },
-      dark:  { pink:"#f5a8c2", deepPink:"#ff9dbf", softPink:"#2a1a22",
-               paper:"#22141b", ink:"#f0dae2", rose:"#3a2430",
-               bg1:"#1a1016", bg2:"#241620", bg3:"#0f0a0e" }
-    },
-    "rose-gold": {
-      light: { pink:"#e8a87c", deepPink:"#c97a4a", softPink:"#fde6d6",
-               paper:"#fffaf3", ink:"#5a4234", rose:"#f5d8c4",
-               bg1:"#fff3ea", bg2:"#fde6d6", bg3:"#fffaf3" },
-      dark:  { pink:"#f0b98c", deepPink:"#ffc79a", softPink:"#2a1e16",
-               paper:"#241916", ink:"#f5e4d6", rose:"#3a251c",
-               bg1:"#191210", bg2:"#241916", bg3:"#100a08" }
-    },
-    "lavender-dream": {
-      light: { pink:"#b9a6ef", deepPink:"#7c5cd6", softPink:"#ece7ff",
-               paper:"#faf8ff", ink:"#4a4266", rose:"#d4c8ff",
-               bg1:"#f3f0ff", bg2:"#ece7ff", bg3:"#faf8ff" },
-      dark:  { pink:"#c7b6ff", deepPink:"#b39dff", softPink:"#1e182b",
-               paper:"#161222", ink:"#e5ddff", rose:"#2c2342",
-               bg1:"#14101e", bg2:"#1e182b", bg3:"#0a0814" }
-    },
-    "peach-cream": {
-      light: { pink:"#f5a97c", deepPink:"#d97b4a", softPink:"#ffe6d2",
-               paper:"#fffaf3", ink:"#5a4432", rose:"#f5d4bc",
-               bg1:"#fff3e6", bg2:"#ffe6d2", bg3:"#fffaf3" },
-      dark:  { pink:"#ffbf94", deepPink:"#ffcba6", softPink:"#2a1e16",
-               paper:"#241b16", ink:"#f5e4d6", rose:"#3a2820",
-               bg1:"#1a1310", bg2:"#241b16", bg3:"#100a08" }
-    },
-    "mint-breeze": {
-      light: { pink:"#7fd3b8", deepPink:"#3aa88a", softPink:"#dff5ee",
-               paper:"#f5fdfa", ink:"#3a544c", rose:"#b8e8d8",
-               bg1:"#eafaf4", bg2:"#dff5ee", bg3:"#f5fdfa" },
-      dark:  { pink:"#8fe6c8", deepPink:"#a0f0d4", softPink:"#16241f",
-               paper:"#0f1a17", ink:"#dff5ec", rose:"#1f3a30",
-               bg1:"#0a1410", bg2:"#16241f", bg3:"#050c09" }
-    },
-    "midnight-rose": {
-      light: { pink:"#e87a9e", deepPink:"#b84670", softPink:"#fde4ec",
-               paper:"#fffafc", ink:"#4a2c3a", rose:"#f7c4d6",
-               bg1:"#ffe8ef", bg2:"#fde4ec", bg3:"#fff7fa" },
-      dark:  { pink:"#ff9dc0", deepPink:"#ffb0cc", softPink:"#20141b",
-               paper:"#160d12", ink:"#f5dce6", rose:"#38202b",
-               bg1:"#160d12", bg2:"#20141b", bg3:"#0a0608" }
-    }
-  };
-
-  const mode = window.TEMPLATE_THEME.themeMode === "dark" ? "dark" : "light";
-  const key = PALETTES[window.TEMPLATE_THEME.colorPalette]
-    ? window.TEMPLATE_THEME.colorPalette
-    : "blush-pink";
-  const v = PALETTES[key][mode];
-  const root = document.documentElement;
-
-  root.style.setProperty("--pink", v.pink);
-  root.style.setProperty("--deep-pink", v.deepPink);
-  root.style.setProperty("--soft-pink", v.softPink);
-  root.style.setProperty("--paper", v.paper);
-  root.style.setProperty("--ink", v.ink);
-  root.style.setProperty("--rose", v.rose);
-  root.style.setProperty("--bg-1", v.bg1);
-  root.style.setProperty("--bg-2", v.bg2);
-  root.style.setProperty("--bg-3", v.bg3);
-
-  root.setAttribute("data-theme", mode);
-})();
-</script>
 </head>
 
 <body>
 
 <div id="hearts"></div>
 
-<!-- OPENING ENVELOPE -->
 <section class="intro" id="intro">
   <div class="intro-content">
     <div class="intro-small">A little something from my heart</div>
@@ -586,7 +491,7 @@ window.TEMPLATE_THEME = window.TEMPLATE_THEME || {
     </div>
 
     <h1>A Letter For You</h1>
-    <p>Written with love, just for you...</p>
+    <p id="introSubtitle">Written with love, just for you...</p>
 
     <button class="open-btn" id="openBtn">
       Open your letter <span>♡</span>
@@ -594,12 +499,10 @@ window.TEMPLATE_THEME = window.TEMPLATE_THEME || {
   </div>
 </section>
 
-<!-- LETTER WEBSITE -->
 <main>
   <div class="top-label">A little piece of my heart</div>
 
   <article class="letter-card">
-    <!-- PAGE ONE -->
     <section class="page active" id="page1">
       <div class="page-number">PAGE ONE · THE BEGINNING</div>
       <div class="small-heart">♡</div>
@@ -609,9 +512,7 @@ window.TEMPLATE_THEME = window.TEMPLATE_THEME || {
 
       <div class="handwriting">
         <p class="greeting">Hey, <span id="partnerName">my love</span>... 💗</p>
-        <p class="letter-body write-line" id="pageOneBody" style="animation-delay:.3s">
-          There are so many things I wish I could tell you...
-        </p>
+        <p class="letter-body write-line" id="pageOneBody" style="animation-delay:.3s"></p>
       </div>
 
       <div class="divider"></div>
@@ -627,7 +528,6 @@ window.TEMPLATE_THEME = window.TEMPLATE_THEME || {
       </div>
     </section>
 
-    <!-- PAGE TWO -->
     <section class="page" id="page2">
       <div class="page-number">PAGE TWO · FROM MY HEART</div>
       <div class="small-heart">💗</div>
@@ -636,20 +536,15 @@ window.TEMPLATE_THEME = window.TEMPLATE_THEME || {
       <p class="subtitle" id="pageTwoSubtitle">A little love letter, just for you...</p>
 
       <div class="handwriting">
-        <p class="greeting">My sweetest love,</p>
-        <p class="letter-body write-line" id="pageTwoBody" style="animation-delay:.3s">
-          If I could give you one thing in this world...
-        </p>
+        <p class="greeting" id="pageTwoGreeting">My sweetest love,</p>
+        <p class="letter-body write-line" id="pageTwoBody" style="animation-delay:.3s"></p>
       </div>
 
       <div class="divider"></div>
 
       <div class="final-heart">♡</div>
 
-      <p class="handwriting" id="finalLine" style="text-align:center;font-size:28px;color:var(--deep-pink)">
-        If I could write a thousand letters,<br>
-        I would still have more love to say.
-      </p>
+      <p class="handwriting" id="finalLine" style="text-align:center;font-size:28px;color:var(--deep-pink)"></p>
 
       <div class="signature">
         With all the love in my heart,
@@ -676,8 +571,15 @@ window.TEMPLATE_THEME = window.TEMPLATE_THEME || {
 <script>
 "use strict";
 
-/* CONFIG — injected by editor / backend per customer. */
-const CONFIG = {
+/* ------------------------------------------------------------------
+   CONFIG RESOLUTION
+   Priority:
+     1. window.NIVA_CONFIG  (injected by backend/editor)
+     2. URL query params    (?partnerName=...&senderName=...)
+     3. Defaults below
+   This makes the page NEVER 404 / NEVER blank — it always renders.
+------------------------------------------------------------------ */
+const DEFAULTS = {
   partnerName: "My Favourite Person",
   senderName: "Yours, always",
   pageOneTitle: "To My Favourite Person",
@@ -698,14 +600,99 @@ const CONFIG = {
     "I just want the little things with you.\n\n" +
     "And if life ever gets too loud, I hope you remember this little letter.\n\n" +
     "Somewhere in this big world, there is a heart that is genuinely happy you exist.",
-  finalLine: "If I could write a thousand letters, I would still have more love to say."
+  finalLine: "If I could write a thousand letters, I would still have more love to say.",
+  themeMode: "light",
+  colorPalette: "blush-pink"
 };
 
+function resolveConfig() {
+  const cfg = Object.assign({}, DEFAULTS);
+
+  // 1. Backend injection
+  if (window.NIVA_CONFIG && typeof window.NIVA_CONFIG === "object") {
+    Object.keys(window.NIVA_CONFIG).forEach(k => {
+      if (window.NIVA_CONFIG[k] !== undefined && window.NIVA_CONFIG[k] !== null && window.NIVA_CONFIG[k] !== "") {
+        cfg[k] = window.NIVA_CONFIG[k];
+      }
+    });
+  }
+
+  // 2. URL params (lets a link carry the personalisation)
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const textKeys = ["partnerName","senderName","pageOneTitle","pageOneSubtitle","pageOneBody","pageTwoTitle","pageTwoSubtitle","pageTwoBody","finalLine","themeMode","colorPalette"];
+    textKeys.forEach(k => {
+      if (params.has(k) && params.get(k)) cfg[k] = params.get(k);
+    });
+    // base64 encoded payload fallback: ?data=<b64-json>
+    if (params.has("data")) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(params.get("data")))));
+        Object.keys(decoded).forEach(k => { if (decoded[k]) cfg[k] = decoded[k]; });
+      } catch (e) { /* ignore bad payload */ }
+    }
+  } catch (e) { /* old browser, ignore */ }
+
+  return cfg;
+}
+
+const CONFIG = resolveConfig();
+
+/* THEME ENGINE (runs immediately so palette applies before paint) */
+(function applyThemeFromConfig() {
+  const PALETTES = {
+    "blush-pink": {
+      light:{pink:"#e98ba8",deepPink:"#c95d82",softPink:"#fff0f4",paper:"#fffaf0",ink:"#765464",rose:"#f5c8d4",bg1:"#fff0f5",bg2:"#fce2e9",bg3:"#fff8f5"},
+      dark:{pink:"#f5a8c2",deepPink:"#ff9dbf",softPink:"#2a1a22",paper:"#22141b",ink:"#f0dae2",rose:"#3a2430",bg1:"#1a1016",bg2:"#241620",bg3:"#0f0a0e"}
+    },
+    "rose-gold": {
+      light:{pink:"#e8a87c",deepPink:"#c97a4a",softPink:"#fde6d6",paper:"#fffaf3",ink:"#5a4234",rose:"#f5d8c4",bg1:"#fff3ea",bg2:"#fde6d6",bg3:"#fffaf3"},
+      dark:{pink:"#f0b98c",deepPink:"#ffc79a",softPink:"#2a1e16",paper:"#241916",ink:"#f5e4d6",rose:"#3a251c",bg1:"#191210",bg2:"#241916",bg3:"#100a08"}
+    },
+    "lavender-dream": {
+      light:{pink:"#b9a6ef",deepPink:"#7c5cd6",softPink:"#ece7ff",paper:"#faf8ff",ink:"#4a4266",rose:"#d4c8ff",bg1:"#f3f0ff",bg2:"#ece7ff",bg3:"#faf8ff"},
+      dark:{pink:"#c7b6ff",deepPink:"#b39dff",softPink:"#1e182b",paper:"#161222",ink:"#e5ddff",rose:"#2c2342",bg1:"#14101e",bg2:"#1e182b",bg3:"#0a0814"}
+    },
+    "peach-cream": {
+      light:{pink:"#f5a97c",deepPink:"#d97b4a",softPink:"#ffe6d2",paper:"#fffaf3",ink:"#5a4432",rose:"#f5d4bc",bg1:"#fff3e6",bg2:"#ffe6d2",bg3:"#fffaf3"},
+      dark:{pink:"#ffbf94",deepPink:"#ffcba6",softPink:"#2a1e16",paper:"#241b16",ink:"#f5e4d6",rose:"#3a2820",bg1:"#1a1310",bg2:"#241b16",bg3:"#100a08"}
+    },
+    "mint-breeze": {
+      light:{pink:"#7fd3b8",deepPink:"#3aa88a",softPink:"#dff5ee",paper:"#f5fdfa",ink:"#3a544c",rose:"#b8e8d8",bg1:"#eafaf4",bg2:"#dff5ee",bg3:"#f5fdfa"},
+      dark:{pink:"#8fe6c8",deepPink:"#a0f0d4",softPink:"#16241f",paper:"#0f1a17",ink:"#dff5ec",rose:"#1f3a30",bg1:"#0a1410",bg2:"#16241f",bg3:"#050c09"}
+    },
+    "midnight-rose": {
+      light:{pink:"#e87a9e",deepPink:"#b84670",softPink:"#fde4ec",paper:"#fffafc",ink:"#4a2c3a",rose:"#f7c4d6",bg1:"#ffe8ef",bg2:"#fde4ec",bg3:"#fff7fa"},
+      dark:{pink:"#ff9dc0",deepPink:"#ffb0cc",softPink:"#20141b",paper:"#160d12",ink:"#f5dce6",rose:"#38202b",bg1:"#160d12",bg2:"#20141b",bg3:"#0a0608"}
+    }
+  };
+
+  function apply(mode, key) {
+    const safeMode = mode === "dark" ? "dark" : "light";
+    const safeKey = PALETTES[key] ? key : "blush-pink";
+    const v = PALETTES[safeKey][safeMode];
+    const root = document.documentElement;
+    root.style.setProperty("--pink", v.pink);
+    root.style.setProperty("--deep-pink", v.deepPink);
+    root.style.setProperty("--soft-pink", v.softPink);
+    root.style.setProperty("--paper", v.paper);
+    root.style.setProperty("--ink", v.ink);
+    root.style.setProperty("--rose", v.rose);
+    root.style.setProperty("--bg-1", v.bg1);
+    root.style.setProperty("--bg-2", v.bg2);
+    root.style.setProperty("--bg-3", v.bg3);
+    root.setAttribute("data-theme", safeMode);
+  }
+
+  apply(CONFIG.themeMode, CONFIG.colorPalette);
+  window.__NIVA_APPLY_THEME__ = apply;
+})();
+
 /* PERSONALIZATION */
-const setText = (id, text) => {
+function setText(id, text) {
   const el = document.getElementById(id);
-  if (el && text) el.textContent = text;
-};
+  if (el && text !== undefined && text !== null) el.textContent = text;
+}
 
 setText("partnerName", CONFIG.partnerName);
 setText("senderName", CONFIG.senderName);
@@ -737,9 +724,7 @@ openBtn.addEventListener("click", () => {
     startHearts();
   }, 1250);
 
-  setTimeout(() => {
-    intro.style.display = "none";
-  }, 2200);
+  setTimeout(() => { intro.style.display = "none"; }, 2200);
 });
 
 /* PAGE NAVIGATION */
@@ -759,12 +744,10 @@ function goToPage(pageNumber) {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
 window.goToPage = goToPage;
 
 /* FLOATING HEARTS */
 let heartTimer;
-
 function startHearts() {
   if (heartTimer) return;
   heartTimer = setInterval(createHeart, 900);
@@ -773,6 +756,7 @@ function startHearts() {
 
 function createHeart() {
   const container = document.getElementById("hearts");
+  if (!container) return;
   const heart = document.createElement("span");
   heart.className = "floating-heart";
 
@@ -794,19 +778,18 @@ function celebrate() {
 
   const footer = document.getElementById("footerNote");
   footer.textContent = "Sending you the biggest hug through this little letter. ♡";
-
   footer.animate(
     [{ transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }],
     { duration: 650, easing: "ease-in-out" }
   );
 }
-
 window.celebrate = celebrate;
 
 /* LIVE PREVIEW — editor/backend can postMessage updates */
 window.addEventListener("message", (event) => {
-  if (event.origin !== window.location.origin) return;
-  if (event.data?.type !== "NIVA_PREVIEW_UPDATE") return;
+  // Allow same-origin OR null origin (file:// previews in editor iframes)
+  if (event.origin && event.origin !== window.location.origin) return;
+  if (!event.data || event.data.type !== "NIVA_PREVIEW_UPDATE") return;
 
   const data = event.data.data || {};
   setText("partnerName", data.partnerName);
@@ -819,58 +802,16 @@ window.addEventListener("message", (event) => {
   setText("pageTwoBody", data.pageTwoBody);
   setText("finalLine", data.finalLine);
 
-  if (data.themeMode || data.colorPalette) {
-    window.TEMPLATE_THEME = {
-      themeMode: data.themeMode || window.TEMPLATE_THEME.themeMode,
-      colorPalette: data.colorPalette || window.TEMPLATE_THEME.colorPalette
-    };
-    // Re-apply theme values
-    const palettes = {
-      "blush-pink": {
-        light:{pink:"#e98ba8",deepPink:"#c95d82",softPink:"#fff0f4",paper:"#fffaf0",ink:"#765464",rose:"#f5c8d4",bg1:"#fff0f5",bg2:"#fce2e9",bg3:"#fff8f5"},
-        dark:{pink:"#f5a8c2",deepPink:"#ff9dbf",softPink:"#2a1a22",paper:"#22141b",ink:"#f0dae2",rose:"#3a2430",bg1:"#1a1016",bg2:"#241620",bg3:"#0f0a0e"}
-      },
-      "rose-gold": {
-        light:{pink:"#e8a87c",deepPink:"#c97a4a",softPink:"#fde6d6",paper:"#fffaf3",ink:"#5a4234",rose:"#f5d8c4",bg1:"#fff3ea",bg2:"#fde6d6",bg3:"#fffaf3"},
-        dark:{pink:"#f0b98c",deepPink:"#ffc79a",softPink:"#2a1e16",paper:"#241916",ink:"#f5e4d6",rose:"#3a251c",bg1:"#191210",bg2:"#241916",bg3:"#100a08"}
-      },
-      "lavender-dream": {
-        light:{pink:"#b9a6ef",deepPink:"#7c5cd6",softPink:"#ece7ff",paper:"#faf8ff",ink:"#4a4266",rose:"#d4c8ff",bg1:"#f3f0ff",bg2:"#ece7ff",bg3:"#faf8ff"},
-        dark:{pink:"#c7b6ff",deepPink:"#b39dff",softPink:"#1e182b",paper:"#161222",ink:"#e5ddff",rose:"#2c2342",bg1:"#14101e",bg2:"#1e182b",bg3:"#0a0814"}
-      },
-      "peach-cream": {
-        light:{pink:"#f5a97c",deepPink:"#d97b4a",softPink:"#ffe6d2",paper:"#fffaf3",ink:"#5a4432",rose:"#f5d4bc",bg1:"#fff3e6",bg2:"#ffe6d2",bg3:"#fffaf3"},
-        dark:{pink:"#ffbf94",deepPink:"#ffcba6",softPink:"#2a1e16",paper:"#241b16",ink:"#f5e4d6",rose:"#3a2820",bg1:"#1a1310",bg2:"#241b16",bg3:"#100a08"}
-      },
-      "mint-breeze": {
-        light:{pink:"#7fd3b8",deepPink:"#3aa88a",softPink:"#dff5ee",paper:"#f5fdfa",ink:"#3a544c",rose:"#b8e8d8",bg1:"#eafaf4",bg2:"#dff5ee",bg3:"#f5fdfa"},
-        dark:{pink:"#8fe6c8",deepPink:"#a0f0d4",softPink:"#16241f",paper:"#0f1a17",ink:"#dff5ec",rose:"#1f3a30",bg1:"#0a1410",bg2:"#16241f",bg3:"#050c09"}
-      },
-      "midnight-rose": {
-        light:{pink:"#e87a9e",deepPink:"#b84670",softPink:"#fde4ec",paper:"#fffafc",ink:"#4a2c3a",rose:"#f7c4d6",bg1:"#ffe8ef",bg2:"#fde4ec",bg3:"#fff7fa"},
-        dark:{pink:"#ff9dc0",deepPink:"#ffb0cc",softPink:"#20141b",paper:"#160d12",ink:"#f5dce6",rose:"#38202b",bg1:"#160d12",bg2:"#20141b",bg3:"#0a0608"}
-      }
-    };
-    const mode = window.TEMPLATE_THEME.themeMode === "dark" ? "dark" : "light";
-    const key = palettes[window.TEMPLATE_THEME.colorPalette] ? window.TEMPLATE_THEME.colorPalette : "blush-pink";
-    const v = palettes[key][mode];
-    const root = document.documentElement;
-    root.style.setProperty("--pink", v.pink);
-    root.style.setProperty("--deep-pink", v.deepPink);
-    root.style.setProperty("--soft-pink", v.softPink);
-    root.style.setProperty("--paper", v.paper);
-    root.style.setProperty("--ink", v.ink);
-    root.style.setProperty("--rose", v.rose);
-    root.style.setProperty("--bg-1", v.bg1);
-    root.style.setProperty("--bg-2", v.bg2);
-    root.style.setProperty("--bg-3", v.bg3);
-    root.setAttribute("data-theme", mode);
+  if ((data.themeMode || data.colorPalette) && window.__NIVA_APPLY_THEME__) {
+    const mode = data.themeMode || CONFIG.themeMode;
+    const palette = data.colorPalette || CONFIG.colorPalette;
+    window.__NIVA_APPLY_THEME__(mode, palette);
   }
 });
 
-/* Signal to the editor that we're ready for updates */
+/* Signal to editor that we're ready for updates */
 if (window.parent && window.parent !== window) {
-  try { window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin); } catch {}
+  try { window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, "*"); } catch (e) {}
 }
 </script>
 

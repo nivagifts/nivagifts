@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Letter For You ❤️</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- Handwriting fonts for many languages -->
+<link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Kalam:wght@400;700&family=Great+Vibes&family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Indie+Flower&family=Tillana:wght@400;600&family=Hind:wght@400;600&family=Baloo+2:wght@400;600&family=Baloo+Tamma+2:wght@400;600&family=Baloo+Chettan+2:wght@400;600&family=Baloo+Bhai+2:wght@400;600&family=Baloo+Thambi+2:wght@400;600&family=Baloo+Da+2:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --cream: #fffaf3;
+  --paper: #fffdf8;
+  --rose: #d88991;
+  --rose-dark: #a95668;
+  --peach: #f5d9cb;
+  --ink: #694b48;
+  --muted: #a9827b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 15% 20%, #ffe9e4 0, transparent 32%),
+    radial-gradient(circle at 85% 80%, #f8e5d7 0, transparent 35%),
+    var(--cream);
+  color: var(--ink);
+  overflow-x: hidden;
+  font-family: 'Manjari', 'Noto Sans Malayalam', sans-serif;
+  transition: background .5s, color .5s;
+}
+
+button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+#effects {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.petal {
+  position: absolute;
+  top: -30px;
+  animation: fall linear forwards;
+  opacity: .65;
+  color: var(--rose);
+}
+
+@keyframes fall {
+  to {
+    transform: translate3d(100px, 110vh, 0) rotate(500deg);
+    opacity: 0;
+  }
+}
+
+.raindrop {
+  position: absolute;
+  top: -20px;
+  width: 1px;
+  height: 18px;
+  background: linear-gradient(to bottom, transparent, var(--rose));
+  opacity: .35;
+  animation: rainDrop linear forwards;
+}
+
+@keyframes rainDrop {
+  to { transform: translateY(110vh); opacity: 0; }
+}
+
+.page {
+  display: none;
+  min-height: 100vh;
+  padding: 28px 18px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.page.active {
+  display: flex;
+  animation: pageIn .8s ease both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-size: 11px;
+  color: var(--rose-dark);
+  margin-bottom: 18px;
+}
+
+h1 {
+  font-family: 'Great Vibes', 'Manjari', cursive;
+  font-size: clamp(38px, 8vw, 70px);
+  color: var(--rose-dark);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.9;
+  max-width: 360px;
+  color: var(--muted);
+  white-space: pre-line;
+}
+
+/* ENVELOPE */
+.envelope-scene {
+  width: min(340px, 88vw);
+  height: 245px;
+  position: relative;
+  margin: 40px auto 24px;
+  perspective: 1000px;
+}
+
+.envelope {
+  position: absolute;
+  inset: 35px 0 0;
+  height: 190px;
+  background: #edc4bb;
+  border-radius: 5px;
+  box-shadow: 0 22px 45px #b77d7725;
+}
+
+.envelope::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(140deg, #f5d9cb, #dca5a0);
+  clip-path: polygon(0 0, 50% 60%, 100% 0);
+  z-index: 4;
+}
+
+.envelope::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #e9b8b2;
+  clip-path: polygon(0 100%, 50% 48%, 100% 100%);
+  z-index: 5;
+}
+
+.letter-preview {
+  position: absolute;
+  left: 7%;
+  width: 86%;
+  height: 155px;
+  top: 38px;
+  padding: 22px 10px;
+  background: var(--paper);
+  border: 1px solid #eedbd0;
+  color: var(--rose-dark);
+  font-size: 20px;
+  font-family: 'Kalam', 'Noto Sans Malayalam', cursive;
+  transition: transform 1s ease;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.flap {
+  position: absolute;
+  inset: 0;
+  height: 110px;
+  background: #d99a98;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform .8s ease;
+  z-index: 6;
+}
+
+.seal {
+  position: absolute;
+  z-index: 8;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #b96376;
+  color: #fff4ed;
+  display: grid;
+  place-items: center;
+  font-size: 23px;
+  top: 104px;
+  left: calc(50% - 23px);
+  box-shadow: 0 5px 12px #7d454522;
+  transition: opacity .3s;
+}
+
+.envelope-scene.open .flap { transform: rotateX(180deg); z-index: 1; }
+.envelope-scene.open .seal { opacity: 0; }
+.envelope-scene.open .letter-preview { transform: translateY(-115px); }
+
+.primary-btn {
+  border: none;
+  padding: 15px 30px;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: white;
+  border-radius: 40px;
+  box-shadow: 0 9px 24px #bd687d35;
+  transition: transform .25s, box-shadow .25s;
+}
+
+.primary-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px #bd687d45; }
+.primary-btn:disabled { opacity: .6; cursor: wait; }
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 14px;
+}
+
+/* LETTER PAGE */
+.letter-page {
+  justify-content: flex-start;
+  padding-top: 35px;
+  padding-bottom: 50px;
+}
+
+.letter-heading { margin-bottom: 25px; }
+
+.paper {
+  position: relative;
+  width: min(620px, 100%);
+  background:
+    repeating-linear-gradient(to bottom, transparent 0, transparent 35px, #eadbd050 36px),
+    var(--paper);
+  padding: 32px clamp(18px, 5vw, 48px) 40px;
+  text-align: left;
+  border: 1px solid #f0e0d6;
+  border-radius: 5px;
+  box-shadow: 0 20px 60px #92695c14;
+  overflow: hidden;
+}
+
+.paper::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid #e9b8b266;
+}
+
+.paper-top {
+  text-align: center;
+  color: var(--rose-dark);
+  font-size: 13px;
+  margin-bottom: 25px;
+}
+
+.handwriting {
+  font-family: var(--hand-font, 'Kalam'), 'Noto Sans Malayalam', cursive;
+  font-size: clamp(17px, 4vw, 21px);
+  line-height: 2;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: 220px;
+}
+
+.handwriting .char {
+  opacity: 0;
+  transition: opacity .03s linear;
+}
+
+.handwriting .char.visible { opacity: 1; }
+
+.signature {
+  font-family: var(--hand-font, 'Kalam'), 'Noto Sans Malayalam', cursive;
+  font-size: 23px;
+  color: var(--rose-dark);
+  margin-top: 22px;
+  min-height: 40px;
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.signature.visible { opacity: 1; }
+
+.pen {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  font-size: 28px;
+  transform: translate(-50%, -50%) rotate(-35deg);
+  filter: drop-shadow(0 3px 2px #75534c35);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pen.active { opacity: 1; }
+
+.progress-wrap {
+  width: min(250px, 75%);
+  height: 4px;
+  background: #eddcd5;
+  border-radius: 20px;
+  margin: 22px auto 12px;
+  overflow: hidden;
+}
+
+.progress {
+  width: 0;
+  height: 100%;
+  background: var(--rose);
+  transition: width .1s linear;
+}
+
+.status {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.bottom-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.secondary-btn {
+  padding: 12px 20px;
+  border-radius: 30px;
+  border: 1px solid #dba8a3;
+  background: #fffaf3cc;
+  color: var(--rose-dark);
+}
+
+.ending {
+  margin-top: 28px;
+  max-width: 460px;
+  font-size: 14px;
+  line-height: 2;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 1s;
+  white-space: pre-line;
+}
+
+.ending.visible { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="effects" aria-hidden="true"></div>
+
+<!-- PAGE 1 -->
+<section class="page active" id="page1">
+  <div class="eyebrow" id="envelopeEyebrow">A little letter from my heart</div>
+  <h1 id="envelopeTitle">എന്നോട് ക്ഷമിക്കുമോ?</h1>
+  <p class="subtitle" id="envelopeSubtitle">പറയാൻ ഒരുപാട് കാര്യങ്ങളുണ്ട്...<br>അതെല്ലാം ഈ ചെറിയ കത്തിൽ എഴുതിയിട്ടുണ്ട്. ❤️</p>
+
+  <div class="envelope-scene" id="envelopeScene">
+    <div class="envelope">
+      <div class="letter-preview" id="letterPreview">എന്റെ പ്രിയപ്പെട്ടവൾക്ക്... ♡</div>
+      <div class="flap"></div>
+      <div class="seal">♡</div>
+    </div>
+  </div>
+
+  <button class="primary-btn" id="openBtn" onclick="openLetter()">
+    <span id="openBtnText">എന്റെ കത്ത് തുറക്കൂ 💌</span>
+  </button>
+
+  <p class="hint">നിനക്കായി... മനസ്സിൽ നിന്ന് എഴുതിയത്.</p>
+</section>
+
+<!-- PAGE 2 -->
+<section class="page letter-page" id="page2">
+  <div class="letter-heading">
+    <div class="eyebrow" id="letterEyebrow">Every word comes from my heart</div>
+    <h1 style="font-size:clamp(34px,7vw,58px)" id="letterHeading">എന്റെ ഹൃദയത്തിൽ നിന്ന്...</h1>
+  </div>
+
+  <article class="paper" id="paper">
+    <div class="paper-top" id="paperTopLabel">♡ നിനക്കായി എഴുതിയ ഒരു കത്ത് ♡</div>
+    <div class="pen" id="pen" aria-hidden="true">🖋️</div>
+    <div class="handwriting" id="handwriting"></div>
+    <div class="signature" id="signature"></div>
+  </article>
+
+  <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+  <div class="status" id="status" aria-live="polite">നിനക്കായി ഓരോ വാക്കും എഴുതുകയാണ്... ✍️</div>
+
+  <div class="bottom-actions">
+    <button class="secondary-btn" id="replayBtn" onclick="replayLetter()">↻ കത്ത് വീണ്ടും വായിക്കാം</button>
+    <button class="primary-btn" onclick="showEnding()">ഒരു കാര്യം കൂടി പറയട്ടെ? 🤍</button>
+  </div>
+
+  <p class="ending" id="ending"></p>
+</section>
+
+<script>
+"use strict";
+
+/* ==========================================================
+   CONFIG RESOLUTION
+   1) window.NIVA_CONFIG   (backend injection)
+   2) URL query params
+   3) Defaults
+   ========================================================== */
+const DEFAULTS = {
+  language: "malayalam",
+  partnerName: "എന്റെ പ്രിയപ്പെട്ടവൾ",
+  senderName: "നിനക്കായി ഈ കത്ത് എഴുതിയ ആൾ",
+  envelopeTitle: "എന്നോട് ക്ഷമിക്കുമോ?",
+  envelopeSubtitle: "പറയാൻ ഒരുപാട് കാര്യങ്ങളുണ്ട്... അതെല്ലാം ഈ ചെറിയ കത്തിൽ എഴുതിയിട്ടുണ്ട്. ❤️",
+  openButtonText: "എന്റെ കത്ത് തുറക്കൂ 💌",
+  letterHeading: "എന്റെ ഹൃദയത്തിൽ നിന്ന്...",
+  letterEyebrow: "Every word comes from my heart",
+  paperTopLabel: "♡ നിനക്കായി എഴുതിയ ഒരു കത്ത് ♡",
+  letterBody: `എന്റെ പ്രിയപ്പെട്ടവളേ,
+
+നിന്നോട് കുറച്ച് കാര്യങ്ങൾ പറയാനുണ്ട്.
+അതെല്ലാം എങ്ങനെ തുടങ്ങണമെന്ന് എനിക്കറിയില്ല.
+എങ്കിലും എന്റെ മനസ്സിലുള്ളത് നിന്നോട് പറയണം.
+
+എന്റെ വാക്കുകളോ പ്രവൃത്തികളോ നിന്നെ
+വിഷമിപ്പിച്ചിട്ടുണ്ടെങ്കിൽ എന്നോട് ക്ഷമിക്കണം.
+നിന്റെ മനസ്സ് വേദനിപ്പിക്കണമെന്ന്
+ഞാൻ ഒരിക്കലും ആഗ്രഹിച്ചിട്ടില്ല.
+
+എന്റെ ഭാഗത്തെ തെറ്റുകൾ മനസ്സിലാക്കി
+അവ തിരുത്താൻ ഞാൻ ആഗ്രഹിക്കുന്നു.
+ക്ഷമ ചോദിക്കുന്നത് മാത്രം പോരാ,
+എന്റെ പ്രവൃത്തികളിലൂടെ അത് തെളിയിക്കാനും
+ഞാൻ ശ്രമിക്കും.
+
+നിനക്ക് വിഷമമുണ്ടെങ്കിൽ അത് എന്നോട് പറയണം.
+നിന്റെ മനസ്സ് കേൾക്കാനും
+നിന്നെ മനസ്സിലാക്കാനും ഞാൻ തയ്യാറാണ്.
+
+സ്നേഹത്തോടെ,
+നിനക്കായി ഈ കത്ത് എഴുതിയ ആൾ. ❤️`,
+  signatureLine: "സ്നേഹത്തോടെ, നിന്റെ സ്വന്തം... ❤️",
+  endingText: `നിന്നെ വിഷമിപ്പിച്ചിട്ടുണ്ടെങ്കിൽ എന്നോട് ക്ഷമിക്കണം.
+എന്റെ തെറ്റുകൾ മനസ്സിലാക്കി തിരുത്താൻ ഞാൻ ശ്രമിക്കും.
+നമുക്ക് പരസ്പരം മനസ്സിലാക്കി മുന്നോട്ട് പോകാം. ❤️`,
+  themeMode: "light",
+  colorPalette: "rose-blush",
+  animationStyle: "petals",
+  animationIntensity: "medium",
+  writingSpeed: "normal",
+  showPen: true
+};
+
+function resolveConfig() {
+  const cfg = Object.assign({}, DEFAULTS);
+  if (window.NIVA_CONFIG && typeof window.NIVA_CONFIG === "object") {
+    Object.keys(window.NIVA_CONFIG).forEach(k => {
+      const v = window.NIVA_CONFIG[k];
+      if (v !== undefined && v !== null && v !== "") cfg[k] = v;
+    });
+  }
+  try {
+    const params = new URLSearchParams(window.location.search);
+    ["language","partnerName","senderName","envelopeTitle","envelopeSubtitle",
+     "openButtonText","letterHeading","letterEyebrow","paperTopLabel","letterBody",
+     "signatureLine","endingText","themeMode","colorPalette","animationStyle",
+     "animationIntensity","writingSpeed"].forEach(k => {
+      if (params.has(k) && params.get(k)) cfg[k] = params.get(k);
+    });
+    if (params.has("data")) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(params.get("data")))));
+        Object.keys(decoded).forEach(k => { if (decoded[k]) cfg[k] = decoded[k]; });
+      } catch (e) {}
+    }
+  } catch (e) {}
+  return cfg;
+}
+
+const CONFIG = resolveConfig();
+
+/* ==========================================================
+   LANGUAGE → HANDWRITING FONT + DIRECTION
+   ========================================================== */
+const LANGUAGE_FONTS = {
+  malayalam: { font: "'Kalam', 'Noto Sans Malayalam', 'Manjari', cursive", dir: "ltr", label: "മലയാളം" },
+  hindi:     { font: "'Tillana', 'Noto Sans Devanagari', 'Hind', cursive", dir: "ltr", label: "हिन्दी" },
+  english:   { font: "'Caveat', 'Patrick Hand', 'Indie Flower', cursive", dir: "ltr", label: "English" },
+  kannada:   { font: "'Baloo Tamma 2', 'Noto Sans Kannada', cursive", dir: "ltr", label: "ಕನ್ನಡ" },
+  tamil:     { font: "'Baloo Thambi 2', 'Noto Sans Tamil', cursive", dir: "ltr", label: "தமிழ்" },
+  telugu:    { font: "'Baloo Bhai 2', 'Noto Sans Telugu', cursive", dir: "ltr", label: "తెలుగు" },
+  bengali:   { font: "'Baloo Da 2', 'Noto Sans Bengali', cursive", dir: "ltr", label: "বাংলা" },
+  marathi:   { font: "'Tillana', 'Noto Sans Devanagari', cursive", dir: "ltr", label: "मराठी" },
+  gujarati:  { font: "'Baloo Bhai 2', 'Noto Sans Gujarati', cursive", dir: "ltr", label: "ગુજરાતી" },
+  punjabi:   { font: "'Baloo Bhai 2', 'Noto Sans Gurmukhi', cursive", dir: "ltr", label: "ਪੰਜਾਬੀ" }
+};
+
+const langInfo = LANGUAGE_FONTS[CONFIG.language] || LANGUAGE_FONTS.malayalam;
+document.documentElement.style.setProperty("--hand-font", langInfo.font);
+document.documentElement.lang = CONFIG.language;
+document.documentElement.dir = langInfo.dir;
+
+/* ==========================================================
+   THEME ENGINE
+   ========================================================== */
+const PALETTES = {
+  "rose-blush": {
+    light: { cream:"#fffaf3", paper:"#fffdf8", rose:"#d88991", roseDark:"#a95668", peach:"#f5d9cb", ink:"#694b48", muted:"#a9827b", bg1:"#ffe9e4", bg2:"#f8e5d7" },
+    dark:  { cream:"#1a1216", paper:"#22181d", rose:"#f0a8b5", roseDark:"#ffb8c8", peach:"#3a2830", ink:"#f0dde3", muted:"#c8a4ad", bg1:"#2a1a22", bg2:"#22141b" }
+  },
+  "peach-cream": {
+    light: { cream:"#fffaf3", paper:"#fffdf8", rose:"#e8a87c", roseDark:"#c97a4a", peach:"#fde6d6", ink:"#5a4234", muted:"#9a7d6a", bg1:"#fff3ea", bg2:"#fde6d6" },
+    dark:  { cream:"#1a1310", paper:"#241b16", rose:"#f0b98c", roseDark:"#ffc79a", peach:"#3a251c", ink:"#f5e4d6", muted:"#c9a892", bg1:"#241916", bg2:"#1a120f" }
+  },
+  "lavender-dream": {
+    light: { cream:"#faf8ff", paper:"#ffffff", rose:"#b9a6ef", roseDark:"#7c5cd6", peach:"#ece7ff", ink:"#4a4266", muted:"#7a7296", bg1:"#f3f0ff", bg2:"#ece7ff" },
+    dark:  { cream:"#14101e", paper:"#161222", rose:"#c7b6ff", roseDark:"#b39dff", peach:"#2c2342", ink:"#e5ddff", muted:"#a59cc8", bg1:"#1e182b", bg2:"#14101e" }
+  },
+  "mint-breeze": {
+    light: { cream:"#f5fdfa", paper:"#ffffff", rose:"#7fd3b8", roseDark:"#3aa88a", peach:"#dff5ee", ink:"#3a544c", muted:"#6a8a80", bg1:"#eafaf4", bg2:"#dff5ee" },
+    dark:  { cream:"#0a1410", paper:"#0f1a17", rose:"#8fe6c8", roseDark:"#a0f0d4", peach:"#1f3a30", ink:"#dff5ec", muted:"#8aa89f", bg1:"#16241f", bg2:"#0a1410" }
+  },
+  "midnight-rose": {
+    light: { cream:"#fff7fa", paper:"#fffafc", rose:"#e87a9e", roseDark:"#b84670", peach:"#fde4ec", ink:"#4a2c3a", muted:"#8a6474", bg1:"#ffe8ef", bg2:"#fde4ec" },
+    dark:  { cream:"#0a0608", paper:"#160d12", rose:"#ff9dc0", roseDark:"#ffb0cc", peach:"#38202b", ink:"#f5dce6", muted:"#c8a0b0", bg1:"#20141b", bg2:"#160d12" }
+  },
+  "golden-amber": {
+    light: { cream:"#fffbf0", paper:"#fffef9", rose:"#d4a24c", roseDark:"#a87828", peach:"#f5e4c0", ink:"#5a4a2a", muted:"#9a8a5a", bg1:"#fff5dc", bg2:"#f5e4c0" },
+    dark:  { cream:"#16110a", paper:"#1f180e", rose:"#f0c87a", roseDark:"#ffd88a", peach:"#3a2e1a", ink:"#f5ecd4", muted:"#c8b88a", bg1:"#241a0e", bg2:"#16110a" }
+  }
+};
+
+function applyTheme(mode, key) {
+  const safeMode = mode === "dark" ? "dark" : "light";
+  const safeKey = PALETTES[key] ? key : "rose-blush";
+  const v = PALETTES[safeKey][safeMode];
+  const root = document.documentElement;
+  root.style.setProperty("--cream", v.cream);
+  root.style.setProperty("--paper", v.paper);
+  root.style.setProperty("--rose", v.rose);
+  root.style.setProperty("--rose-dark", v.roseDark);
+  root.style.setProperty("--peach", v.peach);
+  root.style.setProperty("--ink", v.ink);
+  root.style.setProperty("--muted", v.muted);
+  document.body.style.background =
+    `radial-gradient(circle at 15% 20%, ${v.bg1} 0, transparent 32%),
+     radial-gradient(circle at 85% 80%, ${v.bg2} 0, transparent 35%),
+     ${v.cream}`;
+  root.setAttribute("data-theme", safeMode);
+}
+applyTheme(CONFIG.themeMode, CONFIG.colorPalette);
+window.__APPLY_THEME__ = applyTheme;
+
+/* ==========================================================
+   TEXT PERSONALISATION
+   ========================================================== */
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el && text !== undefined && text !== null) el.textContent = text;
+}
+function setHTML(id, html) {
+  const el = document.getElementById(id);
+  if (el && html !== undefined && html !== null) el.innerHTML = html;
+}
+
+setText("envelopeTitle", CONFIG.envelopeTitle);
+setHTML("envelopeSubtitle", (CONFIG.envelopeSubtitle || "").replace(/\n/g, "<br>"));
+setText("openBtnText", CONFIG.openButtonText);
+setText("letterHeading", CONFIG.letterHeading);
+setText("letterEyebrow", CONFIG.letterEyebrow);
+setText("paperTopLabel", CONFIG.paperTopLabel);
+setText("letterPreview", (CONFIG.partnerName || "") + " ♡");
+setText("signature", CONFIG.signatureLine);
+setText("ending", CONFIG.endingText);
+
+/* ==========================================================
+   ANIMATION SETTINGS
+   ========================================================== */
+const INTENSITY = {
+  low:    { petalRate: 2000, rainRate: 260, petalCount: 1, rainCount: 1 },
+  medium: { petalRate: 1100, rainRate: 140, petalCount: 1, rainCount: 2 },
+  high:   { petalRate: 650,  rainRate: 80,  petalCount: 2, rainCount: 3 }
+};
+
+const intensity = INTENSITY[CONFIG.animationIntensity] || INTENSITY.medium;
+let petalTimer = null;
+let rainTimer = null;
+
+function startEffects() {
+  stopEffects();
+  if (CONFIG.animationStyle === "petals" || CONFIG.animationStyle === "both") {
+    petalTimer = setInterval(() => {
+      for (let i = 0; i < intensity.petalCount; i++) createPetal();
+    }, intensity.petalRate);
+  }
+  if (CONFIG.animationStyle === "rain" || CONFIG.animationStyle === "both") {
+    rainTimer = setInterval(() => {
+      for (let i = 0; i < intensity.rainCount; i++) createRain();
+    }, intensity.rainRate);
+  }
+}
+
+function stopEffects() {
+  if (petalTimer) { clearInterval(petalTimer); petalTimer = null; }
+  if (rainTimer) { clearInterval(rainTimer); rainTimer = null; }
+}
+
+function createPetal() {
+  const container = document.getElementById("effects");
+  if (!container) return;
+  const petal = document.createElement("span");
+  petal.className = "petal";
+  petal.textContent = Math.random() > .5 ? "✿" : "♡";
+  petal.style.left = Math.random() * 100 + "vw";
+  petal.style.fontSize = (12 + Math.random() * 13) + "px";
+  petal.style.animationDuration = (8 + Math.random() * 7) + "s";
+  container.appendChild(petal);
+  setTimeout(() => petal.remove(), 16000);
+}
+
+function createRain() {
+  const container = document.getElementById("effects");
+  if (!container) return;
+  const drop = document.createElement("span");
+  drop.className = "raindrop";
+  drop.style.left = Math.random() * 100 + "vw";
+  drop.style.animationDuration = (0.8 + Math.random() * 0.9) + "s";
+  drop.style.opacity = (0.2 + Math.random() * 0.3).toFixed(2);
+  container.appendChild(drop);
+  setTimeout(() => drop.remove(), 2000);
+}
+
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (!prefersReducedMotion) startEffects();
+
+/* ==========================================================
+   TYPEWRITER ENGINE (works for all scripts)
+   ========================================================== */
+const handwriting = document.getElementById("handwriting");
+const paper = document.getElementById("paper");
+const pen = document.getElementById("pen");
+const progress = document.getElementById("progress");
+const statusText = document.getElementById("status");
+const signature = document.getElementById("signature");
+
+if (!CONFIG.showPen) pen.style.display = "none";
+
+let timer = null;
+let writing = false;
+let currentIndex = 0;
+let totalTokens = 0;
+
+const SPEED = {
+  slow: 220,
+  normal: 155,
+  fast: 90,
+  instant: 0
+};
+
+function createLetter() {
+  handwriting.replaceChildren();
+  const text = CONFIG.letterBody || "";
+  // Tokenise into grapheme clusters + whitespace so Malayalam/Hindi/etc.
+  // combining marks reveal together (no broken glyphs).
+  let tokens;
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+    tokens = Array.from(seg.segment(text), s => s.segment);
+  } else {
+    tokens = Array.from(text);
+  }
+  totalTokens = tokens.length;
+  currentIndex = 0;
+  tokens.forEach(chunk => {
+    const span = document.createElement("span");
+    span.className = "char";
+    span.textContent = chunk;
+    handwriting.appendChild(span);
+  });
+}
+
+function updatePen() {
+  if (!CONFIG.showPen) return;
+  const spans = handwriting.querySelectorAll(".char");
+  if (currentIndex === 0 || currentIndex >= spans.length) return;
+  const current = spans[currentIndex - 1];
+  if (!current) return;
+  const paperRect = paper.getBoundingClientRect();
+  const rect = current.getBoundingClientRect();
+  pen.style.left = (rect.right - paperRect.left + paper.scrollLeft) + "px";
+  pen.style.top = (rect.bottom - paperRect.top + paper.scrollTop - 7) + "px";
+}
+
+function finishWriting() {
+  writing = false;
+  clearInterval(timer);
+  if (CONFIG.showPen) pen.classList.remove("active");
+  progress.style.width = "100%";
+  statusText.textContent = "കത്ത് പൂർത്തിയായി... ❤️";
+  signature.classList.add("visible");
+}
+
+function writeNext() {
+  const spans = handwriting.querySelectorAll(".char");
+  if (currentIndex >= spans.length) { finishWriting(); return; }
+  spans[currentIndex].classList.add("visible");
+  currentIndex++;
+  const pct = (currentIndex / spans.length) * 100;
+  progress.style.width = pct + "%";
+  updatePen();
+  if (currentIndex % 25 === 0) statusText.textContent = "മനസ്സിൽ നിന്നൊരു വാക്ക് കൂടി... ✍️";
+}
+
+function startWriting() {
+  clearInterval(timer);
+  createLetter();
+  signature.classList.remove("visible");
+  progress.style.width = "0%";
+  statusText.textContent = "നിനക്കായി ഓരോ വാക്കും എഴുതുകയാണ്... ✍️";
+  writing = true;
+  if (CONFIG.showPen) pen.classList.add("active");
+
+  const delay = SPEED[CONFIG.writingSpeed] ?? SPEED.normal;
+
+  if (delay === 0) {
+    // instant
+    handwriting.querySelectorAll(".char").forEach(el => el.classList.add("visible"));
+    progress.style.width = "100%";
+    finishWriting();
+    return;
+  }
+
+  timer = setInterval(() => {
+    for (let i = 0; i < 2; i++) {
+      writeNext();
+      if (!writing) break;
+    }
+  }, delay);
+}
+
+function openLetter() {
+  const scene = document.getElementById("envelopeScene");
+  const button = document.getElementById("openBtn");
+  button.disabled = true;
+  button.textContent = "കത്ത് തുറക്കുന്നു... 💌";
+  scene.classList.add("open");
+
+  setTimeout(() => {
+    document.getElementById("page1").classList.remove("active");
+    document.getElementById("page2").classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    startWriting();
+  }, 1100);
+}
+
+function replayLetter() {
+  document.getElementById("ending").classList.remove("visible");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  startWriting();
+}
+
+function showEnding() {
+  document.getElementById("ending").classList.add("visible");
+  document.getElementById("ending").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+window.openLetter = openLetter;
+window.replayLetter = replayLetter;
+window.showEnding = showEnding;
+
+/* ==========================================================
+   LIVE PREVIEW — editor postMessage updates
+   ========================================================== */
+window.addEventListener("message", (event) => {
+  if (event.origin && event.origin !== window.location.origin) return;
+  if (!event.data || event.data.type !== "NIVA_PREVIEW_UPDATE") return;
+  const data = event.data.data || {};
+
+  // Re-resolve language font if changed
+  if (data.language && LANGUAGE_FONTS[data.language]) {
+    const li = LANGUAGE_FONTS[data.language];
+    document.documentElement.style.setProperty("--hand-font", li.font);
+    document.documentElement.lang = data.language;
+    document.documentElement.dir = li.dir;
+  }
+
+  setText("envelopeTitle", data.envelopeTitle);
+  setHTML("envelopeSubtitle", (data.envelopeSubtitle || "").replace(/\n/g, "<br>"));
+  setText("openBtnText", data.openButtonText);
+  setText("letterHeading", data.letterHeading);
+  setText("letterEyebrow", data.letterEyebrow);
+  setText("paperTopLabel", data.paperTopLabel);
+  setText("letterPreview", (data.partnerName || CONFIG.partnerName || "") + " ♡");
+  setText("signature", data.signatureLine);
+  setText("ending", data.endingText);
+
+  if (data.letterBody) CONFIG.letterBody = data.letterBody;
+
+  if (data.themeMode || data.colorPalette) {
+    applyTheme(data.themeMode || CONFIG.themeMode, data.colorPalette || CONFIG.colorPalette);
+  }
+
+  if (data.animationStyle || data.animationIntensity) {
+    CONFIG.animationStyle = data.animationStyle || CONFIG.animationStyle;
+    CONFIG.animationIntensity = data.animationIntensity || CONFIG.animationIntensity;
+    startEffects();
+  }
+
+  if (data.writingSpeed) CONFIG.writingSpeed = data.writingSpeed;
+});
+
+if (window.parent && window.parent !== window) {
+  try { window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, "*"); } catch (e) {}
+}
+</script>
+
+</body>
+</html>

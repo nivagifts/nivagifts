@@ -5,7 +5,7 @@
   "description": "A romantic handwritten letter experience with an opening envelope, two love letter pages, floating hearts, and a little celebration.",
   "price": 39,
   "currency": "INR",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "active": true,
   "templatePath": "/templates/letters/loveletter/template.html",
   "previewImage": "/templates/letters/loveletter/preview.jpg",
@@ -17,12 +17,10 @@
     "Light / dark theme + colour palette selector",
     "Responsive on mobile and desktop"
   ],
-
   "templateLimits": {
     "photoSlots": 0,
     "note": "This template is text-only. No photo uploads. Editor must hide the image gallery field."
   },
-
   "customization": {
     "partnerName": {
       "label": "Their name",
@@ -89,7 +87,6 @@
       "required": false,
       "maxLength": 200
     },
-
     "themeMode": {
       "label": "Theme mode",
       "type": "select",
@@ -101,7 +98,6 @@
       ],
       "help": "Switches the whole letter between light and dark theme."
     },
-
     "colorPalette": {
       "label": "Colour palette",
       "type": "select",
@@ -118,14 +114,12 @@
       "help": "Changes ink, paper, buttons and background tint colours."
     }
   },
-
   "sections": [
     { "title": "The names", "subtitle": "Who is this letter for?", "fields": ["partnerName", "senderName"] },
     { "title": "Page one — the beginning", "subtitle": "The first page of your letter.", "fields": ["pageOneTitle", "pageOneSubtitle", "pageOneBody"] },
     { "title": "Page two — from my heart", "subtitle": "The deeper feelings.", "fields": ["pageTwoTitle", "pageTwoSubtitle", "pageTwoBody", "finalLine"] },
     { "title": "Theme & colours", "subtitle": "Match the mood of your letter.", "fields": ["themeMode", "colorPalette"] }
   ],
-
   "preview": {
     "nameField": "partnerName",
     "senderField": "senderName",
