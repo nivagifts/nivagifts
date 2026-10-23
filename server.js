@@ -977,7 +977,7 @@ app.get("/api/account", requireAuthenticated, async (req, res, next) => {
 
 const ALLOWED_TEMPLATE_IDS = new Set([
   "eternal-love", "love-proposal", "birthday-magic", "loveletter",
-  "eternal-anniversary", "besties", "memory-box",
+  "eternal-anniversary", "besties", "memory-box","apologyletter",
 ]);
 
 const TEMPLATE_PRICES = {
