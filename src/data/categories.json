@@ -25,7 +25,7 @@
       "sortOrder": 3
     },
     {
-      "id": "friendship",
+      "id": "friedship",
       "name": "Friendship",
       "emoji": "🫶",
       "description": "Celebrate friendship, inside jokes, and unforgettable adventures.",
@@ -39,6 +39,14 @@
       "description": "Preserve your favourite photos, stories, and special moments in one place.",
       "active": true,
       "sortOrder": 5
+    },
+    {
+      "id": "letters",
+      "name": "Letters",
+      "emoji": "✉️",
+      "description": "Express your feelings through heartfelt letters and messages.",
+      "active": true,
+      "sortOrder": 6
     }
   ]
 }
