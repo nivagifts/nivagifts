@@ -375,6 +375,12 @@ async function runMigrations() {
         published_at TIMESTAMPTZ
       );`);
 
+    /* FIX: Add payment_id to an existing legacy table */
+    await pool.query(`
+      ALTER TABLE app.gifts
+      ADD COLUMN IF NOT EXISTS payment_id BIGINT;
+    `);
+
     /* Add FK on gifts -> payments if missing (for legacy DBs) */
     await pool.query(`
       DO $$
