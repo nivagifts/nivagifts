@@ -386,7 +386,7 @@
   <!-- HEADER -->
   <header class="nav-shell">
     <div class="wrap nav">
-      <a class="brand" href="#home" aria-label="NIVA home">
+      <a class="brand" href="index.html" aria-label="NIVA home" data-home-link>
         <img src="public/assets/logo/photo_2026-10-21_07-33-50.jpg" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
         <span class="brand-text">
           <span class="brand-word">NIVA</span>
@@ -405,12 +405,12 @@
       <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
 
       <nav class="nav-links" id="navLinks">
-        <a href="#templates">Templates</a>
-        <a href="#reviews">Reviews</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
-        <a class="btn btn-primary" href="#templates">Create a gift ↗</a>
+        <a href="index.html#templates">Templates</a>
+        <a href="index.html#reviews">Reviews</a>
+        <a href="index.html#pricing">Pricing</a>
+        <a href="index.html#faq">FAQ</a>
+        <a href="index.html#contact">Contact</a>
+        <a class="btn btn-primary" href="index.html#templates">Create a gift ↗</a>
       </nav>
     </div>
   </header>
@@ -536,8 +536,8 @@
           <h1>Some feelings<br>deserve more<br>than <em>a message.</em></h1>
           <p class="hero-lead">Create a personal mini-website as a gift — filled with your favourite photos, words, dates and memories. Choose a design, preview it, then make it yours.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#templates">Explore templates ↗</a>
-            <a class="btn btn-quiet" href="#how">How it works ↓</a>
+            <a class="btn btn-primary" href="index.html#templates">Explore templates ↗</a>
+            <a class="btn btn-quiet" href="index.html#how">How it works ↓</a>
           </div>
           <div class="micro-proof">
             <div class="proof-icons"><span>♥</span><span>✦</span><span>∞</span></div>
@@ -804,6 +804,13 @@
               <p><a href="https://instagram.com/niva.gifts" target="_blank" rel="noopener">@niva.gifts</a></p>
             </div>
           </div>
+          <div class="contact-card">
+            <div class="contact-icon">◉</div>
+            <div class="contact-info">
+              <h3>Instagram</h3>
+              <p><a href="https://instagram.com/nivitherobo" target="_blank" rel="noopener">@nivitherobo</a></p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -815,7 +822,7 @@
           <span class="eyebrow">For the people who mean everything</span>
           <h2>Make a little world<br><span class="gradient">out of your feeling.</span></h2>
           <p>Start with a name, a memory, a reason. The most meaningful gifts don't need to be loud — they just need to feel like you.</p>
-          <a class="btn btn-primary" href="#templates">Explore gift templates ↗</a>
+          <a class="btn btn-primary" href="index.html#templates">Explore gift templates ↗</a>
         </div>
       </div>
     </section>
@@ -824,7 +831,7 @@
   <footer class="footer">
     <div class="wrap">
       <div class="footer-main">
-        <a href="#home" class="footer-brand">
+        <a href="index.html" class="footer-brand" data-home-link>
           <img src="public/assets/logo/photo_2026-10-21_07-33-50.jpg" alt="NIVA Logo" class="brand-logo" style="object-fit:cover;">
           <span>
             <span class="footer-brand-name">NIVA</span>
@@ -832,11 +839,11 @@
           </span>
         </a>
         <div class="footer-links">
-          <a href="#templates">Templates</a>
-          <a href="#reviews">Reviews</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faq">FAQ</a>
-          <a href="#contact">Contact</a>
+          <a href="index.html#templates">Templates</a>
+          <a href="index.html#reviews">Reviews</a>
+          <a href="index.html#pricing">Pricing</a>
+          <a href="index.html#faq">FAQ</a>
+          <a href="index.html#contact">Contact</a>
           <a href="./privacy.html">Privacy</a>
         </div>
       </div>
@@ -876,6 +883,15 @@
       </div>
     </div>
   </div>
+
+  <!-- NIVI CONTACT CONFIG — exposed for the chatbot -->
+  <script>
+    window.NIVA_CONTACT = {
+      instagram: "niva.gifts",
+      instagramUrl: "https://instagram.com/niva.gifts",
+      email: "nivatheofficial@gmail.com"
+    };
+  </script>
 
   <script>
     (() => {
@@ -1847,6 +1863,56 @@
         }
       }
 
+      /* ---------- FIX: HOME NAVIGATION FROM OTHER PAGES ---------- */
+      function initHomeNavigation() {
+        // When this page is loaded, ensure we're at the top or correct hash
+        if (window.location.hash) {
+          const target = document.querySelector(window.location.hash);
+          if (target) {
+            setTimeout(() => {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+          }
+        } else {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
+        // Handle any link that points to index.html with a hash while already on index
+        document.addEventListener('click', (e) => {
+          const link = e.target.closest('a[href]');
+          if (!link) return;
+          const href = link.getAttribute('href');
+          if (!href) return;
+
+          // Only handle same-page index.html#hash links
+          const isIndexHash = href.startsWith('index.html#') || href.startsWith('./index.html#');
+          if (!isIndexHash) return;
+
+          if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+            e.preventDefault();
+            const hash = href.substring(href.indexOf('#'));
+            const target = document.querySelector(hash);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              history.replaceState(null, '', hash);
+            }
+          }
+        });
+
+        // Ensure brand/home links work from any page — fallback if href is not a full path
+        $$('[data-home-link]').forEach(link => {
+          const currentPath = window.location.pathname;
+          const isHome = currentPath.endsWith('index.html') || currentPath === '/' || currentPath.endsWith('/');
+          if (isHome) {
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              history.replaceState(null, '', 'index.html');
+            });
+          }
+        });
+      }
+
       document.addEventListener("keydown", e => {
         if (e.key !== "Escape") return;
         window._nivaCloseMenu?.();
@@ -1923,6 +1989,7 @@
         initPreview();
         initReviews();
         initReveal();
+        initHomeNavigation();
 
         const user = await fetchUser();
         if (user) {
@@ -1954,6 +2021,7 @@
     })();
   </script>
 
+  <!-- NIVI BOT -->
   <script src="/nivabot.js" defer></script>
 </body>
 </html>

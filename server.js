@@ -1,4 +1,4 @@
-﻿﻿﻿/* =========================================================
+﻿﻿/* =========================================================
    NIVA SERVER — Production Version
    PAYMENT-GATED GIFT PUBLISHING
    
@@ -268,10 +268,12 @@ function resetEmailHTML(code, username) {
 }
 
 /* ---------- 11. MIGRATIONS ---------- */
+/* ⚠️  CRITICAL: payments MUST be created BEFORE gifts (gifts FK references payments) */
 async function runMigrations() {
   try {
     await pool.query(`CREATE SCHEMA IF NOT EXISTS app;`);
 
+    /* 1. USERS */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.users (
         id BIGSERIAL PRIMARY KEY,
@@ -310,6 +312,7 @@ async function runMigrations() {
         END IF;
       END $$;`);
 
+    /* 2. SESSIONS */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.sessions (
         sid VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
@@ -318,6 +321,42 @@ async function runMigrations() {
       );`);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_sessions_expire ON app.sessions (expire);`);
 
+    /* 3. PAYMENTS — MUST come BEFORE gifts */
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app.payments (
+        id BIGSERIAL PRIMARY KEY,
+        user_id BIGINT REFERENCES app.users(id) ON DELETE CASCADE,
+        gift_id UUID,
+        amount_inr INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'failed')),
+        provider TEXT DEFAULT 'razorpay',
+        provider_order_id TEXT,
+        provider_payment_id TEXT,
+        template_id TEXT,
+        consumed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        paid_at TIMESTAMPTZ
+      );`);
+
+    /* Add missing columns to legacy payments table */
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='template_id') THEN
+          ALTER TABLE app.payments ADD COLUMN template_id TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='consumed') THEN
+          ALTER TABLE app.payments ADD COLUMN consumed BOOLEAN DEFAULT FALSE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='paid_at') THEN
+          ALTER TABLE app.payments ADD COLUMN paid_at TIMESTAMPTZ;
+        END IF;
+      END $$;`);
+
+    /* 4. GIFTS — references payments, users */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.gifts (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -336,6 +375,20 @@ async function runMigrations() {
         published_at TIMESTAMPTZ
       );`);
 
+    /* Add FK on gifts -> payments if missing (for legacy DBs) */
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'gifts_payment_id_fkey'
+        ) THEN
+          ALTER TABLE app.gifts
+          ADD CONSTRAINT gifts_payment_id_fkey
+          FOREIGN KEY (payment_id) REFERENCES app.payments(id);
+        END IF;
+      END $$;`);
+
+    /* 5. EMAIL CODES */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.email_codes (
         id BIGSERIAL PRIMARY KEY,
@@ -361,6 +414,7 @@ async function runMigrations() {
     } catch (_) {}
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_email_codes_lookup ON app.email_codes (email, type, used);`);
 
+    /* 6. REVIEWS */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.reviews (
         id BIGSERIAL PRIMARY KEY,
@@ -373,54 +427,7 @@ async function runMigrations() {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );`);
 
-    // payments table — must exist BEFORE gifts FK (gifts references payments)
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS app.payments (
-        id BIGSERIAL PRIMARY KEY,
-        user_id BIGINT REFERENCES app.users(id) ON DELETE CASCADE,
-        gift_id UUID,
-        amount_inr INTEGER NOT NULL,
-        status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'failed')),
-        provider TEXT DEFAULT 'razorpay',
-        provider_order_id TEXT,
-        provider_payment_id TEXT,
-        template_id TEXT,
-        consumed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        paid_at TIMESTAMPTZ
-      );`);
-
-    // Add missing columns to legacy payments table if it exists
-    await pool.query(`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
-          WHERE table_schema='app' AND table_name='payments' AND column_name='template_id') THEN
-          ALTER TABLE app.payments ADD COLUMN template_id TEXT;
-        END IF;
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
-          WHERE table_schema='app' AND table_name='payments' AND column_name='consumed') THEN
-          ALTER TABLE app.payments ADD COLUMN consumed BOOLEAN DEFAULT FALSE;
-        END IF;
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
-          WHERE table_schema='app' AND table_name='payments' AND column_name='paid_at') THEN
-          ALTER TABLE app.payments ADD COLUMN paid_at TIMESTAMPTZ;
-        END IF;
-      END $$;`);
-
-    // Now add the FK on gifts -> payments (after both exist)
-    await pool.query(`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM pg_constraint WHERE conname = 'gifts_payment_id_fkey'
-        ) THEN
-          ALTER TABLE app.gifts
-          ADD CONSTRAINT gifts_payment_id_fkey
-          FOREIGN KEY (payment_id) REFERENCES app.payments(id);
-        END IF;
-      END $$;`);
-
+    /* 7. DRAFTS */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.drafts (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -433,6 +440,7 @@ async function runMigrations() {
       );`);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_drafts_user ON app.drafts (user_id, updated_at DESC);`);
 
+    /* 8. WISHLIST */
     await pool.query(`
       CREATE TABLE IF NOT EXISTS app.wishlist (
         id BIGSERIAL PRIMARY KEY,
@@ -447,6 +455,7 @@ async function runMigrations() {
   } catch (err) {
     console.error("❌ Migration error:", err.message);
     console.error("Full error:", err);
+    throw err;  // Do NOT swallow — fail startup so DB issues are noticed
   }
 }
 
@@ -760,7 +769,8 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
     }
     if (!user.password_hash) {
       return res.status(403).json({
-        success: false, needsPasswordSetup: true, needsVerification: !user.email_verified,
+        success: false,
+        needsPasswordSetup: true, needsVerification: !user.email_verified,
         email: user.email, username: user.username || null,
         message: user.email_verified
           ? "Your account has no password yet. Please set a password."
@@ -1688,7 +1698,13 @@ app.use((err, req, res, next) => {
 
 /* ---------- 22. STARTUP ---------- */
 const server = app.listen(PORT, async () => {
-  await runMigrations();
+  try {
+    await runMigrations();
+  } catch (err) {
+    console.error("❌ Fatal: migrations failed. Server will not start correctly.");
+    console.error(err);
+    process.exit(1);
+  }
   console.log("");
   console.log("╔════════════════════════════════════════════╗");
   console.log("║   ✦ NIVA is running ✦                     ║");

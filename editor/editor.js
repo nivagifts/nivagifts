@@ -1,4 +1,4 @@
-﻿﻿﻿/* =========================================================
+﻿﻿/* =========================================================
    NIVA UNIVERSAL GIFT EDITOR — Payment-Gated Publishing
    
    ⚠️ CRITICAL FLOW ⚠️
@@ -1022,21 +1022,15 @@ function updatePlanSummary() {
 }
 
 /* =========================================================
-   15. PUBLISH — PAYMENT GATE (FIXED)
-   
-   Sequence (in order — any failure aborts and no link appears):
+   15. PUBLISH — PAYMENT GATE
+   Sequence:
      1. Validate password
      2. Build encrypted envelope locally
-     3. POST /api/payments/create-order  → get orderId
-     4. POST /api/payments/confirm/verify → server marks PAID
+     3. POST /api/payments/create-order → orderId
+     4. Confirm (mock) or verify (razorpay) → server marks PAID
      5. POST /api/gifts {orderId, envelope} → server verifies PAID
-                                              then generates link
-     6. Display link (only now)
-   
-   FIX: The envelope is now passed DIRECTLY into publishGift()
-   instead of relying on window._lastEnvelope (which was never set)
-   or rebuildEnvelope() (which could fail if the password field
-   was already cleared).
+                                              → generates link
+     6. Display link
    ========================================================= */
 (() => {
   const button = document.getElementById("publishGiftButton");
@@ -1055,9 +1049,9 @@ function updatePlanSummary() {
 
   const encoder = new TextEncoder();
 
-  // Persist envelope/orderId across the async Razorpay callback
   let pendingEnvelope = null;
   let pendingOrderId = null;
+  let isPublishing = false;
 
   function setStatus(msg, isError = false) {
     if (!status) return;
@@ -1074,6 +1068,12 @@ function updatePlanSummary() {
   }
 
   function hideProgress() { progress?.classList.remove("show"); }
+
+  function resetPending() {
+    pendingEnvelope = null;
+    pendingOrderId = null;
+    isPublishing = false;
+  }
 
   function toBase64(bytes) {
     let binary = "";
@@ -1145,12 +1145,6 @@ function updatePlanSummary() {
     return envelope;
   }
 
-  /**
-   * Shared publish step — receives the ALREADY-BUILT envelope and the
-   * orderId whose payment is already marked paid on the server.
-   * Server verifies the payment is PAID + not consumed before returning
-   * a gift URL. On success shows the link. On error, throws.
-   */
   async function publishGift(orderId, envelope) {
     setProgress("Publishing your gift…", 95);
 
@@ -1185,19 +1179,58 @@ function updatePlanSummary() {
     if (confirmInput) confirmInput.value = "";
     setTimeout(hideProgress, 800);
     button.disabled = false;
+    isPublishing = false;
 
     try { result?.scrollIntoView({ behavior: "smooth", block: "center" }); } catch {}
 
-    pendingEnvelope = null;
-    pendingOrderId = null;
+    resetPending();
+  }
+
+  async function buildPayloadAndEnvelope(password) {
+    const gift = window.NIVAEditor.getGiftData();
+    const photos = window.NIVAEditor.getPhotos();
+    const media = window.NIVAEditor.getMediaFiles();
+
+    const totalMediaBytes =
+      photos.reduce((sum, photo) => sum + (photo.file?.size || 0), 0) +
+      media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
+
+    if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
+      throw new Error(`Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`);
+    }
+
+    const totalSteps = photos.length + media.length + 4;
+    let step = 0;
+
+    const photoPayload = [];
+    for (const photo of photos) {
+      setProgress(`Compressing photo ${step + 1}/${photos.length}…`, (step / totalSteps) * 100);
+      photoPayload.push({
+        name: String(photo.name || "Memory").slice(0, 120),
+        dataUrl: await fileAsCompressedDataUrl(photo.file),
+      });
+      step++;
+    }
+
+    const mediaPayload = {};
+    for (const item of media) {
+      setProgress(`Reading ${item.type}…`, (step / totalSteps) * 100);
+      try { mediaPayload[item.key] = await fileAsDataUrl(item.file); }
+      catch { mediaPayload[item.key] = ""; }
+      step++;
+    }
+
+    setProgress("Encrypting gift…", 60);
+    const payload = { ...gift, ...mediaPayload, photos: photoPayload };
+    return encryptGift(payload, password);
   }
 
   button.addEventListener("click", async () => {
-    if (button.disabled) return;
+    if (button.disabled || isPublishing) return;
 
-    // ---- Step 0: reset UI ----
     if (result) result.hidden = true;
     if (urlInput) urlInput.value = "";
+
     if (!window.NIVAEditor) {
       setStatus("Editor not ready. Refresh and try again.", true);
       return;
@@ -1217,53 +1250,17 @@ function updatePlanSummary() {
       return;
     }
 
+    isPublishing = true;
     button.disabled = true;
     setStatus("Preparing your gift…");
 
-    // Capture envelope in a local variable so it survives the async flow
     let builtEnvelope = null;
 
     try {
-      // ---- Step 1: build payload (photos + media) ----
-      const gift = window.NIVAEditor.getGiftData();
-      const photos = window.NIVAEditor.getPhotos();
-      const media = window.NIVAEditor.getMediaFiles();
+      // Step 1: build + encrypt
+      builtEnvelope = await buildPayloadAndEnvelope(password);
 
-      const totalMediaBytes =
-        photos.reduce((sum, photo) => sum + (photo.file?.size || 0), 0) +
-        media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
-
-      if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
-        throw new Error(`Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`);
-      }
-
-      const totalSteps = photos.length + media.length + 4;
-      let step = 0;
-
-      const photoPayload = [];
-      for (const photo of photos) {
-        setProgress(`Compressing photo ${step + 1}/${photos.length}…`, (step / totalSteps) * 100);
-        photoPayload.push({
-          name: String(photo.name || "Memory").slice(0, 120),
-          dataUrl: await fileAsCompressedDataUrl(photo.file),
-        });
-        step++;
-      }
-
-      const mediaPayload = {};
-      for (const item of media) {
-        setProgress(`Reading ${item.type}…`, (step / totalSteps) * 100);
-        try { mediaPayload[item.key] = await fileAsDataUrl(item.file); }
-        catch { mediaPayload[item.key] = ""; }
-        step++;
-      }
-
-      // ---- Step 2: encrypt locally ----
-      setProgress("Encrypting gift…", 60);
-      const payload = { ...gift, ...mediaPayload, photos: photoPayload };
-      builtEnvelope = await encryptGift(payload, password);
-
-      // ---- Step 3: create payment order ----
+      // Step 2: create payment order
       setProgress("Creating payment order…", 70);
       const orderRes = await fetch("/api/payments/create-order", {
         method: "POST", credentials: "same-origin",
@@ -1277,10 +1274,9 @@ function updatePlanSummary() {
       const orderId = orderData.orderId;
       if (!orderId) throw new Error("Payment order missing ID.");
 
-      // ---- Step 4: confirm payment (mock) or verify (razorpay) ----
-      setProgress("Confirming payment…", 85);
+      // Step 3: mock confirm
       if (orderData.mock) {
-        // Mock mode — mark order paid immediately
+        setProgress("Confirming payment…", 85);
         const confirmRes = await fetch("/api/payments/confirm", {
           method: "POST", credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
@@ -1290,18 +1286,15 @@ function updatePlanSummary() {
         if (!confirmRes.ok || !confirmData.success) {
           throw new Error(confirmData.message || "Payment failed.");
         }
-
-        // ---- Step 5: publish — pass envelope directly ----
         await publishGift(orderId, builtEnvelope);
         return;
       }
 
-      // Real Razorpay flow
+      // Step 3b: real Razorpay
       if (typeof window.Razorpay !== "function") {
         throw new Error("Payment SDK not loaded. Please refresh and try again.");
       }
 
-      // Save across the Razorpay callback
       pendingEnvelope = builtEnvelope;
       pendingOrderId = orderId;
 
@@ -1327,42 +1320,43 @@ function updatePlanSummary() {
             if (!vRes.ok || !vData.success) {
               setStatus(vData.message || "Payment verification failed.", true);
               button.disabled = false;
+              isPublishing = false;
               hideProgress();
-              pendingEnvelope = null;
-              pendingOrderId = null;
+              resetPending();
               return;
             }
-
-            // Publish using the SAME envelope built before payment
-            await publishGift(pendingOrderId, pendingEnvelope);
+            const env = pendingEnvelope;
+            const oid = pendingOrderId;
+            resetPending();
+            await publishGift(oid, env);
           } catch (err) {
             setStatus(err.message || "Publishing failed.", true);
             button.disabled = false;
+            isPublishing = false;
             hideProgress();
-            pendingEnvelope = null;
-            pendingOrderId = null;
+            resetPending();
           }
         },
         modal: {
           ondismiss: () => {
             setStatus("Payment cancelled. You can try again.", true);
             button.disabled = false;
+            isPublishing = false;
             hideProgress();
-            pendingEnvelope = null;
-            pendingOrderId = null;
+            resetPending();
           },
         },
       });
 
       setProgress("Awaiting payment…", 85);
       rzp.open();
-      return; // flow continues in the handler callback
+      return;
     } catch (err) {
       hideProgress();
       setStatus(err.message || "Something went wrong.", true);
       button.disabled = false;
-      pendingEnvelope = null;
-      pendingOrderId = null;
+      isPublishing = false;
+      resetPending();
     }
   });
 
