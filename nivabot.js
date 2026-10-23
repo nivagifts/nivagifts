@@ -1200,6 +1200,13 @@
             <span class="nivi-contact-icon" aria-hidden="true">◎</span>
             <span class="nivi-contact-text">@niva.gifts</span>
           </a>
+          <a class="nivi-contact-link insta"
+             href="https://instagram.com/nivitherobo"
+             target="_blank" rel="noopener noreferrer"
+             aria-label="NIVA on Instagram">
+            <span class="nivi-contact-icon" aria-hidden="true">◎</span>
+            <span class="nivi-contact-text">@nivitherobo</span>
+          </a>
           <a class="nivi-contact-link email"
              href="mailto:nivatheofficial@gmail.com"
              aria-label="Email NIVA">

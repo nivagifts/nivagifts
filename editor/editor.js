@@ -1,15 +1,16 @@
 ﻿﻿/* =========================================================
-   NIVA UNIVERSAL GIFT EDITOR — No-Payment Publishing (TEST MODE)
+   NIVA UNIVERSAL GIFT EDITOR — Payment-Gated Publishing
    
-   ⚠️ TEST MODE — payment gate ഒഴിവാക്കി ⚠️
+   ⚠️ CRITICAL FLOW ⚠️
    1. User fills form
-   2. Sets gift password
-   3. Clicks "Create My Gift"
-   4. → envelope encrypt ചെയ്യുന്നു (browser-ൽ)
-   5. → POST /api/gifts (payment verification ഇല്ല)
-   6. → Gift link ഉടൻ ലഭിക്കുന്നു
+   2. User clicks "Pay & Create My Gift"
+   3. → create-order (server records pending payment)
+   4. → confirm/verify (server marks payment PAID)
+   5. → POST /api/gifts with orderId + envelope
+   6. Server verifies payment is PAID + not consumed
+   7. ONLY THEN generates gift link
    
-   PRODUCTION-ൽ payment flow തിരികെ ചേർക്കണം.
+   The gift link is NEVER shown until step 6 succeeds.
    ========================================================= */
 "use strict";
 
@@ -1022,11 +1023,15 @@ function updatePlanSummary() {
 }
 
 /* =========================================================
-   15. PUBLISH — NO PAYMENT GATE (TEST MODE)
-   ⚠️ Payment ഒഴിവാക്കി — form fill + password set + click
-   ചെയ്താൽ ഉടൻ gift link generate ആകും.
-   
-   ⚠️ PRODUCTION-ൽ payment flow തിരികെ ചേർക്കണം ⚠️
+   15. PUBLISH — PAYMENT GATE
+   Sequence:
+     1. Validate password
+     2. Build encrypted envelope locally
+     3. POST /api/payments/create-order → orderId
+     4. Confirm (mock) or verify (razorpay) → server marks PAID
+     5. POST /api/gifts {orderId, envelope} → server verifies PAID
+                                              → generates link
+     6. Display link
    ========================================================= */
 (() => {
   const button = document.getElementById("publishGiftButton");
@@ -1044,6 +1049,9 @@ function updatePlanSummary() {
   const progressPct = document.getElementById("progressPercent");
 
   const encoder = new TextEncoder();
+
+  let pendingEnvelope = null;
+  let pendingOrderId = null;
   let isPublishing = false;
 
   function setStatus(msg, isError = false) {
@@ -1061,6 +1069,12 @@ function updatePlanSummary() {
   }
 
   function hideProgress() { progress?.classList.remove("show"); }
+
+  function resetPending() {
+    pendingEnvelope = null;
+    pendingOrderId = null;
+    isPublishing = false;
+  }
 
   function toBase64(bytes) {
     let binary = "";
@@ -1132,8 +1146,7 @@ function updatePlanSummary() {
     return envelope;
   }
 
-  // ✅ Payment verification ഇല്ല — envelope മാത്രം POST ചെയ്യുന്നു
-  async function publishGift(envelope) {
+  async function publishGift(orderId, envelope) {
     setProgress("Publishing your gift…", 95);
 
     const response = await fetch("/api/gifts", {
@@ -1143,6 +1156,7 @@ function updatePlanSummary() {
       body: JSON.stringify({
         templateId: window.NIVAEditor.templateId,
         envelope,
+        orderId,
       }),
       cache: "no-store",
     });
@@ -1150,6 +1164,8 @@ function updatePlanSummary() {
     const data = await response.json().catch(() => ({}));
 
     if (response.status === 401) throw new Error("Please log in before publishing.");
+    if (response.status === 402) throw new Error(data.message || "Payment required.");
+    if (response.status === 409) throw new Error(data.message || "This payment has already been used.");
     if (response.status === 413) throw new Error("Gift too large. Use smaller files.");
     if (!response.ok || !data.success || !data.gift?.url) {
       throw new Error(data.message || "Publishing failed.");
@@ -1167,6 +1183,47 @@ function updatePlanSummary() {
     isPublishing = false;
 
     try { result?.scrollIntoView({ behavior: "smooth", block: "center" }); } catch {}
+
+    resetPending();
+  }
+
+  async function buildPayloadAndEnvelope(password) {
+    const gift = window.NIVAEditor.getGiftData();
+    const photos = window.NIVAEditor.getPhotos();
+    const media = window.NIVAEditor.getMediaFiles();
+
+    const totalMediaBytes =
+      photos.reduce((sum, photo) => sum + (photo.file?.size || 0), 0) +
+      media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
+
+    if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
+      throw new Error(`Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`);
+    }
+
+    const totalSteps = photos.length + media.length + 4;
+    let step = 0;
+
+    const photoPayload = [];
+    for (const photo of photos) {
+      setProgress(`Compressing photo ${step + 1}/${photos.length}…`, (step / totalSteps) * 100);
+      photoPayload.push({
+        name: String(photo.name || "Memory").slice(0, 120),
+        dataUrl: await fileAsCompressedDataUrl(photo.file),
+      });
+      step++;
+    }
+
+    const mediaPayload = {};
+    for (const item of media) {
+      setProgress(`Reading ${item.type}…`, (step / totalSteps) * 100);
+      try { mediaPayload[item.key] = await fileAsDataUrl(item.file); }
+      catch { mediaPayload[item.key] = ""; }
+      step++;
+    }
+
+    setProgress("Encrypting gift…", 60);
+    const payload = { ...gift, ...mediaPayload, photos: photoPayload };
+    return encryptGift(payload, password);
   }
 
   button.addEventListener("click", async () => {
@@ -1198,53 +1255,109 @@ function updatePlanSummary() {
     button.disabled = true;
     setStatus("Preparing your gift…");
 
+    let builtEnvelope = null;
+
     try {
-      // Step 1: Build payload
-      const gift = window.NIVAEditor.getGiftData();
-      const photos = window.NIVAEditor.getPhotos();
-      const media = window.NIVAEditor.getMediaFiles();
+      // Step 1: build + encrypt
+      builtEnvelope = await buildPayloadAndEnvelope(password);
 
-      const totalMediaBytes =
-        photos.reduce((sum, photo) => sum + (photo.file?.size || 0), 0) +
-        media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
-
-      if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
-        throw new Error(`Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`);
+      // Step 2: create payment order
+      setProgress("Creating payment order…", 70);
+      const orderRes = await fetch("/api/payments/create-order", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateId: window.NIVAEditor.templateId }),
+      });
+      const orderData = await orderRes.json().catch(() => ({}));
+      if (!orderRes.ok || !orderData.success) {
+        throw new Error(orderData.message || "Could not create payment order.");
       }
+      const orderId = orderData.orderId;
+      if (!orderId) throw new Error("Payment order missing ID.");
 
-      const totalSteps = photos.length + media.length + 2;
-      let step = 0;
-
-      const photoPayload = [];
-      for (const photo of photos) {
-        setProgress(`Compressing photo ${step + 1}/${photos.length}…`, (step / totalSteps) * 100);
-        photoPayload.push({
-          name: String(photo.name || "Memory").slice(0, 120),
-          dataUrl: await fileAsCompressedDataUrl(photo.file),
+      // Step 3: mock confirm
+      if (orderData.mock) {
+        setProgress("Confirming payment…", 85);
+        const confirmRes = await fetch("/api/payments/confirm", {
+          method: "POST", credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, paymentId: "mock_" + Date.now() }),
         });
-        step++;
+        const confirmData = await confirmRes.json().catch(() => ({}));
+        if (!confirmRes.ok || !confirmData.success) {
+          throw new Error(confirmData.message || "Payment failed.");
+        }
+        await publishGift(orderId, builtEnvelope);
+        return;
       }
 
-      const mediaPayload = {};
-      for (const item of media) {
-        setProgress(`Reading ${item.type}…`, (step / totalSteps) * 100);
-        try { mediaPayload[item.key] = await fileAsDataUrl(item.file); }
-        catch { mediaPayload[item.key] = ""; }
-        step++;
+      // Step 3b: real Razorpay
+      if (typeof window.Razorpay !== "function") {
+        throw new Error("Payment SDK not loaded. Please refresh and try again.");
       }
 
-      // Step 2: Encrypt (browser-ൽ locally)
-      setProgress("Encrypting gift…", 60);
-      const payload = { ...gift, ...mediaPayload, photos: photoPayload };
-      const envelope = await encryptGift(payload, password);
+      pendingEnvelope = builtEnvelope;
+      pendingOrderId = orderId;
 
-      // Step 3: Publish — payment verification ഇല്ല, ഉടൻ link
-      await publishGift(envelope);
+      const rzp = new window.Razorpay({
+        key: orderData.keyId,
+        amount: orderData.amount * 100,
+        currency: orderData.currency,
+        order_id: orderId,
+        name: "NIVA",
+        description: "Gift publishing",
+        handler: async (response) => {
+          try {
+            const vRes = await fetch("/api/payments/verify", {
+              method: "POST", credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: pendingOrderId,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              }),
+            });
+            const vData = await vRes.json().catch(() => ({}));
+            if (!vRes.ok || !vData.success) {
+              setStatus(vData.message || "Payment verification failed.", true);
+              button.disabled = false;
+              isPublishing = false;
+              hideProgress();
+              resetPending();
+              return;
+            }
+            const env = pendingEnvelope;
+            const oid = pendingOrderId;
+            resetPending();
+            await publishGift(oid, env);
+          } catch (err) {
+            setStatus(err.message || "Publishing failed.", true);
+            button.disabled = false;
+            isPublishing = false;
+            hideProgress();
+            resetPending();
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setStatus("Payment cancelled. You can try again.", true);
+            button.disabled = false;
+            isPublishing = false;
+            hideProgress();
+            resetPending();
+          },
+        },
+      });
+
+      setProgress("Awaiting payment…", 85);
+      rzp.open();
+      return;
     } catch (err) {
       hideProgress();
       setStatus(err.message || "Something went wrong.", true);
       button.disabled = false;
       isPublishing = false;
+      resetPending();
     }
   });
 
@@ -1276,7 +1389,7 @@ async function initEditor() {
     bindStaticEvents();
     initPreviewIframe();
     setSaveStatus("Your changes are local");
-    console.info(`[NIVA] Editor ready (TEST MODE): ${context.templateId} · photoSlots=${context.photoSlotLimit}`);
+    console.info(`[NIVA] Editor ready: ${context.templateId} · photoSlots=${context.photoSlotLimit} · price=₹${TEMPLATE_PRICE}`);
   } catch (err) {
     console.error("[NIVA] Editor init failed:", err);
     setSaveStatus("Failed to load template");
