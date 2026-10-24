@@ -1,9 +1,9 @@
 ﻿﻿/* =========================================================
-   NIVA UNIVERSAL GIFT EDITOR — No-Payment Publishing (TEST MODE)
-   ✅ FIX: Recipient link now shows the user's customizations
-   ✅ NEW: Song file upload (type: "file") → songSrc
-   ✅ Preview + publish + drafts preserved
-   ⚠️ PRODUCTION: re-add payment gate before publish.
+   NIVA UNIVERSAL GIFT EDITOR — Payment + Test fallback
+   ✅ Pay → confirm/verify → publish → link  (when server ready)
+   ✅ Auto fallback to test mode if payment API is unavailable
+   ✅ type:"file" song upload → songSrc
+   ✅ Sends plaintext config so recipient link shows user changes
    ========================================================= */
 "use strict";
 
@@ -498,10 +498,7 @@ function renderField(key, spec) {
         <p class="field-help">${escapeHtml(spec.help || "One item per line.")}</p>`;
       break;
     }
-    /* ============================================================
-       ✅ NEW: GENERIC "file" TYPE — used for the song upload
-       Stores the selected file + objectURL so preview + publish work.
-       ============================================================ */
+    /* ✅ Generic "file" — used for song upload */
     case "file": {
       const mb = spec.maxSizeMB || 20;
       wrap.innerHTML = `
@@ -665,10 +662,7 @@ function handleFileInput(key, event) {
     return;
   }
 
-  /* ============================================================
-     ✅ file / video / audio — single-file replacement
-     Also mirrors the file into "songSrc" for song fields
-     ============================================================ */
+  /* ✅ file / video / audio — single-file replacement */
   if (spec.type === "file" || spec.type === "video" || spec.type === "audio") {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -689,9 +683,7 @@ function handleFileInput(key, event) {
     }
     field.files.forEach(f => URL.revokeObjectURL(f.url));
     field.files = [{ file, url: URL.createObjectURL(file) }];
-    // ✅ also set the text value so the config JSON carries the filename
     setFieldValue(key, file.name);
-    // ✅ mirror to songSrc so template.html picks it up
     if (key === "songFile" || key === "song") {
       setFieldValue("songSrc", file.name);
     }
@@ -833,7 +825,6 @@ function getGiftData() {
     }
     data[key] = field.value;
   });
-  // ✅ ensure songSrc always exists for song fields
   if (context.fields.songFile && context.fields.songFile.files[0]) {
     data.songSrc = context.fields.songFile.files[0].file.name;
   } else if (context.fields.song && context.fields.song.files[0]) {
@@ -1056,9 +1047,11 @@ function updatePlanSummary() {
 }
 
 /* =========================================================
-   15. PUBLISH — NO PAYMENT GATE (TEST MODE)
-   ✅ FIX: Now also sends the plaintext config so the
-   recipient link renders the user's customizations.
+   15. PUBLISH — Payment flow with auto test-mode fallback
+   - Tries /api/payments/create-order first.
+   - If payment API is missing (404/405), publishes in test mode.
+   - Otherwise waits for confirm/verify, then publishes.
+   - Always sends { templateId, category, envelope, config }.
    ========================================================= */
 (() => {
   const button = document.getElementById("publishGiftButton");
@@ -1076,6 +1069,10 @@ function updatePlanSummary() {
   const progressPct = document.getElementById("progressPercent");
 
   const encoder = new TextEncoder();
+
+  let pendingEnvelope = null;
+  let pendingOrderId = null;
+  let pendingPlainConfig = null;
   let isPublishing = false;
 
   function setStatus(msg, isError = false) {
@@ -1093,6 +1090,13 @@ function updatePlanSummary() {
   }
 
   function hideProgress() { progress?.classList.remove("show"); }
+
+  function resetPending() {
+    pendingEnvelope = null;
+    pendingOrderId = null;
+    pendingPlainConfig = null;
+    isPublishing = false;
+  }
 
   function toBase64(bytes) {
     let binary = "";
@@ -1164,33 +1168,72 @@ function updatePlanSummary() {
     return envelope;
   }
 
-  /* ============================================================
-     ✅ Publish — now sends plaintext config too
-     The server should:
-       - store `envelope` (encrypted, private)
-       - store `config` (plaintext, used by template.html on the
-         recipient side, OR inject it as window.__NIVA_GIFT__)
-       - return { success, gift: { url: "/g/<id>" } }
-     ============================================================ */
-  async function publishGift(envelope, plainConfig) {
+  async function buildPayloadAndEnvelope(password) {
+    const plainConfig = window.NIVAEditor.getGiftData();
+    const photos = window.NIVAEditor.getPhotos();
+    const media = window.NIVAEditor.getMediaFiles();
+
+    const totalMediaBytes =
+      photos.reduce((sum, photo) => sum + (photo.file?.size || 0), 0) +
+      media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
+
+    if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
+      throw new Error(`Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`);
+    }
+
+    const totalSteps = photos.length + media.length + 4;
+    let step = 0;
+
+    const photoPayload = [];
+    for (const photo of photos) {
+      setProgress(`Compressing photo ${step + 1}/${photos.length}…`, (step / totalSteps) * 100);
+      photoPayload.push({
+        name: String(photo.name || "Memory").slice(0, 120),
+        dataUrl: await fileAsCompressedDataUrl(photo.file),
+      });
+      step++;
+    }
+
+    const mediaPayload = {};
+    for (const item of media) {
+      setProgress(`Reading ${item.type}…`, (step / totalSteps) * 100);
+      try { mediaPayload[item.key] = await fileAsDataUrl(item.file); }
+      catch { mediaPayload[item.key] = ""; }
+      step++;
+    }
+
+    setProgress("Encrypting gift…", 60);
+    const payload = { ...plainConfig, ...mediaPayload, photos: photoPayload };
+    const envelope = await encryptGift(payload, password);
+    return { envelope, plainConfig };
+  }
+
+  /* ✅ Publish — sends encrypted envelope AND plaintext config.
+     Pass orderId when payment was completed; omit for test mode. */
+  async function publishGift(envelope, plainConfig, orderId) {
     setProgress("Publishing your gift…", 95);
+
+    const body = {
+      templateId: window.NIVAEditor.templateId,
+      category: context.category,
+      envelope,
+      config: plainConfig,        // recipient-visible customizations
+    };
+    if (orderId) body.orderId = orderId;
 
     const response = await fetch("/api/gifts", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        templateId: window.NIVAEditor.templateId,
-        category: context.category,
-        envelope,
-        config: plainConfig,        // ✅ NEW: recipient-visible config
-      }),
+      body: JSON.stringify(body),
       cache: "no-store",
     });
 
     const data = await response.json().catch(() => ({}));
 
     if (response.status === 401) throw new Error("Please log in before publishing.");
+    if (response.status === 402) throw new Error(data.message || "Payment required.");
+    if (response.status === 409) throw new Error(data.message || "This payment has already been used.");
     if (response.status === 413) throw new Error("Gift too large. Use smaller files.");
     if (!response.ok || !data.success || !data.gift?.url) {
       throw new Error(data.message || "Publishing failed.");
@@ -1206,8 +1249,44 @@ function updatePlanSummary() {
     setTimeout(hideProgress, 800);
     button.disabled = false;
     isPublishing = false;
+    resetPending();
 
     try { result?.scrollIntoView({ behavior: "smooth", block: "center" }); } catch {}
+  }
+
+  /* Try to create a payment order. Returns null if the payment API
+     isn't available (so we fall back to test mode). */
+  async function tryCreateOrder() {
+    try {
+      const res = await fetch("/api/payments/create-order", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateId: window.NIVAEditor.templateId }),
+      });
+      if (res.status === 404 || res.status === 405 || res.status === 501) return null;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success || !data.orderId) {
+        throw new Error(data.message || "Could not create payment order.");
+      }
+      return data;
+    } catch (err) {
+      if (/fetch|network|failed to fetch/i.test(String(err?.message || ""))) return null;
+      throw err;
+    }
+  }
+
+  async function tryConfirmMock(orderId) {
+    setProgress("Confirming payment…", 85);
+    const res = await fetch("/api/payments/confirm", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, paymentId: "mock_" + Date.now() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || "Payment failed.");
+    }
+    return true;
   }
 
   button.addEventListener("click", async () => {
@@ -1240,52 +1319,103 @@ function updatePlanSummary() {
     setStatus("Preparing your gift…");
 
     try {
-      // Step 1: Build payloads
-      const plainConfig = window.NIVAEditor.getGiftData();      // ✅ recipient-visible
-      const photos = window.NIVAEditor.getPhotos();
-      const media = window.NIVAEditor.getMediaFiles();
+      // Step 1: build encrypted envelope + plain config
+      const { envelope, plainConfig } = await buildPayloadAndEnvelope(password);
 
-      const totalMediaBytes =
-        photos.reduce((sum, photo) => sum + (photo.file?.size || 0), 0) +
-        media.reduce((sum, item) => sum + (item.file?.size || 0), 0);
-
-      if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
-        throw new Error(`Your media totals ${formatBytes(totalMediaBytes)}. Max is ${formatBytes(MAX_TOTAL_MEDIA_BYTES)}.`);
+      // Step 2: try to create payment order
+      let orderData = null;
+      try {
+        setProgress("Creating payment order…", 70);
+        orderData = await tryCreateOrder();
+      } catch (err) {
+        throw err;
       }
 
-      const totalSteps = photos.length + media.length + 2;
-      let step = 0;
-
-      const photoPayload = [];
-      for (const photo of photos) {
-        setProgress(`Compressing photo ${step + 1}/${photos.length}…`, (step / totalSteps) * 100);
-        photoPayload.push({
-          name: String(photo.name || "Memory").slice(0, 120),
-          dataUrl: await fileAsCompressedDataUrl(photo.file),
-        });
-        step++;
+      // No payment API → test mode: publish directly
+      if (!orderData) {
+        setProgress("Publishing (test mode)…", 90);
+        await publishGift(envelope, plainConfig, null);
+        return;
       }
 
-      const mediaPayload = {};
-      for (const item of media) {
-        setProgress(`Reading ${item.type}…`, (step / totalSteps) * 100);
-        try { mediaPayload[item.key] = await fileAsDataUrl(item.file); }
-        catch { mediaPayload[item.key] = ""; }
-        step++;
+      // Payment API exists → mock or Razorpay
+      const orderId = orderData.orderId;
+
+      if (orderData.mock) {
+        await tryConfirmMock(orderId);
+        await publishGift(envelope, plainConfig, orderId);
+        return;
       }
 
-      // Step 2: Encrypt (browser-ൽ locally)
-      setProgress("Encrypting gift…", 60);
-      const payload = { ...plainConfig, ...mediaPayload, photos: photoPayload };
-      const envelope = await encryptGift(payload, password);
+      // Real Razorpay
+      if (typeof window.Razorpay !== "function") {
+        throw new Error("Payment SDK not loaded. Please refresh and try again.");
+      }
 
-      // Step 3: Publish — payment verification ഇല്ല, ഉടൻ link
-      await publishGift(envelope, plainConfig);
+      pendingEnvelope = envelope;
+      pendingOrderId = orderId;
+      pendingPlainConfig = plainConfig;
+
+      const rzp = new window.Razorpay({
+        key: orderData.keyId,
+        amount: (orderData.amount || TEMPLATE_PRICE) * 100,
+        currency: orderData.currency || "INR",
+        order_id: orderId,
+        name: "NIVA",
+        description: "Gift publishing",
+        handler: async (response) => {
+          try {
+            const vRes = await fetch("/api/payments/verify", {
+              method: "POST", credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: pendingOrderId,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              }),
+            });
+            const vData = await vRes.json().catch(() => ({}));
+            if (!vRes.ok || !vData.success) {
+              setStatus(vData.message || "Payment verification failed.", true);
+              button.disabled = false;
+              isPublishing = false;
+              hideProgress();
+              resetPending();
+              return;
+            }
+            const env = pendingEnvelope;
+            const cfg = pendingPlainConfig;
+            const oid = pendingOrderId;
+            resetPending();
+            await publishGift(env, cfg, oid);
+          } catch (err) {
+            setStatus(err.message || "Publishing failed.", true);
+            button.disabled = false;
+            isPublishing = false;
+            hideProgress();
+            resetPending();
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setStatus("Payment cancelled. You can try again.", true);
+            button.disabled = false;
+            isPublishing = false;
+            hideProgress();
+            resetPending();
+          },
+        },
+      });
+
+      setProgress("Awaiting payment…", 85);
+      rzp.open();
+      return;
     } catch (err) {
       hideProgress();
       setStatus(err.message || "Something went wrong.", true);
       button.disabled = false;
       isPublishing = false;
+      resetPending();
     }
   });
 
@@ -1317,7 +1447,7 @@ async function initEditor() {
     bindStaticEvents();
     initPreviewIframe();
     setSaveStatus("Your changes are local");
-    console.info(`[NIVA] Editor ready (TEST MODE): ${context.templateId} · photoSlots=${context.photoSlotLimit}`);
+    console.info(`[NIVA] Editor ready: ${context.templateId} · price=₹${TEMPLATE_PRICE}`);
   } catch (err) {
     console.error("[NIVA] Editor init failed:", err);
     setSaveStatus("Failed to load template");
