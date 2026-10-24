@@ -1,15 +1,9 @@
 ﻿﻿/* =========================================================
    NIVA UNIVERSAL GIFT EDITOR — No-Payment Publishing (TEST MODE)
-   
-   ⚠️ TEST MODE — payment gate ഒഴിവാക്കി ⚠️
-   1. User fills form
-   2. Sets gift password
-   3. Clicks "Create My Gift"
-   4. → envelope encrypt ചെയ്യുന്നു (browser-ൽ)
-   5. → POST /api/gifts (payment verification ഇല്ല)
-   6. → Gift link ഉടൻ ലഭിക്കുന്നു
-   
-   PRODUCTION-ൽ payment flow തിരികെ ചേർക്കണം.
+   ✅ FIX: Recipient link now shows the user's customizations
+   ✅ NEW: Song file upload (type: "file") → songSrc
+   ✅ Preview + publish + drafts preserved
+   ⚠️ PRODUCTION: re-add payment gate before publish.
    ========================================================= */
 "use strict";
 
@@ -504,6 +498,24 @@ function renderField(key, spec) {
         <p class="field-help">${escapeHtml(spec.help || "One item per line.")}</p>`;
       break;
     }
+    /* ============================================================
+       ✅ NEW: GENERIC "file" TYPE — used for the song upload
+       Stores the selected file + objectURL so preview + publish work.
+       ============================================================ */
+    case "file": {
+      const mb = spec.maxSizeMB || 20;
+      wrap.innerHTML = `
+        <label for="${id}" class="upload-box">
+          <span class="upload-icon" aria-hidden="true">♪</span>
+          <strong>${escapeHtml(spec.label || "Choose a file")}</strong>
+          <span>${escapeHtml(spec.accept || "audio/*")} · up to ${mb} MB</span>
+          <input id="${id}" data-field-key="${key}" type="file"
+                 accept="${escapeHtml(spec.accept || "*/*")}" ${required}>
+        </label>
+        <div class="photo-grid" data-photo-grid="${key}" aria-live="polite"></div>
+        ${spec.help ? `<p class="field-help">${escapeHtml(spec.help)}</p>` : ""}`;
+      break;
+    }
     case "audio": {
       const mb = spec.maxSizeMB || 200;
       wrap.innerHTML = `
@@ -629,7 +641,7 @@ function handleFileInput(key, event) {
         showToast(`This template supports only ${slotLimit} photo${slotLimit === 1 ? "" : "s"}.`);
         break;
       }
-      if (accept.length && !accept.includes(file.type)) {
+      if (accept.length && !accept.includes(file.type) && !accept.some(a => a.endsWith("/*") && file.type.startsWith(a.replace("/*", "")))) {
         showToast(`${file.name}: unsupported type.`);
         continue;
       }
@@ -653,12 +665,17 @@ function handleFileInput(key, event) {
     return;
   }
 
-  if (spec.type === "video" || spec.type === "audio") {
+  /* ============================================================
+     ✅ file / video / audio — single-file replacement
+     Also mirrors the file into "songSrc" for song fields
+     ============================================================ */
+  if (spec.type === "file" || spec.type === "video" || spec.type === "audio") {
     const file = event.target.files?.[0];
     if (!file) return;
-    const maxSize = (spec.maxSizeMB || (spec.type === "video" ? 800 : 200)) * 1024 * 1024;
-    if (accept.length && !accept.includes(file.type)) {
-      showToast(spec.type === "video" ? "Choose an MP4 or WebM video." : "Choose MP3, WAV or OGG.");
+    const maxSize = (spec.maxSizeMB || (spec.type === "video" ? 800 : (spec.type === "audio" ? 200 : 20))) * 1024 * 1024;
+    const wildcardOk = accept.some(a => a.endsWith("/*") && file.type.startsWith(a.replace("/*", "")));
+    if (accept.length && !accept.includes(file.type) && !wildcardOk) {
+      showToast(`Choose a supported file type (${accept.join(", ")}).`);
       event.target.value = ""; return;
     }
     if (file.size > maxSize) {
@@ -672,7 +689,13 @@ function handleFileInput(key, event) {
     }
     field.files.forEach(f => URL.revokeObjectURL(f.url));
     field.files = [{ file, url: URL.createObjectURL(file) }];
-    showToast(`${spec.type === "video" ? "Video" : "Audio"} added: ${file.name}`);
+    // ✅ also set the text value so the config JSON carries the filename
+    setFieldValue(key, file.name);
+    // ✅ mirror to songSrc so template.html picks it up
+    if (key === "songFile" || key === "song") {
+      setFieldValue("songSrc", file.name);
+    }
+    showToast(`${file.name} added.`);
     renderFileGrid(key);
     scheduleAutosave();
     updatePreview();
@@ -687,7 +710,7 @@ function renderFileGrid(key) {
   grid.innerHTML = "";
   field.files.forEach((item, i) => {
     const isVideo = field.spec.type === "video";
-    const isAudio = field.spec.type === "audio";
+    const isAudio = field.spec.type === "audio" || field.spec.type === "file";
     const card = document.createElement("div");
     card.style.cssText = "position:relative;aspect-ratio:1;overflow:hidden;border:1px solid var(--line-rose);border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--bg-rose);";
     if (isVideo) {
@@ -715,6 +738,7 @@ function renderFileGrid(key) {
     remove.addEventListener("click", () => {
       URL.revokeObjectURL(item.url);
       field.files.splice(i, 1);
+      if (key === "songFile" || key === "song") setFieldValue("songSrc", "");
       renderFileGrid(key);
       updatePreview();
       scheduleAutosave();
@@ -753,7 +777,10 @@ function collectPreviewData() {
   Object.entries(context.fields).forEach(([key, field]) => {
     const spec = field.spec;
     if (spec.type === "imageGallery") { data[key] = field.files.map(f => f.url); return; }
-    if (spec.type === "video" || spec.type === "audio") { data[key] = field.files[0]?.url || ""; return; }
+    if (spec.type === "video" || spec.type === "audio" || spec.type === "file") {
+      data[key] = field.files[0]?.url || "";
+      return;
+    }
     if (spec.type === "textArray") {
       data[key] = String(field.value || "").split("\n").map(s => s.trim()).filter(Boolean);
       return;
@@ -796,7 +823,7 @@ function getGiftData() {
     const field = context.fields[key];
     const spec = field.spec;
     if (spec.type === "imageGallery") return;
-    if (spec.type === "video" || spec.type === "audio") {
+    if (spec.type === "video" || spec.type === "audio" || spec.type === "file") {
       data[key] = field.files[0]?.file ? field.files[0].file.name : "";
       return;
     }
@@ -806,6 +833,12 @@ function getGiftData() {
     }
     data[key] = field.value;
   });
+  // ✅ ensure songSrc always exists for song fields
+  if (context.fields.songFile && context.fields.songFile.files[0]) {
+    data.songSrc = context.fields.songFile.files[0].file.name;
+  } else if (context.fields.song && context.fields.song.files[0]) {
+    data.songSrc = context.fields.song.files[0].file.name;
+  }
   return data;
 }
 
@@ -825,7 +858,7 @@ function getMediaFiles() {
   Object.keys(context.fields).forEach(key => {
     const field = context.fields[key];
     if (!field) return;
-    if (field.spec.type !== "video" && field.spec.type !== "audio") return;
+    if (field.spec.type !== "video" && field.spec.type !== "audio" && field.spec.type !== "file") return;
     const f = field.files[0];
     if (f?.file) media.push({ key, type: field.spec.type, file: f.file, name: f.file.name });
   });
@@ -952,7 +985,7 @@ function applyDraftValues(values) {
   Object.entries(values).forEach(([key, val]) => {
     const field = context.fields[key];
     if (!field) return;
-    if (field.spec.type === "imageGallery" || field.spec.type === "audio" || field.spec.type === "video") return;
+    if (field.spec.type === "imageGallery" || field.spec.type === "audio" || field.spec.type === "video" || field.spec.type === "file") return;
     field.value = val;
     const input = $(`[data-field-key="${key}"]`);
     if (!input) return;
@@ -986,7 +1019,7 @@ function resetEditor() {
       else if (input.type === "file") input.value = "";
       else input.value = field.value;
     }
-    if (spec.type === "imageGallery" || spec.type === "video" || spec.type === "audio") renderFileGrid(key);
+    if (spec.type === "imageGallery" || spec.type === "video" || spec.type === "audio" || spec.type === "file") renderFileGrid(key);
     updateCounter(key);
   });
   try {
@@ -1024,10 +1057,8 @@ function updatePlanSummary() {
 
 /* =========================================================
    15. PUBLISH — NO PAYMENT GATE (TEST MODE)
-   ⚠️ Payment ഒഴിവാക്കി — form fill + password set + click
-   ചെയ്താൽ ഉടൻ gift link generate ആകും.
-   
-   ⚠️ PRODUCTION-ൽ payment flow തിരികെ ചേർക്കണം ⚠️
+   ✅ FIX: Now also sends the plaintext config so the
+   recipient link renders the user's customizations.
    ========================================================= */
 (() => {
   const button = document.getElementById("publishGiftButton");
@@ -1133,8 +1164,15 @@ function updatePlanSummary() {
     return envelope;
   }
 
-  // ✅ Payment verification ഇല്ല — envelope മാത്രം POST ചെയ്യുന്നു
-  async function publishGift(envelope) {
+  /* ============================================================
+     ✅ Publish — now sends plaintext config too
+     The server should:
+       - store `envelope` (encrypted, private)
+       - store `config` (plaintext, used by template.html on the
+         recipient side, OR inject it as window.__NIVA_GIFT__)
+       - return { success, gift: { url: "/g/<id>" } }
+     ============================================================ */
+  async function publishGift(envelope, plainConfig) {
     setProgress("Publishing your gift…", 95);
 
     const response = await fetch("/api/gifts", {
@@ -1143,7 +1181,9 @@ function updatePlanSummary() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         templateId: window.NIVAEditor.templateId,
+        category: context.category,
         envelope,
+        config: plainConfig,        // ✅ NEW: recipient-visible config
       }),
       cache: "no-store",
     });
@@ -1200,8 +1240,8 @@ function updatePlanSummary() {
     setStatus("Preparing your gift…");
 
     try {
-      // Step 1: Build payload
-      const gift = window.NIVAEditor.getGiftData();
+      // Step 1: Build payloads
+      const plainConfig = window.NIVAEditor.getGiftData();      // ✅ recipient-visible
       const photos = window.NIVAEditor.getPhotos();
       const media = window.NIVAEditor.getMediaFiles();
 
@@ -1236,11 +1276,11 @@ function updatePlanSummary() {
 
       // Step 2: Encrypt (browser-ൽ locally)
       setProgress("Encrypting gift…", 60);
-      const payload = { ...gift, ...mediaPayload, photos: photoPayload };
+      const payload = { ...plainConfig, ...mediaPayload, photos: photoPayload };
       const envelope = await encryptGift(payload, password);
 
       // Step 3: Publish — payment verification ഇല്ല, ഉടൻ link
-      await publishGift(envelope);
+      await publishGift(envelope, plainConfig);
     } catch (err) {
       hideProgress();
       setStatus(err.message || "Something went wrong.", true);

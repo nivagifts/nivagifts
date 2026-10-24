@@ -1,13 +1,14 @@
 /* =========================================================
-   NIVI v4.0 — Emotional Companion Robot
+   NIVI v4.2 — Emotional Companion Robot
    - 8 emotions (happy/sad/angry/excited/shy/smile/thinking/neutral)
    - Floating explorer mode (non-intrusive, throttled)
    - Context-aware section reactions
    - Page-aware tool discovery
    - Chat + modal robot unified
    - Mobile-first, reduced-motion safe
-   - ✅ FIX: Home navigation on my-gifts / draft / publish / wishlist
-   - ✅ FIX: Contact card (Instagram + email) inside chat panel
+   - ✅ Compact contact card (single row, auto-hides)
+   - ✅ Deep privacy + refund knowledge
+   - ✅ Friendly, clear, user-first replies
    ========================================================= */
 (() => {
   "use strict";
@@ -31,49 +32,35 @@
     home:      "You're on the NIVA home page — ask me about gifts, pricing, or signing up.",
     editor:    "You're in the gift editor — try 'How to save a draft?' or 'How to publish?'.",
     "my-gifts":"You're in My Gifts — ask 'What is a draft?' or 'How to delete a gift?'.",
-    privacy:   "You're on Privacy & Safety — ask 'Is my data safe?'.",
+    privacy:   "You're on Privacy & Safety — ask me about privacy, safety or refunds.",
   };
 
   const PAGE_TOOLS = {
     home:      "✦ Browse **templates**, check **pricing**, or tap **Sign up** to start your first gift.",
     editor:    "✦ Your tools: **live preview** (right side), **Save Draft** (top-right), and **Publish** (bottom).",
-    "my-gifts":"✦ Three tabs: **Drafts**, **Published**, **Wishlist** — tap any to manage your gifts. Use **Home** to go back.",
+    "my-gifts":"✦ Three tabs: **Drafts**, **Published**, **Wishlist** — tap any to manage your gifts.",
     privacy:   "✦ Read how we encrypt gifts with **AES-256-GCM** right in your browser. Your data stays yours.",
   };
 
   /* =======================================================
-     ✅ FIX #1: Home navigation on sub-pages
-     Draft / Published / Wishlist / My Gifts / Privacy pages
-     often have broken or missing "back to home" links.
-     This block safely intercepts known home-ish elements
-     and routes them to the site root. Runs only on sub-pages.
+     ✅ Home navigation fix on sub-pages
      ======================================================= */
   (() => {
-    if (PAGE === "home") return; // only on sub-pages
+    if (PAGE === "home") return;
 
-    // Resolve the site root from the current path.
-    // e.g. /my-gifts.html  -> /
-    //      /editor/editor.html -> /
-    //      /privacy.html -> /
     function siteRoot() {
       const parts = location.pathname.split("/").filter(Boolean);
       if (!parts.length) return "/";
-      // If the last segment has a dot, we're at file level (e.g. /my-gifts.html)
-      if (parts[parts.length - 1].includes(".")) {
-        return "/";
-      }
-      // Otherwise we're in a folder (e.g. /editor/editor.html already handled above)
+      if (parts[parts.length - 1].includes(".")) return "/";
       return "/";
     }
 
     function goHome(e) {
-      // Don't hijack modified clicks (new tab, etc.)
       if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1)) return;
       e && e.preventDefault();
       window.location.href = siteRoot();
     }
 
-    // Attach to any click that looks like "home"
     function bindHomeTargets() {
       const candidates = document.querySelectorAll([
         '[data-home]',
@@ -96,11 +83,9 @@
       candidates.forEach(el => {
         if (el.dataset.niviHomeBound === "1") return;
         el.dataset.niviHomeBound = "1";
-        // Only intercept anchors or elements that are clearly meant to navigate
         if (el.tagName === "A") {
           el.addEventListener("click", (e) => {
             const href = el.getAttribute("href") || "";
-            // If href is empty hash or clearly a home anchor, intercept
             if (
               href === "#home" ||
               href === "/" ||
@@ -114,11 +99,9 @@
             }
           });
         } else {
-          // Non-anchor (e.g. button or img with class .brand)
           el.style.cursor = el.style.cursor || "pointer";
           el.addEventListener("click", (e) => {
             const tag = el.tagName;
-            // If it's inside an <a>, let the anchor handle it
             if (el.closest("a")) return;
             if (tag === "IMG" || tag === "SPAN" || el.classList.contains("brand") || el.classList.contains("brand-logo")) {
               goHome(e);
@@ -128,17 +111,14 @@
       });
     }
 
-    // Bind immediately + after DOM settles + on navigation
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", bindHomeTargets, { once: true });
     } else {
       bindHomeTargets();
     }
-    // Re-bind once after a short delay in case of late-rendered headers
     setTimeout(bindHomeTargets, 400);
     setTimeout(bindHomeTargets, 1500);
 
-    // Also expose a helper other scripts / NIVI actions can call
     window.NIVI_goHome = () => { window.location.href = siteRoot(); };
   })();
 
@@ -167,13 +147,17 @@
       answer: "Making a gift is easy:\n\n1. Pick a template\n2. Sign up with a **username + email** — I can help right here\n3. Fill in your words & photos — live preview updates as you type\n4. Set a **gift password** and pay\n5. Share the private link ♥",
       next: ["Sign up","Pricing?","Is it private?"] },
     { id: "privacy", tag: "Privacy", emotion: "smile",
-      keywords: ["password","private","secure","encrypt","security","safe","is it private","data"],
-      answer: "Your gift is **encrypted in your browser** with AES-256-GCM before it ever reaches our server. 🔒\n\n• PBKDF2 key derivation (310,000 iterations)\n• Only ciphertext + metadata is stored\n• Recipient needs the password you set\n• We never see your gift content",
-      next: ["How does the recipient open it?","Sign up"] },
+      keywords: ["password","private","secure","encrypt","security","safe","is it private","data","privacy"],
+      answer: "Your gift is **encrypted in your browser** with AES-256-GCM before it ever reaches our server. 🔒\n\n• PBKDF2 key derivation (310,000 iterations)\n• Only ciphertext + metadata is stored\n• Recipient needs the password you set\n• We never see your gift content\n\n**Important:** a private link is not a substitute for consent. Never include addresses, IDs, passwords or financial details in a gift, and only upload photos you have permission to use. ♥",
+      next: ["How does the recipient open it?","Refund policy?","Safety rules?"] },
+    { id: "metadata", tag: "Metadata", emotion: "thinking",
+      keywords: ["metadata","what data do you store","what do you store","server see","logs","retain","retention"],
+      answer: "Here's what I can honestly say:\n\n• Your gift **content** is encrypted before upload — only ciphertext reaches the server.\n• The server still stores **metadata** like the gift ID, timestamps, template type and delivery status.\n• Encryption is not magic — protect your **gift password** and avoid opening private gifts on shared devices.\n\nBefore public launch, NIVA should publish exact retention, deletion and backup details. Don't assume deleting a local draft deletes a published gift from the server. ♥",
+      next: ["Is it private?","Delete a gift?","Refund policy?"] },
     { id: "payment", tag: "Payment", emotion: "thinking",
       keywords: ["payment","pay","razorpay","upi","card","how to pay","checkout","billing"],
       answer: "Payments are handled securely by **Razorpay** — UPI, cards, netbanking.\n\nYou only pay once, at the moment you publish a gift.",
-      next: ["Refunds?","Sign up"] },
+      next: ["Refund policy?","Sign up"] },
     { id: "account", tag: "Account", emotion: "happy",
       keywords: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password","username"],
       answer: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• **sign up** — to create a new account (choose a username!)\n• **sign in** — to log in\n• **forgot password** — to reset",
@@ -188,20 +172,47 @@
       next: ["My Gifts?","How to create a gift?"] },
     { id: "delete", tag: "Delete", emotion: "sad",
       keywords: ["delete","remove","unpublish","stop link","take down","erase"],
-      answer: "Go to **My Gifts → Published** and tap Delete on any gift. The private link stops working immediately.",
-      next: ["Refunds?","My Gifts?"] },
+      answer: "Go to **My Gifts → Published** and tap Delete on any gift. The private link stops working immediately.\n\nFor content that should never have been shared, stop sharing the link and password, then reach out through the official contact channel. ♥",
+      next: ["Refund policy?","My Gifts?"] },
     { id: "upload", tag: "Uploads", emotion: "thinking",
       keywords: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"],
       answer: "You can upload photos, video and audio — up to **1 GB total** per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB",
       next: ["How to create a gift?","Is it private?"] },
-    { id: "refund", tag: "Refunds", emotion: "sad",
-      keywords: ["refund","cancel","return","money back","chargeback"],
-      answer: "Gifts are digital and shareable, so we don't offer refunds **after** publishing. If something fails before publishing, you won't be charged.",
-      next: ["Payment?","Contact support?"] },
+
+    /* ---------- REFUND KNOWLEDGE (detailed) ---------- */
+    { id: "refund", tag: "Refunds", emotion: "smile",
+      keywords: ["refund","refunds","money back","chargeback","return money","cancel payment","reimburse"],
+      answer: "Here's the **Refund & Payment Protection** policy, simplified for you ♥\n\n**You can request a refund if:**\n• Payment succeeded but **no gift link** was generated\n• The gift link shows **“Page Not Found”** because of a real technical issue\n• The delivered gift **materially differs** from the preview you selected (technical/delivery error)\n• Another **verified NIVA-side technical failure** blocks access\n\n**You generally cannot get a refund for:**\n• Change of mind after the gift works correctly\n• Disliking colours, fonts, animations or style\n• Wanting a different template after purchase\n\nReview the template preview carefully before buying. ♥",
+      next: ["How to request a refund?","Refund timeline?","Payments?"] },
+    { id: "refund-how", tag: "Refund · How", emotion: "thinking",
+      keywords: ["how to request refund","how do i get a refund","refund process","request refund","claim refund","apply refund"],
+      answer: "To request a refund:\n\n1. Open Instagram and message **@niva.gifts**\n2. Explain what went wrong\n3. Attach **evidence**:\n   • Payment confirmation / order ID\n   • The gift link (if generated)\n   • Screenshot or screen recording of the issue\n   • A short description\n\nWe'll check the payment record, template, delivered gift and evidence before deciding. ✦\n\n**Never** send your account password, gift password, card PIN or OTP to support. ♥",
+      next: ["Refund timeline?","Refund policy?","Contact support?"] },
+    { id: "refund-time", tag: "Refund · Timeline", emotion: "smile",
+      keywords: ["refund time","refund timeline","how long refund","when will i get refund","refund days","refund processing"],
+      answer: "Once a genuine claim is verified and approved, NIVA aims to **initiate** the eligible refund within **2 working days**. ⏱️\n\nThat window covers verification and initiating the refund. The time for the money to actually appear in your bank account depends on the payment provider and your bank — so the credit date may be later. ♥",
+      next: ["How to request a refund?","Refund policy?","Contact support?"] },
+    { id: "refund-no", tag: "Refund · Not eligible", emotion: "sad",
+      keywords: ["refund not","no refund","refund rejected","refund denied","why no refund","change of mind"],
+      answer: "A refund is generally **not** available when the gift link was generated successfully and the gift opens and works as described. 🥺\n\nThat includes:\n• Disliking the theme, colours, fonts or animations\n• Wanting a different template after purchase\n• Changing your mind after correct delivery\n• Preferring a different appearance when the gift matches its preview\n\nIf the delivered gift **materially differs** from the selected preview, send screenshots or a recording via **@niva.gifts** — we'll investigate whether it's a genuine technical/delivery error. ♥",
+      next: ["Refund policy?","How to request a refund?","Contact support?"] },
+
+    /* ---------- SAFETY / RULES KNOWLEDGE ---------- */
+    { id: "safety", tag: "Safety", emotion: "thinking",
+      keywords: ["safety","safe use","rules","use rules","harass","threat","abuse","consent","permission"],
+      answer: "A thoughtful gift should make someone feel **respected**, not pressured. ♥\n\nPlease:\n• Use NIVA lawfully and respectfully\n• Don't create gifts to threaten, harass, impersonate or humiliate\n• Don't share intimate or embarrassing material without clear permission\n• Don't upload malware or try to bypass passwords\n• Don't use a gift link to track or repeatedly contact someone who doesn't want contact\n• Protect minors' personal information and images especially\n\nIf a gift accidentally reveals something private, **stop sharing** the link and password right away. ✦",
+      next: ["Is it private?","Delete a gift?","Contact support?"] },
+    { id: "consent", tag: "Consent", emotion: "smile",
+      keywords: ["consent","permission","can i upload","someone else's photo","someone else photo","without permission"],
+      answer: "Only add information and media that you have a **right to use** and that the recipient would reasonably expect. ♥\n\n• Don't upload another person's private info without permission\n• Don't include addresses, ID documents, passwords or financial details\n• Ask before using sensitive photos or sharing a gift with a group\n• Keep minors' info and images especially protected\n\nA private link is **not** a substitute for consent. ✦",
+      next: ["Safety rules?","Is it private?"] },
+
+    /* ---------- CONTACT (inline, no card needed) ---------- */
     { id: "contact", tag: "Contact", emotion: "smile",
-      keywords: ["contact","support","help","email you","reach you","talk to someone","instagram","insta","dm","message"],
-      answer: "You can reach NIVA on:\n• **Instagram** — @niva.gifts 💗\n• **Email** — nivatheofficial@gmail.com\n\nTap the contact card below the chat input to open Instagram directly. ♥",
-      next: ["Pricing?","Sign up"] },
+      keywords: ["contact","support","help","email you","reach you","talk to someone","instagram","insta","dm","message","human"],
+      answer: "You can reach NIVA here ♥\n\n• **Instagram** — [@niva.gifts](https://instagram.com/niva.gifts)\n• **NIVI's own Instagram** — [@nivitherobo](https://instagram.com/nivitherobo)\n• **Email** — nivatheofficial@gmail.com\n\nJust tap the small contact row under the chat whenever you want to open one of them. ✦",
+      next: ["Refund policy?","Pricing?","Sign up"] },
+
     { id: "recipient", tag: "Recipient", emotion: "smile",
       keywords: ["recipient","open gift","receive","someone sent","unlock","unlock gift"],
       answer: "Your recipient opens the private link, enters the **gift password** you gave them, and the gift unlocks in their browser. ✦",
@@ -217,10 +228,10 @@
       keywords: ["hello","hi","hey","namaste","vanakkam","sup","yo","hola"],
       answer: () => pick([
         "Hi there! ♥ I'm **NIVI** — NIVA's little robot guide.",
-        "Hello! ✦ Ask about gifts, pricing, or say **sign up** / **sign in**.",
-        "Hey! 💗 I can help with templates, pricing, or signing in.",
+        "Hello! ✦ Ask about gifts, pricing, privacy or refunds — or say **sign up** / **sign in**.",
+        "Hey! 💗 I can help with templates, pricing, privacy, refunds, or signing in.",
       ]),
-      next: ["What is NIVA?","Pricing?","Sign up","Sign in"] },
+      next: ["What is NIVA?","Pricing?","Refund policy?","Sign in"] },
     { id: "thanks", emotion: "shy",
       keywords: ["thank","thanks","thx","ty","appreciate"],
       answer: () => pick(["Anytime! ♥ ✦","You're welcome! ✦","Happy to help! 💕"]),
@@ -231,7 +242,7 @@
       next: ["What is NIVA?"] },
     { id: "whoami", emotion: "smile",
       keywords: ["who are you","your name","whats your name","what is your name","are you real","nivi"],
-      answer: () => "I'm **NIVI** — NIVA's little robot guide. ✦\n\nI can help you understand NIVA, or even sign you in / sign you up. Just ask! 💗",
+      answer: () => "I'm **NIVI** — NIVA's little robot guide. ✦\n\nI can help you understand NIVA, answer privacy or refund questions, or even sign you in / sign you up. Just ask! 💗",
       next: ["Sign up","Sign in","What is NIVA?"] },
     { id: "compliment", emotion: "shy",
       keywords: ["cute","adorable","love you","you're sweet","youre sweet","beautiful","pretty","nice bot","good bot"],
@@ -257,6 +268,10 @@
         "Aww thank you! 🎉 Want to try making one?",
       ]),
       next: ["How to create a gift?","Templates"] },
+    { id: "confused", emotion: "thinking",
+      keywords: ["i don't understand","dont understand","confused","not clear","explain again","simpler"],
+      answer: () => "No problem at all ♥ — let me keep it simple:\n\n• Want to **make** a gift? → say *how to create*\n• Want to know **cost**? → say *pricing*\n• Worried about **privacy**? → say *privacy*\n• Money issue or refund? → say *refund*\n• Want to sign in or sign up? → say *sign in* / *sign up*\n\nWhich one shall we start with? ✦",
+      next: ["Pricing?","Privacy?","Refund policy?","Sign in"] },
   ];
 
   const AUTH_INTENTS = [
@@ -266,9 +281,9 @@
   ];
 
   const FALLBACKS = [
-    "I'm not sure I got that. Try **pricing**, **templates**, **privacy**, or say **sign up** / **sign in**. ♡",
-    "Hmm, beyond what I know. Try 'how much does it cost?' or 'sign in'.",
-    "I'd love to help — what would you like to know?",
+    "I'm not totally sure I got that ♥ — try **pricing**, **templates**, **privacy**, **refund**, or say **sign up** / **sign in**.",
+    "Hmm, that's a little beyond me. You can ask about **privacy**, **refunds**, **pricing**, or say **sign in**.",
+    "I'd love to help — what would you like to know? Try **privacy** or **refund policy**.",
   ];
 
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -359,6 +374,7 @@
     let safe = String(text).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     safe = safe.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     safe = safe.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     safe = safe.replace(/\n/g, "<br>");
     safe = safe.replace(/^•\s/gm, '<span class="nivi-bullet">•</span> ');
     safe = safe.replace(/<br>•\s/g, '<br><span class="nivi-bullet">•</span> ');
@@ -801,6 +817,8 @@
     }
     .niva-bot-msg strong { color: #2c1f39; font-weight: 700; }
     .niva-bot-msg.user strong { color: #fff; }
+    .niva-bot-msg a { color: #8d65ad; text-decoration: underline; }
+    .niva-bot-msg.user a { color: #fff; }
     .nivi-bullet { color: #b69aff; font-weight: 700; }
     .niva-bot-quick {
       display: flex; flex-wrap: wrap; gap: 7px;
@@ -819,42 +837,43 @@
     .niva-bot-quick button:disabled { opacity: .5; cursor: wait; }
 
     /* =====================================================
-       ✅ FIX #2: Contact card (Instagram + email)
-       Shown just below the quick-action chips and above
-       the text input. Small, subtle, matches NIVI style.
+       ✅ Compact contact row — single line, auto-hides
        ===================================================== */
     .nivi-contact-card {
       flex-shrink: 0;
       margin: 0 13px 8px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid #f0e3fa;
-      border-radius: 14px;
+      border-radius: 12px;
       background: linear-gradient(135deg, #fff7fd, #f7f0ff);
-      display: flex; flex-direction: column; gap: 7px;
+      display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap;
       box-shadow: 0 2px 10px rgba(174,112,255,.06);
+      transition: opacity .25s ease;
     }
     .nivi-contact-title {
-      font-size: 10px;
+      font-size: 9px;
       letter-spacing: .1em;
       font-weight: 700;
       text-transform: uppercase;
       color: #9a70b8;
-      display: flex; align-items: center; gap: 6px;
+      margin-right: 2px;
+      display: inline-flex; align-items: center; gap: 4px;
     }
     .nivi-contact-title::before {
-      content: "♥"; color: #ff8fbd; font-size: 11px;
+      content: "♥"; color: #ff8fbd; font-size: 10px;
     }
     .nivi-contact-links {
-      display: flex; flex-wrap: wrap; gap: 7px;
+      display: flex; flex-wrap: wrap; gap: 5px; flex: 1;
     }
     .nivi-contact-link {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 11px;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 9px;
       border-radius: 999px;
       border: 1px solid #e6d2f5;
       background: #fff;
       color: #8d65ad;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       text-decoration: none;
       font-family: 'DM Sans', system-ui, sans-serif;
@@ -868,9 +887,9 @@
       transform: translateY(-1px);
     }
     .nivi-contact-link .nivi-contact-icon {
-      font-size: 12px; line-height: 1;
+      font-size: 11px; line-height: 1;
       display: inline-grid; place-items: center;
-      width: 16px; height: 16px;
+      width: 14px; height: 14px;
     }
     .nivi-contact-link.insta .nivi-contact-icon {
       background: linear-gradient(45deg,#f9ce34,#ee2a7b 45%,#6228d7);
@@ -880,7 +899,7 @@
     .nivi-contact-link.email .nivi-contact-icon { color: #b76e79; }
     .nivi-contact-link span.nivi-contact-text {
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 180px;
+      max-width: 140px;
     }
 
     .niva-bot-input {
@@ -925,7 +944,7 @@
         min-height: 280px; border-radius: 22px;
       }
       .nivi-badge { right: 65px; bottom: 22px; font-size: 10px; }
-      .nivi-contact-link span.nivi-contact-text { max-width: 140px; }
+      .nivi-contact-link span.nivi-contact-text { max-width: 110px; }
     }
     @media (max-width: 350px) {
       .niva-bot-quick button { font-size: 10px; padding: 6px 8px; }
@@ -1161,7 +1180,7 @@
   document.head.appendChild(style);
 
   /* -------------------------------------------------------
-     8. FLOATING MARKUP
+     8. FLOATING MARKUP — single compact contact row
      ------------------------------------------------------- */
   const root = document.createElement("div");
   root.className = "niva-bot-root";
@@ -1185,13 +1204,13 @@
       <div class="niva-bot-quick" id="nivaBotQuick">
         <button type="button" data-q="What is NIVA?">💗 About NIVA</button>
         <button type="button" data-q="Pricing?">✨ Pricing</button>
-        <button type="button" data-q="Sign up">Sign up</button>
-        <button type="button" data-q="Sign in">Sign in</button>
+        <button type="button" data-q="Privacy?">🔒 Privacy</button>
+        <button type="button" data-q="Refund policy?">💸 Refunds</button>
       </div>
 
-      <!-- ✅ FIX #2: Contact card, Instagram + email -->
+      <!-- ✅ Single compact contact row — no duplicate card -->
       <div class="nivi-contact-card" id="niviContactCard" aria-label="Contact NIVA">
-        <div class="nivi-contact-title">Talk to a human</div>
+        <span class="nivi-contact-title">Talk to a human</span>
         <div class="nivi-contact-links">
           <a class="nivi-contact-link insta"
              href="https://instagram.com/niva.gifts"
@@ -1200,36 +1219,17 @@
             <span class="nivi-contact-icon" aria-hidden="true">◎</span>
             <span class="nivi-contact-text">@niva.gifts</span>
           </a>
-          <a class="nivi-contact-link insta"
-             href="https://instagram.com/nivitherobo"
-             target="_blank" rel="noopener noreferrer"
-             aria-label="NIVA on Instagram">
-            <span class="nivi-contact-icon" aria-hidden="true">◎</span>
-            <span class="nivi-contact-text">@nivitherobo</span>
-          </a>
           <a class="nivi-contact-link email"
              href="mailto:nivatheofficial@gmail.com"
              aria-label="Email NIVA">
             <span class="nivi-contact-icon" aria-hidden="true">✉</span>
-            <span class="nivi-contact-text">Email us</span>
+            <span class="nivi-contact-text">Email</span>
           </a>
         </div>
       </div>
-      <div class="nivi-contact-card" id="niviContactCard" aria-label="Contact NIVA">
-        <div class="nivi-contact-title">Talk to Me</div>
-        <div class="nivi-contact-links">
-          <a class="nivi-contact-link insta"
-             href="https://instagram.com/nivitherobo"
-             target="_blank" rel="noopener noreferrer"
-             aria-label="NIVA on Instagram">
-            <span class="nivi-contact-icon" aria-hidden="true">◎</span>
-            <span class="nivi-contact-text">@nivitherobo</span>
-          </a>
-        </div>
-      </div>  
 
       <form class="niva-bot-input" id="nivaBotForm">
-        <input id="nivaBotInput" type="text" placeholder="Ask your little robot..." autocomplete="off" maxlength="300" aria-label="Type your question">
+        <input id="nivaBotInput" type="text" placeholder="Ask about gifts, privacy or refunds..." autocomplete="off" maxlength="300" aria-label="Type your question">
         <button type="submit" aria-label="Send message">➤</button>
       </form>
     </div>
@@ -1267,6 +1267,7 @@
   const quick      = root.querySelector("#nivaBotQuick");
   const sendBtn    = form.querySelector('button[type="submit"]');
   const badge      = root.querySelector("#niviBadge");
+  const contactCard = root.querySelector("#niviContactCard");
 
   if (!fab || !panel || !closeBtn || !body || !form || !input || !quick) {
     console.warn("[NIVI] Required elements missing.");
@@ -1276,7 +1277,7 @@
   }
 
   /* -------------------------------------------------------
-     9. EMOTION ENGINE (unchanged)
+     9. EMOTION ENGINE
      ------------------------------------------------------- */
   const EMOTION_EMOJI = {
     neutral: "♥", happy: "🎉", sad: "🥺", angry: "😤",
@@ -1312,7 +1313,7 @@
   }
 
   /* -------------------------------------------------------
-     10. CHAT RENDERING (unchanged)
+     10. CHAT RENDERING
      ------------------------------------------------------- */
   function addMessage(html, who = "bot") {
     const el = document.createElement("div");
@@ -1342,7 +1343,7 @@
     quick.innerHTML = "";
     const base = items && items.length
       ? items
-      : ["What is NIVA?", "Pricing?", "Sign up", "Sign in"];
+      : ["What is NIVA?", "Pricing?", "Privacy?", "Refund policy?"];
     base.slice(0, 4).forEach(q => {
       const b = document.createElement("button");
       b.type = "button";
@@ -1366,7 +1367,7 @@
   }
 
   /* -------------------------------------------------------
-     11. AUTH API WRAPPERS (unchanged)
+     11. AUTH API WRAPPERS
      ------------------------------------------------------- */
   async function apiCall(path, body) {
     const res = await fetch(path, {
@@ -1417,7 +1418,7 @@
   }
 
   /* -------------------------------------------------------
-     12. USERNAME VALIDATION (unchanged)
+     12. USERNAME VALIDATION
      ------------------------------------------------------- */
   function validateUsernameClient(name) {
     if (!name || typeof name !== "string") return "Please choose a username.";
@@ -1430,7 +1431,7 @@
   }
 
   /* -------------------------------------------------------
-     13. AUTH FLOW (unchanged)
+     13. AUTH FLOW
      ------------------------------------------------------- */
   function resetAuthFlow() {
     state.authFlow = null;
@@ -1725,7 +1726,7 @@
   }
 
   /* -------------------------------------------------------
-     14. COMPOSE (unchanged)
+     14. COMPOSE
      ------------------------------------------------------- */
   function composeReply(query) {
     const q = String(query || "").toLowerCase().trim();
@@ -1752,7 +1753,7 @@
   }
 
   /* -------------------------------------------------------
-     15. OPEN / CLOSE (unchanged)
+     15. OPEN / CLOSE
      ------------------------------------------------------- */
   let hasOpened = false;
   function openPanel() {
@@ -1764,6 +1765,7 @@
     root.classList.remove("exploring", "exploring-left");
     removeExploreBubble();
     if (badge) badge.style.display = "none";
+    if (contactCard) contactCard.style.opacity = "1";
 
     if (!hasOpened) {
       hasOpened = true;
@@ -1783,7 +1785,7 @@
           `Hi! ♥ I'm **NIVI** — NIVA's little robot guide.\n\n` +
           `${loggedIn}${PAGE_HINTS[PAGE] || ""}\n\n` +
           `**Tools on this page:**\n${PAGE_TOOLS[PAGE] || ""}\n\n` +
-          `I can also **sign you up** or **sign you in** right here. Just tell me.`;
+          `I can also help with **privacy**, **refunds**, or **sign you in / up**. Just ask. ♥`;
         addRaw(renderRich(greet), "bot");
         state.history.push({ who: "bot", html: greet });
         saveHistory();
@@ -1799,6 +1801,7 @@
     fab.setAttribute("aria-expanded", "false");
     root.classList.remove("chat-open");
     applyEmotion("neutral");
+    if (contactCard) contactCard.style.opacity = "0";
   }
 
   fab.addEventListener("click", () => {
@@ -1810,7 +1813,7 @@
   });
 
   /* -------------------------------------------------------
-     16. EXPLORER MODE (unchanged)
+     16. EXPLORER MODE
      ------------------------------------------------------- */
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let exploreBubble = null;
@@ -1837,7 +1840,7 @@
     privacy: [
       "AES-256-GCM encryption — done in your browser 🔒",
       "We never see your gift content, only ciphertext ✦",
-      "Set a gift password your recipient will need 🔑",
+      "Refunds? Ask me *refund policy* — I'll explain 💗",
     ],
   };
 
@@ -1931,10 +1934,12 @@
     const map = {
       pricing: "💰 Pricing section spotted — scroll to see all tiers!",
       templates: "🎨 Templates! Tap one to preview it live ✦",
+      refunds: "💸 Refund policy here — ask me if anything is unclear!",
     };
     const selectors = [
       ["#pricing, .pricing-section, [data-section='pricing']", "pricing"],
       ["#templates, .templates-section, [data-section='templates']", "templates"],
+      ["#refunds, .refund-section", "refunds"],
     ];
     if (!("IntersectionObserver" in window)) return;
 
@@ -1959,7 +1964,7 @@
   }
 
   /* -------------------------------------------------------
-     17. MODAL ROBOT (unchanged)
+     17. MODAL ROBOT
      ------------------------------------------------------- */
   let modalRoot = null;
   let modalRobot = null;
@@ -2167,7 +2172,7 @@
   }
 
   /* -------------------------------------------------------
-     18. RESPOND (unchanged)
+     18. RESPOND
      ------------------------------------------------------- */
   async function respond(question) {
     if (state.busy) return;
@@ -2265,7 +2270,7 @@
   });
 
   /* -------------------------------------------------------
-     19. BOOT (unchanged, plus safe home-link re-bind)
+     19. BOOT
      ------------------------------------------------------- */
   (async () => {
     await checkCurrentUser();
@@ -2273,16 +2278,14 @@
     setupSectionReactions();
     scheduleExplorer();
 
-    // Re-bind home targets after full boot (belt & suspenders)
-    if (typeof window.NIVI_goHome === "function") {
-      // nothing extra to do — binding already done in Fix #1
-    }
-
     if (state.user) {
       const name = state.user.username || state.user.displayName || state.user.email?.split("@")[0] || "friend";
       if (badge) badge.textContent = `Hi @${name}! 💗`;
     }
     reactEmotion("happy", 2500);
+
+    // Auto-hide the contact row while the panel is closed
+    if (contactCard) contactCard.style.opacity = "0";
 
     if (badge) {
       setTimeout(() => {
@@ -2299,7 +2302,7 @@
     open: openPanel,
     close: closePanel,
     ask: (q) => { openPanel(); respond(q); },
-    version: "4.1.0",
+    version: "4.2.0",
     emotion: (e, ms) => reactEmotion(e, ms),
     speak: (text, emotion) => { ensureModalRobot(); speak(text, emotion); },
     narrateError: (paneId, text) => { ensureModalRobot(); narrateError(paneId, text); },
