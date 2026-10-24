@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>A Little Something For You</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="googleFontsLink" rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap">
+
+<style>
+:root {
+  --bg: #fff5f7;
+  --bg-alt: #ffe9ee;
+  --bg-rose: #ffe0e8;
+  --bg-card: #fffafb;
+  --rose: #e75a7c;
+  --rose-dark: #a83258;
+  --rose-light: #f7b2c1;
+  --rose-soft: #fde7ee;
+  --gold: #d4a456;
+  --ink: #4a2b3a;
+  --muted: #9b7b88;
+  --line: #f2d8df;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-script: 'Caveat', cursive;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+button { font: inherit; cursor: pointer; touch-action: manipulation; border: 0; background: none; color: inherit; }
+img { max-width: 100%; display: block; }
+
+/* ==================== PAGE SYSTEM ==================== */
+.page {
+  display: none;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 60px 20px;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  position: relative;
+  overflow-x: hidden;
+}
+.page.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: pageIn .9s ease both;
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(20px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.inner {
+  width: min(100%, 780px);
+  margin: auto;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* ==================== FLOATING HEARTS BG ==================== */
+.bg-hearts {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.bg-hearts span {
+  position: absolute;
+  bottom: -40px;
+  color: var(--rose);
+  opacity: 0;
+  font-size: 22px;
+  animation: floatHeart linear infinite;
+  user-select: none;
+}
+@keyframes floatHeart {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.5; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+}
+
+/* ==================== BUTTONS ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 32px;
+  min-height: 52px;
+  background: var(--rose);
+  color: #fff;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: 0 10px 26px rgba(231, 90, 124, 0.35);
+  transition: .3s ease;
+  margin-top: 24px;
+}
+.btn:hover {
+  background: var(--rose-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(231, 90, 124, 0.45);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--rose-dark);
+  border: 1.5px solid var(--rose);
+  box-shadow: none;
+}
+.btn.ghost:hover { background: var(--rose); color: #fff; }
+
+/* ==================== PAGE 1 — INVITATION ==================== */
+#page1 {
+  background:
+    radial-gradient(circle at 15% 20%, var(--rose-soft) 0, transparent 45%),
+    radial-gradient(circle at 85% 80%, var(--bg-alt) 0, transparent 50%),
+    var(--bg);
+  text-align: center;
+}
+.ask-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--rose-light), var(--rose));
+  border: 3px solid #fff;
+  margin: 0 auto 28px;
+  display: grid;
+  place-items: center;
+  font-size: 42px;
+  box-shadow: 0 12px 30px rgba(231, 90, 124, 0.3);
+  animation: heartbeat 2.4s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.1); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.07); }
+}
+
+.ask-eyebrow {
+  font-size: 12px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--rose-dark);
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+.ask-question {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(32px, 7vw, 52px);
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+.ask-subtitle {
+  max-width: 520px;
+  margin: 0 auto 44px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.ask-buttons {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  min-height: 70px;
+}
+
+.yes-btn {
+  padding: 18px 44px;
+  font-size: 16px;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), background .3s ease;
+}
+.yes-btn.pulse { animation: yesPulse 1.2s ease-in-out infinite; }
+@keyframes yesPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.no-btn {
+  padding: 15px 30px;
+  background: transparent;
+  color: var(--muted);
+  border: 1.5px solid var(--line);
+  border-radius: 50px;
+  min-height: 52px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: .2s ease;
+  position: relative;
+}
+
+/* ==================== LETTER ==================== */
+.letter-wrap {
+  width: min(100%, 640px);
+  margin: 0 auto 40px;
+}
+.letter {
+  width: 100%;
+  padding: clamp(30px, 6vw, 60px);
+  background:
+    repeating-linear-gradient(transparent 0 32px, rgba(180, 130, 150, 0.08) 33px),
+    var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 24px 65px rgba(180, 100, 130, 0.15);
+  transform: rotate(-0.5deg);
+  text-align: left;
+  position: relative;
+}
+.letter::before {
+  content: "✿";
+  position: absolute;
+  top: 16px;
+  right: 22px;
+  font-size: 26px;
+  color: var(--rose);
+  opacity: 0.7;
+}
+.letter-title {
+  font-family: var(--font-script);
+  font-size: clamp(34px, 6vw, 46px);
+  color: var(--rose-dark);
+  text-align: center;
+  margin-bottom: 26px;
+}
+.letter h3 {
+  font-family: var(--font-script);
+  font-size: clamp(24px, 5vw, 32px);
+  color: var(--rose-dark);
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.letter p {
+  font-family: var(--font-script);
+  font-size: clamp(20px, 4.4vw, 25px);
+  line-height: 1.8;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+.letter .sig {
+  text-align: right;
+  color: var(--rose-dark);
+  margin-top: 12px;
+  font-size: clamp(22px, 5vw, 28px);
+  font-family: var(--font-script);
+}
+.letter .sig small {
+  display: block;
+  font-size: 1.05em;
+}
+
+/* ==================== LETTER PAGE ==================== */
+#page2 {
+  background: linear-gradient(180deg, var(--bg), var(--bg-alt));
+  justify-content: flex-start;
+  padding-top: 70px;
+}
+
+/* ==================== DATE & TIME ==================== */
+#page3 {
+  background:
+    radial-gradient(circle at 50% 0%, var(--rose-soft) 0, transparent 55%),
+    var(--bg);
+}
+
+.when-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(30px, 6vw, 48px);
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.when-subtitle {
+  max-width: 500px;
+  margin: 0 auto 32px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.datetime-card {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 44px);
+  background: var(--bg-card);
+  border: 1.5px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(180, 100, 130, 0.12);
+}
+.dt-field { margin-bottom: 22px; text-align: left; }
+.dt-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--rose-dark);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.dt-input {
+  width: 100%;
+  padding: 15px 18px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--bg);
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.dt-input:focus {
+  outline: none;
+  border-color: var(--rose);
+  box-shadow: 0 0 0 4px rgba(231, 90, 124, 0.12);
+}
+.dt-hint {
+  margin-top: 18px;
+  font-family: var(--font-script);
+  font-size: 20px;
+  color: var(--rose-dark);
+  text-align: center;
+}
+
+/* ==================== PROPOSAL PAGE ==================== */
+#proposalPage {
+  background:
+    radial-gradient(circle at 50% 0%, var(--rose-light) 0, transparent 55%),
+    radial-gradient(circle at 50% 100%, var(--rose-soft) 0, transparent 60%),
+    var(--bg);
+  text-align: center;
+}
+
+.proposal-icon {
+  font-size: clamp(64px, 14vw, 92px);
+  display: block;
+  margin-bottom: 16px;
+  animation: heartbeat 2s infinite;
+}
+.proposal-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(30px, 6vw, 46px);
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 22px;
+}
+.proposal-body {
+  max-width: 500px;
+  margin: 0 auto 30px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.proposal-buttons {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+/* ==================== CERTIFICATE ==================== */
+#certificatePage {
+  background:
+    radial-gradient(circle at 50% 100%, var(--rose-light) 0, transparent 60%),
+    radial-gradient(circle at 50% 0%, var(--rose-soft) 0, transparent 55%),
+    var(--bg);
+}
+
+.cert-badge {
+  display: inline-block;
+  padding: 8px 22px;
+  background: var(--rose);
+  color: #fff;
+  border-radius: 50px;
+  font-size: 12px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(231, 90, 124, 0.35);
+}
+
+.certificate-card {
+  max-width: 680px;
+  margin: 0 auto 26px;
+  padding: clamp(34px, 6vw, 60px) clamp(24px, 5vw, 48px);
+  background: var(--bg-card);
+  border: 3px double var(--gold);
+  border-radius: 14px;
+  box-shadow: 0 25px 60px rgba(180, 100, 130, 0.18);
+  position: relative;
+  text-align: center;
+}
+.certificate-card::before,
+.certificate-card::after {
+  content: "✦";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  color: var(--gold);
+  background: var(--bg-card);
+  padding: 0 10px;
+}
+.certificate-card::after { top: auto; bottom: 12px; }
+
+.cert-seal {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold), #b58a2c);
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(201, 154, 60, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.15);
+}
+.cert-eyebrow {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.cert-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(26px, 5.5vw, 42px);
+  color: var(--rose-dark);
+  margin-bottom: 16px;
+}
+.cert-names {
+  font-family: var(--font-script);
+  font-size: clamp(30px, 6.5vw, 48px);
+  color: var(--rose-dark);
+  margin: 18px 0;
+  line-height: 1.1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.cert-names .amp {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-style: italic;
+  font-size: 0.65em;
+}
+.cert-note {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+  max-width: 500px;
+  margin: 0 auto 24px;
+  padding: 0 8px;
+}
+.cert-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--line);
+  flex-wrap: wrap;
+}
+.cert-meta-col { text-align: center; flex: 1; min-width: 100px; }
+.cert-meta-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.cert-meta-value {
+  font-family: var(--font-script);
+  font-size: 22px;
+  color: var(--rose-dark);
+  font-weight: 700;
+}
+
+.cert-footer {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--rose-dark);
+  margin-top: 20px;
+}
+
+/* ==================== GAME ==================== */
+#gamePage {
+  background: linear-gradient(180deg, var(--bg-alt), var(--bg-rose));
+}
+
+.game-head { margin-bottom: 22px; }
+.game-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(30px, 6vw, 46px);
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.15;
+}
+.game-subtitle {
+  max-width: 460px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.game-hud {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 20px auto;
+  max-width: 400px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.game-hud strong {
+  color: var(--rose-dark);
+  font-size: 20px;
+  font-family: var(--font-display);
+  margin-left: 4px;
+}
+
+.game-arena {
+  position: relative;
+  width: min(100%, 480px);
+  height: clamp(340px, 58vh, 500px);
+  margin: 0 auto;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.8), transparent 60%),
+    linear-gradient(180deg, var(--rose-soft), var(--bg-alt));
+  border-radius: 24px;
+  border: 2px solid var(--line);
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(180, 100, 130, 0.15);
+}
+
+.game-start-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(255, 250, 251, 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 5;
+  text-align: center;
+}
+
+.falling-heart {
+  position: absolute;
+  font-size: 34px;
+  cursor: pointer;
+  user-select: none;
+  filter: drop-shadow(0 4px 8px rgba(231, 90, 124, 0.35));
+  animation: heartPop .3s ease both;
+  transition: transform .1s;
+}
+.falling-heart:active { transform: scale(0.85); }
+@keyframes heartPop {
+  from { transform: scale(0.2); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.falling-heart.caught {
+  animation: caught .5s ease forwards;
+  pointer-events: none;
+}
+@keyframes caught {
+  0% { transform: scale(1); opacity: 1; }
+  60% { transform: scale(1.6) translateY(-20px); opacity: 0.9; }
+  100% { transform: scale(0.3) translateY(-40px); opacity: 0; }
+}
+
+.game-status {
+  min-height: 30px;
+  margin-top: 20px;
+  font-family: var(--font-script);
+  font-size: 22px;
+  color: var(--rose-dark);
+  text-align: center;
+}
+
+/* ==================== FINAL CONFIRMATION (date mode) ==================== */
+#confirmPage {
+  background:
+    radial-gradient(circle at 50% 100%, var(--rose-light) 0, transparent 60%),
+    radial-gradient(circle at 50% 0%, var(--rose-soft) 0, transparent 55%),
+    var(--bg);
+}
+
+.confirm-icon {
+  font-size: clamp(72px, 16vw, 104px);
+  display: block;
+  margin-bottom: 12px;
+  animation: heartbeat 2s infinite;
+}
+
+.confirm-title {
+  font-family: var(--font-script);
+  font-size: clamp(52px, 11vw, 88px);
+  color: var(--rose-dark);
+  line-height: 1.05;
+  margin-bottom: 22px;
+}
+.confirm-body {
+  max-width: 500px;
+  margin: 0 auto 24px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.confirm-details {
+  max-width: 460px;
+  margin: 0 auto 24px;
+  padding: 28px 24px;
+  background: var(--bg-card);
+  border: 1.5px dashed var(--rose);
+  border-radius: 20px;
+  text-align: left;
+}
+.confirm-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.confirm-detail:last-child { border-bottom: none; }
+.confirm-detail-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+.confirm-detail-label {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--rose-dark);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.confirm-detail-value {
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.confirm-footer {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--rose-dark);
+  margin-top: 20px;
+}
+
+/* ==================== MUSIC ==================== */
+.music-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1.5px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 8px 20px rgba(180, 100, 130, 0.2);
+  z-index: 100;
+  cursor: pointer;
+  transition: .2s ease;
+}
+.music-btn:hover { transform: scale(1.08); }
+.music-btn.playing { animation: spin 3s linear infinite; }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== CONFETTI ==================== */
+.confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 300;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 600px) {
+  .page { padding: 40px 16px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+  #page2 { padding-top: 50px; }
+  .letter { transform: none; padding: 28px 22px; }
+  .ask-buttons { flex-direction: column; gap: 16px; }
+  .yes-btn, .no-btn { width: 100%; max-width: 320px; }
+  .confirm-details { padding: 20px 18px; }
+  .proposal-buttons { flex-direction: column; }
+  .proposal-buttons .btn { width: 100%; max-width: 320px; }
+  .certificate-card { padding: 28px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .bg-hearts { display: none; }
+  .yes-btn.pulse { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND HEARTS -->
+<div class="bg-hearts" id="bgHearts" aria-hidden="true"></div>
+
+<!-- AUDIO -->
+<audio id="music" loop preload="none"></audio>
+<button class="music-btn" id="musicBtn" type="button" aria-label="Toggle music" title="Music">♪</button>
+
+<!-- ==================================================
+     SHARED PAGES (both modes use these)
+     ================================================== -->
+
+<!-- PAGE 1: ASK -->
+<section class="page active" id="page1">
+  <div class="inner">
+    <div class="ask-avatar" id="askAvatar">💌</div>
+    <p class="ask-eyebrow" id="askEyebrow"></p>
+    <h1 class="ask-question" id="askQuestion"></h1>
+    <p class="ask-subtitle" id="askSubtitle"></p>
+
+    <div class="ask-buttons">
+      <button class="btn yes-btn pulse" id="yesBtn" type="button" onclick="handleYes()">
+        <span id="yesBtnText"></span>
+      </button>
+      <button class="no-btn" id="noBtn" type="button" onmouseenter="runAway(this)" onclick="runAway(this)" ontouchstart="runAway(this)">
+        <span id="noBtnText"></span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 2: LETTER -->
+<section class="page" id="page2">
+  <div class="inner">
+    <div class="letter-wrap">
+      <div class="letter">
+        <div class="letter-title" id="letterTitle"></div>
+        <h3 id="letterGreeting"></h3>
+        <div id="letterParagraphs"></div>
+        <p class="sig">
+          <span id="letterSignature"></span>
+          <small id="letterSignatureName"></small>
+        </p>
+      </div>
+    </div>
+    <button class="btn" type="button" onclick="goToNextFromLetter()">
+      Okay, I'm listening →
+    </button>
+  </div>
+</section>
+
+<!-- PAGE: GAME (shared between both modes) -->
+<section class="page" id="gamePage">
+  <div class="inner">
+    <div class="game-head">
+      <p class="ask-eyebrow">One more thing</p>
+      <h2 class="game-title" id="gameTitle"></h2>
+      <p class="game-subtitle" id="gameSubtitle"></p>
+    </div>
+
+    <div class="game-hud">
+      <div>Hearts <strong id="scoreValue">0</strong>/<span id="targetValue">10</span></div>
+      <div>Time <strong id="timeValue">30</strong>s</div>
+    </div>
+
+    <div class="game-arena" id="gameArena">
+      <div class="game-start-overlay" id="gameStartOverlay">
+        <p style="font-family:var(--font-script);font-size:24px;color:var(--rose-dark);" id="gameStartText"></p>
+        <button class="btn" type="button" id="gameStartBtn" onclick="startGame()"></button>
+      </div>
+    </div>
+
+    <p class="game-status" id="gameStatus"></p>
+
+    <div id="gameAfter" style="display:none;width:100%">
+      <button class="btn" type="button" onclick="afterGame()">
+        See your answer ♥
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================
+     DATE MODE PAGES
+     ================================================== -->
+
+<!-- PAGE 3 (date): DATE & TIME -->
+<section class="page" id="whenPage">
+  <div class="inner">
+    <p class="ask-eyebrow">The Details</p>
+    <h2 class="when-title" id="whenTitle"></h2>
+    <p class="when-subtitle" id="whenSubtitle"></p>
+
+    <div class="datetime-card">
+      <div class="dt-field">
+        <label class="dt-label" for="dateInput">Pick a day</label>
+        <input class="dt-input" id="dateInput" type="date" aria-label="Pick a date">
+      </div>
+      <div class="dt-field">
+        <label class="dt-label" for="timeInput">Pick a time</label>
+        <input class="dt-input" id="timeInput" type="time" aria-label="Pick a time">
+      </div>
+      <p class="dt-hint" id="whenHint"></p>
+    </div>
+
+    <button class="btn" type="button" onclick="confirmDateTime()">
+      Lock it in ♥
+    </button>
+  </div>
+</section>
+
+<!-- PAGE 5 (date): FINAL CONFIRMATION -->
+<section class="page" id="confirmPage">
+  <div class="inner">
+    <span class="cert-badge" id="confirmEyebrow"></span>
+    <span class="confirm-icon">💗</span>
+    <h2 class="confirm-title" id="finalTitle"></h2>
+    <p class="confirm-body" id="finalBody"></p>
+
+    <div class="confirm-details">
+      <div class="confirm-detail">
+        <div class="confirm-detail-icon">📅</div>
+        <div>
+          <div class="confirm-detail-label">Date</div>
+          <div class="confirm-detail-value" id="confirmDate">—</div>
+        </div>
+      </div>
+      <div class="confirm-detail">
+        <div class="confirm-detail-icon">⏰</div>
+        <div>
+          <div class="confirm-detail-label">Time</div>
+          <div class="confirm-detail-value" id="confirmTime">—</div>
+        </div>
+      </div>
+      <div class="confirm-detail" id="venueRow">
+        <div class="confirm-detail-icon">📍</div>
+        <div>
+          <div class="confirm-detail-label">Where</div>
+          <div class="confirm-detail-value" id="confirmVenue">—</div>
+        </div>
+      </div>
+      <div class="confirm-detail">
+        <div class="confirm-detail-icon">💌</div>
+        <div>
+          <div class="confirm-detail-label">From</div>
+          <div class="confirm-detail-value" id="confirmFrom">—</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="confirm-footer" id="finalFooter"></p>
+
+    <button class="btn ghost" type="button" onclick="restartAll()">
+      <span id="finalBtnText"></span>
+    </button>
+  </div>
+</section>
+
+<!-- ==================================================
+     PROPOSAL MODE PAGES
+     ================================================== -->
+
+<!-- PROPOSAL PAGE (after letter) -->
+<section class="page" id="proposalPage">
+  <div class="inner">
+    <span class="proposal-icon">💍</span>
+    <p class="ask-eyebrow" id="proposalEyebrow"></p>
+    <h2 class="proposal-title" id="proposalTitle"></h2>
+    <p class="proposal-body" id="proposalBody"></p>
+
+    <div class="proposal-buttons">
+      <button class="btn" type="button" onclick="handleProposalYes()" id="proposalYesBtn">
+        💍 Yes, forever
+      </button>
+      <button class="no-btn" type="button" onmouseenter="runAway(this)" onclick="runAway(this)" ontouchstart="runAway(this)" id="proposalNoBtn">
+        <span>Maybe not…</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICATE PAGE -->
+<section class="page" id="certificatePage">
+  <div class="inner">
+    <span class="cert-badge">OFFICIALLY CONFIRMED</span>
+
+    <div class="certificate-card">
+      <div class="cert-seal">💗</div>
+      <div class="cert-eyebrow">Official &amp; Forever</div>
+      <h2 class="cert-title" id="certTitle"></h2>
+
+      <div class="cert-names" id="certNames"></div>
+
+      <p class="cert-note" id="certNote"></p>
+
+      <div class="cert-meta">
+        <div class="cert-meta-col">
+          <div class="cert-meta-label">Certified on</div>
+          <div class="cert-meta-value" id="certDate">—</div>
+        </div>
+        <div class="cert-meta-col">
+          <div class="cert-meta-label">Love ID</div>
+          <div class="cert-meta-value" id="certId">—</div>
+        </div>
+        <div class="cert-meta-col">
+          <div class="cert-meta-label">Expires</div>
+          <div class="cert-meta-value">Never ♥</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="cert-footer" id="proposalFooter"></p>
+
+    <button class="btn ghost" type="button" onclick="restartAll()">
+      <span id="proposalBtnText"></span>
+    </button>
+  </div>
+</section>
+
+<script>
+"use strict";
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let CONFIG = null;
+let currentPage = "page1";
+let gameState = { active: false, score: 0, timeLeft: 30, target: 10, spawnTimer: null, tickTimer: null };
+let selectedDate = "";
+let selectedTime = "";
+let musicStarted = false;
+let certSnapshot = null;
+
+/* ============================================================
+   DEFAULTS
+   ============================================================ */
+function defaults() {
+  return {
+    mode: "date",
+    fromName: "Aarav",
+    toName: "Diya",
+    askEyebrow: "I have something to ask you…",
+    askQuestion: "Will you go out with me?",
+    askSubtitle: "There's a little plan I've been carrying around in my head for a while. And it involves you.",
+    yesButton: "Yes, obviously ♥",
+    noButton: "No (for now)",
+    letterTitle: "Read this first",
+    letterGreeting: "Dear Diya,",
+    letterBody: "I've been trying to figure out how to say this without sounding like a fool. So I'm just going to say it: I really like you. Not in a small way — in the kind of way where I think about what you'd say to something before I even do it.\n\nI'd like to take you somewhere. Somewhere quiet. Somewhere where we can talk and laugh and not check the time. Just us, for a few hours.\n\nIf you say yes, I promise to make it a day you'll remember.",
+    letterSignature: "Hoping you say yes,",
+    letterSignatureName: "Aarav",
+    whenTitle: "When works for you?",
+    whenSubtitle: "Pick a day and a time — I'll plan everything around it.",
+    whenHint: "No pressure, just us.",
+    gameTitle: "One last thing",
+    gameSubtitle: "Catch 10 hearts in 30 seconds. Each one is a reason to say yes.",
+    gameStart: "Start catching",
+    gameWin: "You caught every one. And you've made me the happiest person alive. ♥",
+    gameLose: "Almost! Try again — the hearts are worth catching. 💕",
+    gameTarget: "10",
+    finalEyebrow: "It's a date",
+    finalTitle: "See you then ♥",
+    finalBody: "Bring yourself. Bring your laugh. Bring your stories. Everything else — I'll take care of.",
+    finalVenue: "A little café with fairy lights",
+    finalFooter: "With all my heart ♥",
+    finalButton: "Ask me again ↻",
+    proposalEyebrow: "The moment of truth",
+    proposalTitle: "Will You Be Mine, Forever?",
+    proposalBody: "Every day with you feels like the first day of something wonderful. I don't want to imagine a life that doesn't have you in it. I'm asking — with all my heart — will you be mine?",
+    certificateTitle: "Certificate of Love",
+    certificateNote: "This certifies that the two people named below are, from this day forward, officially, irrevocably, and forever in love. Terms: endless. Expiry: never.",
+    proposalFooter: "Yours, forever ♥",
+    proposalButton: "Replay our story ↻",
+    songEnabled: "yes",
+    songSrc: "song.mp3"
+  };
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+function setText(id, v) {
+  const el = document.getElementById(id);
+  if (el && v != null) el.textContent = v;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(cfg) {
+  const isDate = cfg.mode !== "proposal";
+
+  // Shared: names & letter
+  setText("askEyebrow", cfg.askEyebrow);
+  setText("askQuestion", isDate ? cfg.askQuestion : "Will you be mine, forever?");
+  setText("askSubtitle", isDate ? cfg.askSubtitle : cfg.proposalBody);
+  setText("yesBtnText", isDate ? cfg.yesButton : "Yes, forever ♥");
+  setText("noBtnText", isDate ? cfg.noButton : "Maybe not…");
+
+  setText("letterTitle", cfg.letterTitle);
+  setText("letterGreeting", cfg.letterGreeting);
+  setText("letterSignature", cfg.letterSignature);
+  setText("letterSignatureName", cfg.letterSignatureName);
+  const lp = document.getElementById("letterParagraphs");
+  lp.innerHTML = "";
+  String(cfg.letterBody || "").split(/\n\s*\n/).forEach(t => {
+    if (!t.trim()) return;
+    const p = document.createElement("p");
+    p.textContent = t;
+    lp.appendChild(p);
+  });
+
+  // Game (shared)
+  setText("gameTitle", cfg.gameTitle);
+  setText("gameSubtitle", cfg.gameSubtitle);
+  setText("gameStartText", cfg.gameSubtitle);
+  setText("gameStartBtn", cfg.gameStart);
+  gameState.target = parseInt(cfg.gameTarget) || 10;
+  setText("targetValue", String(gameState.target));
+
+  // Date mode
+  setText("whenTitle", cfg.whenTitle);
+  setText("whenSubtitle", cfg.whenSubtitle);
+  setText("whenHint", cfg.whenHint);
+  setText("confirmEyebrow", cfg.finalEyebrow);
+  setText("finalTitle", cfg.finalTitle);
+  setText("finalBody", cfg.finalBody);
+  setText("confirmFrom", cfg.fromName);
+  setText("finalFooter", cfg.finalFooter);
+  setText("finalBtnText", cfg.finalButton);
+
+  const venueRow = document.getElementById("venueRow");
+  if (venueRow) {
+    if (cfg.finalVenue && cfg.finalVenue.trim()) {
+      venueRow.style.display = "flex";
+      setText("confirmVenue", cfg.finalVenue);
+    } else {
+      venueRow.style.display = "none";
+    }
+  }
+
+  // Proposal mode
+  setText("proposalEyebrow", cfg.proposalEyebrow);
+  setText("proposalTitle", cfg.proposalTitle);
+  setText("proposalBody", cfg.proposalBody);
+  setText("certTitle", cfg.certificateTitle);
+  setText("certNote", cfg.certificateNote);
+  setText("proposalFooter", cfg.proposalFooter);
+  setText("proposalBtnText", cfg.proposalButton);
+
+  const certNames = document.getElementById("certNames");
+  certNames.innerHTML =
+    '<span>' + esc(cfg.fromName) + '</span>' +
+    '<span class="amp">&amp;</span>' +
+    '<span>' + esc(cfg.toName) + '</span>';
+
+  // Certificate snapshot (stable)
+  if (!certSnapshot) {
+    const now = new Date();
+    certSnapshot = {
+      date: now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+      id: "LOVE-" + now.getFullYear() + "-" + Math.floor(100 + Math.random() * 900)
+    };
+  }
+  setText("certDate", certSnapshot.date);
+  setText("certId", certSnapshot.id);
+
+  // Music
+  setupMusic(cfg);
+
+  // Background hearts
+  buildBgHearts();
+}
+
+/* ============================================================
+   BACKGROUND HEARTS
+   ============================================================ */
+function buildBgHearts() {
+  const layer = document.getElementById("bgHearts");
+  if (!layer) return;
+  layer.innerHTML = "";
+  const glyphs = ["♥", "♡", "❥", "💕", "💗"];
+  for (let i = 0; i < 16; i++) {
+    const el = document.createElement("span");
+    el.textContent = glyphs[i % glyphs.length];
+    el.style.left = (Math.random() * 100) + "%";
+    el.style.fontSize = (16 + Math.random() * 20) + "px";
+    const dur = 12 + Math.random() * 12;
+    el.style.animationDuration = dur + "s";
+    el.style.animationDelay = (-Math.random() * dur) + "s";
+    layer.appendChild(el);
+  }
+}
+
+/* ============================================================
+   MUSIC
+   ============================================================ */
+function setupMusic(cfg) {
+  const music = document.getElementById("music");
+  const btn = document.getElementById("musicBtn");
+  if (!music || !btn) return;
+
+  if (cfg.songEnabled !== "yes" || !cfg.songSrc) {
+    btn.style.display = "none";
+    return;
+  }
+  btn.style.display = "";
+
+  music.innerHTML = "";
+  const source = document.createElement("source");
+  source.src = cfg.songSrc;
+  source.type = "audio/mpeg";
+  music.appendChild(source);
+
+  btn.onclick = () => {
+    if (music.paused) {
+      music.play().then(() => {
+        btn.classList.add("playing");
+      }).catch(() => {});
+    } else {
+      music.pause();
+      btn.classList.remove("playing");
+    }
+  };
+
+  document.body.addEventListener("click", () => {
+    if (!musicStarted) {
+      musicStarted = true;
+      music.volume = 0.6;
+      music.play().then(() => {
+        btn.classList.add("playing");
+      }).catch(() => {});
+    }
+  }, { once: true });
+}
+
+/* ============================================================
+   PAGE NAVIGATION
+   ============================================================ */
+function goTo(pageId) {
+  if (!pageId || pageId === currentPage) return;
+  const cur = document.getElementById(currentPage);
+  const next = document.getElementById(pageId);
+  if (!next) return;
+  cur.classList.remove("active");
+  next.classList.add("active");
+  currentPage = pageId;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (pageId === "gamePage") resetGameUI();
+  if (pageId === "confirmPage") { updateConfirmDetails(); celebrate(); }
+  if (pageId === "certificatePage") celebrate();
+}
+
+/* ============================================================
+   PAGE 1 — YES / NO
+   ============================================================ */
+function handleYes() {
+  celebrate();
+  const isDate = CONFIG.mode !== "proposal";
+  setTimeout(() => goTo("page2"), 600);
+}
+
+function runAway(btn) {
+  if (!btn) return;
+  const x = (Math.random() - 0.5) * 240;
+  const y = (Math.random() - 0.5) * 100;
+  btn.style.transform = `translate(${x}px, ${y}px)`;
+  const msgs = ["Nope!", "Try again!", "Not today!", "Can't catch me!", "Nuh-uh ♥", "Please? 🥺"];
+  const span = btn.querySelector("span");
+  if (span) span.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+  setTimeout(() => {
+    btn.style.transform = "";
+  }, 1500);
+}
+
+/* ============================================================
+   LETTER NEXT (branch based on mode)
+   ============================================================ */
+function goToNextFromLetter() {
+  if (CONFIG.mode === "proposal") {
+    goTo("proposalPage");
+  } else {
+    goTo("whenPage");
+  }
+}
+
+/* ============================================================
+   DATE MODE — DATE & TIME
+   ============================================================ */
+function confirmDateTime() {
+  const dateEl = document.getElementById("dateInput");
+  const timeEl = document.getElementById("timeInput");
+  if (!dateEl.value) {
+    alert("Pick a day first ♥");
+    dateEl.focus();
+    return;
+  }
+  if (!timeEl.value) {
+    alert("Pick a time first ♥");
+    timeEl.focus();
+    return;
+  }
+  selectedDate = dateEl.value;
+  selectedTime = timeEl.value;
+  goTo("gamePage");
+}
+
+function updateConfirmDetails() {
+  const dateEl = document.getElementById("confirmDate");
+  const timeEl = document.getElementById("confirmTime");
+
+  if (selectedDate) {
+    const d = new Date(selectedDate + "T00:00:00");
+    if (!isNaN(d.getTime())) {
+      dateEl.textContent = d.toLocaleDateString("en-IN", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
+    } else {
+      dateEl.textContent = selectedDate;
+    }
+  } else {
+    dateEl.textContent = "To be decided";
+  }
+
+  if (selectedTime) {
+    const [h, m] = selectedTime.split(":").map(Number);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    timeEl.textContent = d.toLocaleTimeString("en-IN", {
+      hour: "numeric", minute: "2-digit", hour12: true
+    });
+  } else {
+    timeEl.textContent = "To be decided";
+  }
+}
+
+/* ============================================================
+   PROPOSAL MODE
+   ============================================================ */
+function handleProposalYes() {
+  celebrate();
+  setTimeout(() => goTo("gamePage"), 600);
+}
+
+/* ============================================================
+   AFTER GAME — branch by mode
+   ============================================================ */
+function afterGame() {
+  if (CONFIG.mode === "proposal") {
+    goTo("certificatePage");
+  } else {
+    goTo("confirmPage");
+  }
+}
+
+/* ============================================================
+   GAME
+   ============================================================ */
+function resetGameUI() {
+  const arena = document.getElementById("gameArena");
+  arena.querySelectorAll(".falling-heart").forEach(el => el.remove());
+  document.getElementById("gameStartOverlay").style.display = "flex";
+  document.getElementById("scoreValue").textContent = "0";
+  document.getElementById("timeValue").textContent = "30";
+  document.getElementById("gameStatus").textContent = "";
+  document.getElementById("gameAfter").style.display = "none";
+
+  gameState.active = false;
+  gameState.score = 0;
+  gameState.timeLeft = 30;
+  clearInterval(gameState.spawnTimer);
+  clearInterval(gameState.tickTimer);
+}
+
+function startGame() {
+  resetGameUI();
+  document.getElementById("gameStartOverlay").style.display = "none";
+  gameState.active = true;
+  gameState.score = 0;
+  gameState.timeLeft = 30;
+
+  gameState.tickTimer = setInterval(() => {
+    gameState.timeLeft--;
+    document.getElementById("timeValue").textContent = String(Math.max(0, gameState.timeLeft));
+    if (gameState.timeLeft <= 0) endGame(false);
+  }, 1000);
+
+  gameState.spawnTimer = setInterval(spawnHeart, 700);
+  spawnHeart();
+}
+
+function spawnHeart() {
+  if (!gameState.active) return;
+  const arena = document.getElementById("gameArena");
+  const rect = arena.getBoundingClientRect();
+
+  const heart = document.createElement("div");
+  heart.className = "falling-heart";
+  heart.textContent = ["💕", "💖", "💗", "❤️", "💘", "💝"][Math.floor(Math.random() * 6)];
+
+  const x = Math.random() * Math.max(10, rect.width - 50);
+  heart.style.left = x + "px";
+  heart.style.top = "-40px";
+
+  const fallDuration = 3000 + Math.random() * 2500;
+  heart.style.transition = `top ${fallDuration}ms linear`;
+
+  const onClick = (e) => {
+    e.stopPropagation();
+    catchHeart(heart);
+  };
+  heart.addEventListener("click", onClick);
+  heart.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    catchHeart(heart);
+  }, { passive: false });
+
+  arena.appendChild(heart);
+
+  requestAnimationFrame(() => {
+    heart.style.top = (rect.height + 40) + "px";
+  });
+
+  setTimeout(() => {
+    if (heart.parentNode && !heart.classList.contains("caught")) heart.remove();
+  }, fallDuration + 100);
+}
+
+function catchHeart(heart) {
+  if (!gameState.active || heart.classList.contains("caught")) return;
+  heart.classList.add("caught");
+  gameState.score++;
+  document.getElementById("scoreValue").textContent = String(gameState.score);
+  setTimeout(() => heart.remove(), 500);
+  if (gameState.score >= gameState.target) endGame(true);
+}
+
+function endGame(won) {
+  gameState.active = false;
+  clearInterval(gameState.spawnTimer);
+  clearInterval(gameState.tickTimer);
+
+  const arena = document.getElementById("gameArena");
+  arena.querySelectorAll(".falling-heart").forEach(el => el.remove());
+
+  const status = document.getElementById("gameStatus");
+  status.textContent = won ? CONFIG.gameWin : CONFIG.gameLose;
+
+  if (won) {
+    document.getElementById("gameAfter").style.display = "block";
+    celebrate();
+  } else {
+    document.getElementById("gameStartOverlay").style.display = "flex";
+    document.getElementById("gameStartBtn").textContent = "Try again ♥";
+  }
+}
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+function celebrate() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const emojis = ["💕", "💖", "❤️", "✨", "💗", "🌸"];
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement("span");
+    c.className = "confetti";
+    c.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    c.style.left = Math.random() * 100 + "%";
+    c.style.top = "-20px";
+    c.style.fontSize = (16 + Math.random() * 16) + "px";
+    c.style.animationDuration = (2.5 + Math.random() * 3) + "s";
+    c.style.animationDelay = (Math.random() * 1.5) + "s";
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 6000);
+  }
+}
+
+/* ============================================================
+   RESTART
+   ============================================================ */
+function restartAll() {
+  resetGameUI();
+  selectedDate = "";
+  selectedTime = "";
+  const dateEl = document.getElementById("dateInput");
+  const timeEl = document.getElementById("timeInput");
+  if (dateEl) dateEl.value = "";
+  if (timeEl) timeEl.value = "";
+  goTo("page1");
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function boot() {
+  CONFIG = defaults();
+  render(CONFIG);
+
+  fetch("config.json", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : null)
+    .then(json => {
+      if (!json) return;
+      CONFIG = { ...defaults(), ...json };
+      render(CONFIG);
+    })
+    .catch(() => {});
+
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin) return;
+    const msg = event.data || {};
+    if (msg.type === "NIVA_PREVIEW_UPDATE" && msg.data) {
+      CONFIG = { ...defaults(), ...msg.data };
+      render(CONFIG);
+    }
+    if (msg.type === "NIVA_PREVIEW_PING") {
+      try { window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin); } catch {}
+    }
+  });
+
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin);
+    }
+  } catch {}
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot, { once: true });
+} else {
+  boot();
+}
+</script>
+</body>
+</html>

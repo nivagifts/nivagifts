@@ -140,6 +140,70 @@
     .username-status.bad { color: var(--danger); }
     .username-status.checking { color: var(--text-muted); font-style: italic; }
 
+    /* WELCOME SCREEN */
+    .welcome-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: linear-gradient(145deg, #fdf8f3, #f9e8e4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      transition: opacity 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: all;
+      text-align: center;
+      padding: 20px;
+    }
+    .welcome-screen.hide {
+      opacity: 0;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+    .welcome-logo {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--line-gold);
+      box-shadow: 0 20px 60px rgba(183, 110, 121, 0.25);
+      animation: welcomePulse 2.4s ease-in-out infinite;
+    }
+    @keyframes welcomePulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 20px 60px rgba(183, 110, 121, 0.25); }
+      50% { transform: scale(1.04); box-shadow: 0 24px 80px rgba(183, 110, 121, 0.35); }
+    }
+    .welcome-brand {
+      font: 500 clamp(2.4rem, 10vw, 4.2rem) / 1 var(--display);
+      letter-spacing: 0.22em;
+      color: var(--text);
+      animation: welcomeFadeUp 1.2s 0.2s both;
+    }
+    .welcome-tagline {
+      font: italic 1.1rem var(--serif);
+      color: var(--rose-deep);
+      letter-spacing: 0.1em;
+      animation: welcomeFadeUp 1.2s 0.5s both;
+    }
+    .welcome-heart {
+      font-size: 2.2rem;
+      color: var(--rose);
+      animation: beatWelcome 2s infinite;
+      margin-top: 8px;
+    }
+    @keyframes beatWelcome {
+      0%, 100% { transform: scale(1); }
+      8% { transform: scale(1.15); }
+      16% { transform: scale(1); }
+      24% { transform: scale(1.1); }
+      32% { transform: scale(1); }
+    }
+    @keyframes welcomeFadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* HERO */
     .hero { position: relative; padding: 60px 0 80px; overflow: hidden; }
     .hero-grid { display: grid; grid-template-columns: 1fr; gap: 48px; align-items: center; }
@@ -247,7 +311,7 @@
     .stat-label { font-size: 0.78rem; color: var(--text-2); letter-spacing: 0.06em; font-weight: 500; }
     @media (min-width: 900px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } .stat-number { font-size: 3.4rem; } }
 
-    .reviews { padding: 70px 0; border-top: 1px solid var(--line-soft); }
+    .reviews { padding: 70px 0; border-top: 1px solid var(--line-soft); overflow: hidden; }
     .reviews-head { text-align: center; max-width: 720px; margin: 0 auto 40px; }
     .reviews-head .eyebrow::before { display: none; }
     .reviews-head h2 { font: 400 clamp(2rem, 6vw, 2.8rem) / 1.12 var(--display); letter-spacing: -0.02em; margin: 16px 0; }
@@ -255,8 +319,38 @@
     .reviews-rating { display: inline-flex; align-items: center; gap: 12px; margin-top: 22px; padding: 10px 22px; border: 1px solid var(--line-rose); border-radius: 999px; background: var(--panel); }
     .reviews-stars { display: inline-flex; gap: 2px; color: var(--gold); font-size: 1rem; }
     .reviews-rating-text { font-size: 0.76rem; color: var(--text-2); letter-spacing: 0.04em; }
-    .reviews-grid { display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 1000px; margin: 0 auto; }
-    .review-card { padding: 26px; border: 1px solid var(--line-soft); border-radius: 20px; background: var(--panel); box-shadow: var(--shadow-sm); position: relative; }
+
+    /* Moving reviews marquee */
+    .reviews-marquee {
+      display: flex;
+      gap: 18px;
+      width: max-content;
+      animation: marqueeScroll 38s linear infinite;
+      padding: 8px 0 20px;
+    }
+    .reviews-marquee:hover {
+      animation-play-state: paused;
+    }
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .reviews-marquee .review-card {
+      width: 320px;
+      flex: 0 0 auto;
+      margin: 0;
+    }
+    .reviews-viewport {
+      overflow: hidden;
+      position: relative;
+      mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    }
+    .reviews-marquee .review-card:nth-child(even) {
+      animation-delay: -19s;
+    }
+    .review-card { padding: 26px; border: 1px solid var(--line-soft); border-radius: 20px; background: var(--panel); box-shadow: var(--shadow-sm); position: relative; transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease); }
+    .review-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
     .review-quote-mark { position: absolute; top: 12px; right: 20px; font: 400 4rem var(--display); line-height: 1; color: var(--rose-light); opacity: 0.5; pointer-events: none; }
     .review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
     .review-avatar { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font: 600 1rem var(--sans); color: #fff; text-transform: uppercase; flex-shrink: 0; background: linear-gradient(145deg, #d4878e, #b76e79); }
@@ -281,8 +375,19 @@
     .review-form .star-input button.active { color: var(--gold); transform: scale(1.1); }
     .review-form textarea { width: 100%; min-height: 100px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-white); color: var(--text); font-family: var(--sans); font-size: 15px; resize: vertical; }
 
-    @media (min-width: 600px) { .reviews-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 900px) { .reviews { padding: 110px 0; } .reviews-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; } }
+    @media (min-width: 900px) { .reviews { padding: 110px 0; } }
+
+    /* SUGGESTION BOX */
+    .suggestion-section { padding: 70px 0; background: var(--bg-blush); border-block: 1px solid var(--line-soft); }
+    .suggestion-box { max-width: 680px; margin: 0 auto; padding: 36px 30px; border: 1px solid var(--line-rose); border-radius: 24px; background: var(--panel); box-shadow: var(--shadow-sm); }
+    .suggestion-box h2 { font: 500 1.9rem var(--display); margin: 0 0 6px; text-align: center; }
+    .suggestion-box > p { text-align: center; color: var(--text-2); font-size: 0.88rem; margin: 0 0 24px; font-family: var(--serif); }
+    .suggestion-box label { display: block; margin: 16px 0 7px; font-size: 0.78rem; font-weight: 500; color: var(--text); }
+    .suggestion-box input, .suggestion-box textarea { width: 100%; padding: 13px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-white); color: var(--text); font-family: var(--sans); font-size: 15px; resize: vertical; }
+    .suggestion-box input:focus, .suggestion-box textarea:focus { outline: none; border-color: var(--rose); box-shadow: 0 0 0 3px rgba(212, 135, 142, 0.12); }
+    .suggestion-box .btn { width: 100%; margin-top: 20px; }
+    .suggestion-error { margin: 12px 0 0; padding: 10px 14px; border-radius: 10px; font-size: 0.8rem; text-align: center; }
+    .suggestion-error:empty { display: none; }
 
     .pricing-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
     .price-card { position: relative; border: 1px solid var(--line-soft); border-radius: 24px; padding: 32px 28px; background: var(--panel); }
@@ -378,10 +483,20 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
       .reveal { opacity: 1; transform: none; }
+      .reviews-marquee { animation: none; flex-wrap: wrap; justify-content: center; width: 100%; }
+      .reviews-marquee .review-card { width: 300px; }
     }
   </style>
 </head>
 <body>
+
+  <!-- WELCOME SCREEN -->
+  <div class="welcome-screen" id="welcomeScreen">
+    <img src="public/assets/logo/photo_2026-10-21_07-33-50.jpg" alt="NIVA Logo" class="welcome-logo">
+    <div class="welcome-brand">NIVA</div>
+    <div class="welcome-tagline">make moments eternal</div>
+    <div class="welcome-heart">♥</div>
+  </div>
 
   <!-- HEADER -->
   <header class="nav-shell">
@@ -409,6 +524,7 @@
         <a href="index.html#reviews">Reviews</a>
         <a href="index.html#pricing">Pricing</a>
         <a href="index.html#faq">FAQ</a>
+        <a href="index.html#suggestion">Suggestions</a>
         <a href="index.html#contact">Contact</a>
         <a class="btn btn-primary" href="index.html#templates">Create a gift ↗</a>
       </nav>
@@ -627,7 +743,7 @@
       </div>
     </section>
 
-    <!-- REVIEWS -->
+    <!-- REVIEWS (MOVING) -->
     <section class="reviews" id="reviews" aria-label="Customer reviews">
       <div class="wrap">
         <div class="reviews-head reveal">
@@ -641,7 +757,11 @@
             <span class="reviews-rating-text"><strong id="avgRating">0</strong> · <span id="reviewCount">0</span> reviews</span>
           </div>
         </div>
-        <div class="reviews-grid" id="reviewsGrid"></div>
+      </div>
+      <div class="reviews-viewport">
+        <div class="reviews-marquee" id="reviewsGrid"></div>
+      </div>
+      <div class="wrap">
         <div class="review-form reveal" id="reviewFormSection">
           <h3>Write a review</h3>
           <p>Share your experience to help others.</p>
@@ -655,6 +775,31 @@
           <textarea id="reviewText" placeholder="Tell us about your experience…" maxlength="500"></textarea>
           <button type="button" class="btn btn-primary" id="submitReview" style="width:100%;margin-top:14px">Submit review ♥</button>
           <p class="modal-error" id="reviewError" role="alert" style="margin-top:10px"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUGGESTION BOX -->
+    <section class="suggestion-section" id="suggestion">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Help us make NIVA better</span>
+          <h2>What should we<br><span class="gradient">build next?</span></h2>
+          <p>Share your ideas for new templates, features, or anything you'd love to see.</p>
+        </div>
+        <div class="suggestion-box reveal">
+          <h2>Suggestion Box</h2>
+          <p>Your voice shapes the future of NIVA.</p>
+          <form id="suggestionForm" novalidate>
+            <label for="suggestionName">Your name <span style="font-size:0.72rem;color:var(--text-muted)">(optional)</span></label>
+            <input id="suggestionName" type="text" placeholder="e.g. Aarav" maxlength="60" autocomplete="name">
+            <label for="suggestionEmail">Email <span style="font-size:0.72rem;color:var(--text-muted)">(optional, so we can reply)</span></label>
+            <input id="suggestionEmail" type="email" placeholder="you@example.com" maxlength="120" autocomplete="email">
+            <label for="suggestionText">Your suggestion</label>
+            <textarea id="suggestionText" placeholder="I'd love a template for… / It would be amazing if NIVA could… / I noticed an issue with…" rows="5" maxlength="1000" required></textarea>
+            <button type="submit" class="btn btn-primary" id="submitSuggestion">Send suggestion ✦</button>
+            <p class="suggestion-error modal-error" id="suggestionError" role="alert"></p>
+          </form>
         </div>
       </div>
     </section>
@@ -843,6 +988,7 @@
           <a href="index.html#reviews">Reviews</a>
           <a href="index.html#pricing">Pricing</a>
           <a href="index.html#faq">FAQ</a>
+          <a href="index.html#suggestion">Suggestions</a>
           <a href="index.html#contact">Contact</a>
           <a href="./privacy.html">Privacy</a>
         </div>
@@ -899,6 +1045,25 @@
       const $ = (s, c = document) => c.querySelector(s);
       const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
       const esc = (str) => String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+      // WELCOME SCREEN LOGIC
+      const welcomeScreen = $('#welcomeScreen');
+      if (welcomeScreen) {
+        const hasSeenWelcome = sessionStorage.getItem('niva_welcome_seen');
+        if (hasSeenWelcome) {
+          welcomeScreen.style.display = 'none';
+        } else {
+          // Hide after animation + 1.8s
+          setTimeout(() => {
+            welcomeScreen.classList.add('hide');
+            sessionStorage.setItem('niva_welcome_seen', 'true');
+            // Remove from DOM after transition
+            setTimeout(() => {
+              welcomeScreen.style.display = 'none';
+            }, 1300);
+          }, 1800);
+        }
+      }
 
       function showToast(message, ms = 3400) {
         const toast = $("#toast");
@@ -997,6 +1162,17 @@
           features: ['Multi-page experience', 'Apology letter', 'Memory gallery', 'Relationship timer'],
           preview: '/templates/letters/apologyletter/template.html',
           customize: './editor/editor.html?template=apologyletter&category=letters',
+        },
+        {
+          id: 'love-choice',
+          name: 'Love Choice',
+          category: 'love',
+          price: 299,
+          badge: '💕 2-IN-1 LOVE',
+          description: 'One template, two websites. Choose Date Invitation (ask them out with date & time) or Love Proposal (letter + certificate). Only the one you pick is published.',
+          features: ['Two experiences in one', 'Date + time picker', 'Love certificate', 'Heart-catching game', 'Song player'],
+          preview: '/templates/love/love-choice/template.html',
+          customize: './editor/editor.html?template=love-choice&category=love',
         },
       ];
 
@@ -1680,7 +1856,7 @@
               if (errBox) errBox.classList.add("show");
             }
           } catch (e) {
-            // Cross-origin iframe — can't inspect; assume loaded (sandbox allow-same-origin should prevent this)
+            // Cross-origin iframe — can't inspect; assume loaded
           }
         };
         frame.onerror = function () {
@@ -1727,9 +1903,11 @@
         const grid = $("#reviewsGrid");
         if (!grid) return;
         if (!state.reviews.length) {
-          grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">✦</div><h3>No reviews yet.</h3><p>Be the first to share your NIVA experience!</p></div>`;
+          grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;width:100%"><div class="empty-icon">✦</div><h3>No reviews yet.</h3><p>Be the first to share your NIVA experience!</p></div>`;
         } else {
-          grid.innerHTML = state.reviews.map(r => `
+          // Duplicate reviews for seamless marquee effect
+          const doubled = [...state.reviews, ...state.reviews];
+          grid.innerHTML = doubled.map(r => `
             <div class="review-card">
               <span class="review-quote-mark">"</span>
               <div class="review-header">
@@ -1876,7 +2054,6 @@
 
       /* ---------- FIX: HOME NAVIGATION FROM OTHER PAGES ---------- */
       function initHomeNavigation() {
-        // When this page is loaded, ensure we're at the top or correct hash
         if (window.location.hash) {
           const target = document.querySelector(window.location.hash);
           if (target) {
@@ -1888,14 +2065,12 @@
           window.scrollTo({ top: 0, behavior: 'instant' });
         }
 
-        // Handle any link that points to index.html with a hash while already on index
         document.addEventListener('click', (e) => {
           const link = e.target.closest('a[href]');
           if (!link) return;
           const href = link.getAttribute('href');
           if (!href) return;
 
-          // Only handle same-page index.html#hash links
           const isIndexHash = href.startsWith('index.html#') || href.startsWith('./index.html#');
           if (!isIndexHash) return;
 
@@ -1910,7 +2085,6 @@
           }
         });
 
-        // Ensure brand/home links work from any page — fallback if href is not a full path
         $$('[data-home-link]').forEach(link => {
           const currentPath = window.location.pathname;
           const isHome = currentPath.endsWith('index.html') || currentPath === '/' || currentPath.endsWith('/');
@@ -1943,20 +2117,17 @@
           const registry = window.NivaTemplates.getAll();
           if (!Array.isArray(registry) || !registry.length) return;
 
-          // LOCAL entries always win — registry only ADDS new ones
           const localById = new Map(TEMPLATES.map(t => [t.id, t]));
           const merged = [];
           const seen = new Set();
 
-          // Start with local entries (these take precedence)
           TEMPLATES.forEach(t => {
             merged.push(t);
             seen.add(t.id);
           });
 
-          // Add registry-only entries (not already in local list)
           registry.forEach(r => {
-            if (seen.has(r.id)) return; // local wins
+            if (seen.has(r.id)) return;
             seen.add(r.id);
             merged.push({
               id: r.id,
@@ -1978,7 +2149,62 @@
         }
       }
 
-      /* NIVI can dispatch nivi:login with a user object */
+      /* SUGGESTION BOX */
+      function initSuggestion() {
+        const form = $("#suggestionForm");
+        if (!form) return;
+
+        const nameEl = $("#suggestionName");
+        const emailEl = $("#suggestionEmail");
+        const textEl = $("#suggestionText");
+        const errEl = $("#suggestionError");
+        const submitBtn = $("#submitSuggestion");
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          errEl.textContent = "";
+          errEl.classList.remove("success");
+
+          const text = textEl.value.trim();
+          if (!text || text.length < 5) {
+            errEl.textContent = "Please share a suggestion (at least 5 characters).";
+            return;
+          }
+          if (text.length > 1000) {
+            errEl.textContent = "Suggestion must be at most 1000 characters.";
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Sending…";
+
+          try {
+            const res = await fetch("/api/suggestions", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: nameEl.value.trim(),
+                email: emailEl.value.trim(),
+                text,
+              }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.success) throw new Error(data.message || "Could not send suggestion.");
+
+            form.reset();
+            errEl.textContent = "Thank you! Your suggestion has been received. ♥";
+            errEl.classList.add("success");
+            showToast("Suggestion sent. We truly appreciate it! ✦");
+          } catch (err) {
+            errEl.textContent = err.message || "Could not send suggestion. Please try again.";
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Send suggestion ✦";
+          }
+        });
+      }
+
       document.addEventListener("nivi:login", (e) => {
         const user = e.detail;
         if (!user) return;
@@ -1999,13 +2225,13 @@
         initFilters();
         initPreview();
         initReviews();
+        initSuggestion();
         initReveal();
         initHomeNavigation();
 
         const user = await fetchUser();
         if (user) {
           state.user = user;
-          // Warm welcome back
           setTimeout(() => {
             showToast("Welcome back, @" + getDisplayName(user) + " ✦");
           }, 500);
