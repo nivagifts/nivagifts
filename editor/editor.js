@@ -29,7 +29,7 @@ const TEMPLATE_PRICES = {
   "besties": 299,
   "memory-box": 99,
   "apologyletter": 39,
-  "love-choice": 299,
+  "date-invite": 299,
 };
 
 const TEMPLATE_PLAN_NAMES = {
@@ -397,59 +397,18 @@ function setFieldValue(key, value) {
 function renderForm() {
   const container = $("#dynamicSections");
   if (!container) return;
-
   const sections = context.config.sections || [];
   const customization = context.config.customization;
-
   if (!sections.length) {
     container.innerHTML = `<div class="editor-error">No sections defined in config.json.</div>`;
     return;
   }
-
   container.innerHTML = "";
   let step = 0;
-
-  // Helper: does a section pass its showIf condition?
-  const sectionVisible = (section) => {
-    if (!section.showIf) return true;
-    for (const [key, expected] of Object.entries(section.showIf)) {
-      const current = getFieldValue(key);
-      if (String(current) !== String(expected)) return false;
-    }
-    return true;
-  };
-
-  // Re-render on mode change
-  const reRender = () => {
-    const activeMode = getFieldValue("mode");
-    $$("[data-mode-group]").forEach(el => {
-      el.style.display = (el.dataset.modeGroup === activeMode) ? "" : "none";
-    });
-    $$(".form-section").forEach(el => {
-      const cond = el.dataset.showIf;
-      if (!cond) return;
-      try {
-        const rule = JSON.parse(cond);
-        let ok = true;
-        for (const [k, v] of Object.entries(rule)) {
-          if (String(getFieldValue(k)) !== String(v)) { ok = false; break; }
-        }
-        el.style.display = ok ? "" : "none";
-      } catch {}
-    });
-  };
-
   sections.forEach(section => {
-    if (!sectionVisible(section) && section.showIf) {
-      // Will be shown/hidden dynamically — still render but mark
-    }
     step++;
     const block = document.createElement("section");
     block.className = "form-section";
-    if (section.showIf) {
-      block.dataset.showIf = JSON.stringify(section.showIf);
-    }
-
     const header = document.createElement("div");
     header.className = "section-title";
     header.innerHTML = `
@@ -459,47 +418,15 @@ function renderForm() {
         ${section.subtitle ? `<p>${escapeHtml(section.subtitle)}</p>` : ""}
       </div>`;
     block.appendChild(header);
-
     (section.fields || []).forEach(key => {
       const spec = customization[key];
       if (spec) block.appendChild(renderField(key, spec));
     });
-
     container.appendChild(block);
-
-    // Hide the block if it doesn't match
-    if (section.showIf) {
-      let ok = true;
-      for (const [k, v] of Object.entries(section.showIf)) {
-        if (String(getFieldValue(k)) !== String(v)) { ok = false; break; }
-      }
-      block.style.display = ok ? "" : "none";
-    }
   });
-
   const pubStep = $("[data-step-no]");
   if (pubStep) pubStep.textContent = String(step + 1).padStart(2, "0");
-
   bindFieldEvents();
-
-  // Watch for mode change → re-check showIf
-  const modeInput = $('[data-field-key="mode"]');
-  if (modeInput) {
-    modeInput.addEventListener("change", () => {
-      setTimeout(() => {
-        $$(".form-section[data-show-if]").forEach(el => {
-          try {
-            const rule = JSON.parse(el.dataset.showIf);
-            let ok = true;
-            for (const [k, v] of Object.entries(rule)) {
-              if (String(getFieldValue(k)) !== String(v)) { ok = false; break; }
-            }
-            el.style.display = ok ? "" : "none";
-          } catch {}
-        });
-      }, 50);
-    });
-  }
 }
 
 function renderField(key, spec) {
