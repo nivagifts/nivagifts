@@ -4,7 +4,7 @@
   "category": "love",
   "description": "A romantic invitation to a date — playful yes/no page, handwritten letter, date & time picker, a convincing mini-game, and a final confirmation with a song.",
   "templatePath": "/templates/love/date-invite/template.html",
-  "thumbnail": "/templates/love/date-invite/thumb.jpg",
+  "previewImage": "/templates/love/date-invite/preview.jpg",
 
   "templateLimits": {
     "photoSlots": 0,
