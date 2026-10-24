@@ -11,7 +11,11 @@
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap">
 
 <style>
+/* ============================================================
+   THEME PRESETS — applied via data-theme on <body>
+   ============================================================ */
 :root {
+  /* Base defaults — overridden by JS */
   --bg: #fff5f7;
   --bg-alt: #ffe9ee;
   --bg-rose: #ffe0e8;
@@ -24,6 +28,7 @@
   --ink: #4a2b3a;
   --muted: #9b7b88;
   --line: #f2d8df;
+
   --font-display: 'Playfair Display', Georgia, serif;
   --font-script: 'Caveat', cursive;
   --font-body: 'Inter', system-ui, sans-serif;
@@ -39,12 +44,15 @@ body {
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  transition: background-color .4s ease, color .4s ease;
 }
 
 button { font: inherit; cursor: pointer; touch-action: manipulation; border: 0; background: none; color: inherit; }
 img { max-width: 100%; display: block; }
 
-/* ==================== PAGE SYSTEM ==================== */
+/* ============================================================
+   PAGE SYSTEM
+   ============================================================ */
 .page {
   display: none;
   width: 100%;
@@ -75,7 +83,9 @@ img { max-width: 100%; display: block; }
   text-align: center;
 }
 
-/* ==================== FLOATING HEARTS BG ==================== */
+/* ============================================================
+   FLOATING HEARTS BG
+   ============================================================ */
 .bg-hearts {
   position: fixed;
   inset: 0;
@@ -99,7 +109,9 @@ img { max-width: 100%; display: block; }
   100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
 }
 
-/* ==================== BUTTONS ==================== */
+/* ============================================================
+   BUTTONS
+   ============================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -113,14 +125,14 @@ img { max-width: 100%; display: block; }
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  box-shadow: 0 10px 26px rgba(231, 90, 124, 0.35);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.15);
   transition: .3s ease;
   margin-top: 24px;
 }
 .btn:hover {
   background: var(--rose-dark);
   transform: translateY(-3px);
-  box-shadow: 0 16px 36px rgba(231, 90, 124, 0.45);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.2);
 }
 .btn.ghost {
   background: transparent;
@@ -130,7 +142,9 @@ img { max-width: 100%; display: block; }
 }
 .btn.ghost:hover { background: var(--rose); color: #fff; }
 
-/* ==================== PAGE 1 — INVITATION ==================== */
+/* ============================================================
+   PAGE 1 — THE ASK
+   ============================================================ */
 #page1 {
   background:
     radial-gradient(circle at 15% 20%, var(--rose-soft) 0, transparent 45%),
@@ -148,7 +162,7 @@ img { max-width: 100%; display: block; }
   display: grid;
   place-items: center;
   font-size: 42px;
-  box-shadow: 0 12px 30px rgba(231, 90, 124, 0.3);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   animation: heartbeat 2.4s ease-in-out infinite;
 }
 @keyframes heartbeat {
@@ -157,7 +171,6 @@ img { max-width: 100%; display: block; }
   30% { transform: scale(1); }
   45% { transform: scale(1.07); }
 }
-
 .ask-eyebrow {
   font-size: 12px;
   letter-spacing: 5px;
@@ -181,7 +194,6 @@ img { max-width: 100%; display: block; }
   font-size: 15px;
   line-height: 1.85;
 }
-
 .ask-buttons {
   display: flex;
   gap: 14px;
@@ -191,7 +203,6 @@ img { max-width: 100%; display: block; }
   position: relative;
   min-height: 70px;
 }
-
 .yes-btn {
   padding: 18px 44px;
   font-size: 16px;
@@ -202,7 +213,6 @@ img { max-width: 100%; display: block; }
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
-
 .no-btn {
   padding: 15px 30px;
   background: transparent;
@@ -216,20 +226,24 @@ img { max-width: 100%; display: block; }
   position: relative;
 }
 
-/* ==================== LETTER ==================== */
-.letter-wrap {
-  width: min(100%, 640px);
-  margin: 0 auto 40px;
+/* ============================================================
+   LETTER
+   ============================================================ */
+#page2 {
+  background: linear-gradient(180deg, var(--bg), var(--bg-alt));
+  justify-content: flex-start;
+  padding-top: 70px;
 }
+.letter-wrap { width: min(100%, 640px); margin: 0 auto 40px; }
 .letter {
   width: 100%;
   padding: clamp(30px, 6vw, 60px);
   background:
-    repeating-linear-gradient(transparent 0 32px, rgba(180, 130, 150, 0.08) 33px),
+    repeating-linear-gradient(transparent 0 32px, rgba(150, 120, 140, 0.08) 33px),
     var(--bg-card);
   border: 1px solid var(--line);
   border-radius: 4px;
-  box-shadow: 0 24px 65px rgba(180, 100, 130, 0.15);
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.14);
   transform: rotate(-0.5deg);
   text-align: left;
   position: relative;
@@ -271,25 +285,16 @@ img { max-width: 100%; display: block; }
   font-size: clamp(22px, 5vw, 28px);
   font-family: var(--font-script);
 }
-.letter .sig small {
-  display: block;
-  font-size: 1.05em;
-}
+.letter .sig small { display: block; font-size: 1.05em; }
 
-/* ==================== LETTER PAGE ==================== */
-#page2 {
-  background: linear-gradient(180deg, var(--bg), var(--bg-alt));
-  justify-content: flex-start;
-  padding-top: 70px;
-}
-
-/* ==================== DATE & TIME ==================== */
-#page3 {
+/* ============================================================
+   DATE & TIME
+   ============================================================ */
+#whenPage {
   background:
     radial-gradient(circle at 50% 0%, var(--rose-soft) 0, transparent 55%),
     var(--bg);
 }
-
 .when-title {
   font-family: var(--font-display);
   font-weight: 500;
@@ -305,7 +310,6 @@ img { max-width: 100%; display: block; }
   font-size: 15px;
   line-height: 1.85;
 }
-
 .datetime-card {
   max-width: 540px;
   margin: 0 auto;
@@ -313,7 +317,7 @@ img { max-width: 100%; display: block; }
   background: var(--bg-card);
   border: 1.5px solid var(--line);
   border-radius: 24px;
-  box-shadow: 0 20px 50px rgba(180, 100, 130, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
 }
 .dt-field { margin-bottom: 22px; text-align: left; }
 .dt-label {
@@ -351,7 +355,9 @@ img { max-width: 100%; display: block; }
   text-align: center;
 }
 
-/* ==================== PROPOSAL PAGE ==================== */
+/* ============================================================
+   PROPOSAL PAGE
+   ============================================================ */
 #proposalPage {
   background:
     radial-gradient(circle at 50% 0%, var(--rose-light) 0, transparent 55%),
@@ -359,7 +365,6 @@ img { max-width: 100%; display: block; }
     var(--bg);
   text-align: center;
 }
-
 .proposal-icon {
   font-size: clamp(64px, 14vw, 92px);
   display: block;
@@ -381,7 +386,6 @@ img { max-width: 100%; display: block; }
   font-size: 16px;
   line-height: 1.85;
 }
-
 .proposal-buttons {
   display: flex;
   gap: 14px;
@@ -391,14 +395,15 @@ img { max-width: 100%; display: block; }
   margin-bottom: 20px;
 }
 
-/* ==================== CERTIFICATE ==================== */
+/* ============================================================
+   CERTIFICATE PAGE
+   ============================================================ */
 #certificatePage {
   background:
     radial-gradient(circle at 50% 100%, var(--rose-light) 0, transparent 60%),
     radial-gradient(circle at 50% 0%, var(--rose-soft) 0, transparent 55%),
     var(--bg);
 }
-
 .cert-badge {
   display: inline-block;
   padding: 8px 22px;
@@ -410,9 +415,8 @@ img { max-width: 100%; display: block; }
   text-transform: uppercase;
   font-weight: 700;
   margin-bottom: 24px;
-  box-shadow: 0 8px 24px rgba(231, 90, 124, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
-
 .certificate-card {
   max-width: 680px;
   margin: 0 auto 26px;
@@ -420,7 +424,7 @@ img { max-width: 100%; display: block; }
   background: var(--bg-card);
   border: 3px double var(--gold);
   border-radius: 14px;
-  box-shadow: 0 25px 60px rgba(180, 100, 130, 0.18);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
   position: relative;
   text-align: center;
 }
@@ -437,7 +441,6 @@ img { max-width: 100%; display: block; }
   padding: 0 10px;
 }
 .certificate-card::after { top: auto; bottom: 12px; }
-
 .cert-seal {
   width: 70px;
   height: 70px;
@@ -448,7 +451,7 @@ img { max-width: 100%; display: block; }
   place-items: center;
   font-size: 30px;
   color: #fff;
-  box-shadow: 0 8px 20px rgba(201, 154, 60, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), inset 0 -3px 6px rgba(0, 0, 0, 0.15);
 }
 .cert-eyebrow {
   font-size: 10px;
@@ -516,7 +519,6 @@ img { max-width: 100%; display: block; }
   color: var(--rose-dark);
   font-weight: 700;
 }
-
 .cert-footer {
   font-family: var(--font-script);
   font-size: clamp(22px, 5vw, 30px);
@@ -524,11 +526,12 @@ img { max-width: 100%; display: block; }
   margin-top: 20px;
 }
 
-/* ==================== GAME ==================== */
+/* ============================================================
+   GAME
+   ============================================================ */
 #gamePage {
   background: linear-gradient(180deg, var(--bg-alt), var(--bg-rose));
 }
-
 .game-head { margin-bottom: 22px; }
 .game-title {
   font-family: var(--font-display);
@@ -545,7 +548,6 @@ img { max-width: 100%; display: block; }
   font-size: 14px;
   line-height: 1.7;
 }
-
 .game-hud {
   display: flex;
   justify-content: center;
@@ -562,7 +564,6 @@ img { max-width: 100%; display: block; }
   font-family: var(--font-display);
   margin-left: 4px;
 }
-
 .game-arena {
   position: relative;
   width: min(100%, 480px);
@@ -574,9 +575,8 @@ img { max-width: 100%; display: block; }
   border-radius: 24px;
   border: 2px solid var(--line);
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(180, 100, 130, 0.15);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
 }
-
 .game-start-overlay {
   position: absolute;
   inset: 0;
@@ -586,19 +586,18 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   gap: 16px;
   padding: 24px;
-  background: rgba(255, 250, 251, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 5;
   text-align: center;
 }
-
 .falling-heart {
   position: absolute;
   font-size: 34px;
   cursor: pointer;
   user-select: none;
-  filter: drop-shadow(0 4px 8px rgba(231, 90, 124, 0.35));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
   animation: heartPop .3s ease both;
   transition: transform .1s;
 }
@@ -616,7 +615,6 @@ img { max-width: 100%; display: block; }
   60% { transform: scale(1.6) translateY(-20px); opacity: 0.9; }
   100% { transform: scale(0.3) translateY(-40px); opacity: 0; }
 }
-
 .game-status {
   min-height: 30px;
   margin-top: 20px;
@@ -626,21 +624,21 @@ img { max-width: 100%; display: block; }
   text-align: center;
 }
 
-/* ==================== FINAL CONFIRMATION (date mode) ==================== */
+/* ============================================================
+   FINAL CONFIRMATION (date mode)
+   ============================================================ */
 #confirmPage {
   background:
     radial-gradient(circle at 50% 100%, var(--rose-light) 0, transparent 60%),
     radial-gradient(circle at 50% 0%, var(--rose-soft) 0, transparent 55%),
     var(--bg);
 }
-
 .confirm-icon {
   font-size: clamp(72px, 16vw, 104px);
   display: block;
   margin-bottom: 12px;
   animation: heartbeat 2s infinite;
 }
-
 .confirm-title {
   font-family: var(--font-script);
   font-size: clamp(52px, 11vw, 88px);
@@ -655,7 +653,6 @@ img { max-width: 100%; display: block; }
   font-size: 16px;
   line-height: 1.85;
 }
-
 .confirm-details {
   max-width: 460px;
   margin: 0 auto 24px;
@@ -694,7 +691,6 @@ img { max-width: 100%; display: block; }
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
-
 .confirm-footer {
   font-family: var(--font-script);
   font-size: clamp(22px, 5vw, 30px);
@@ -702,7 +698,9 @@ img { max-width: 100%; display: block; }
   margin-top: 20px;
 }
 
-/* ==================== MUSIC ==================== */
+/* ============================================================
+   MUSIC
+   ============================================================ */
 .music-btn {
   position: fixed;
   bottom: 20px;
@@ -716,7 +714,7 @@ img { max-width: 100%; display: block; }
   display: grid;
   place-items: center;
   font-size: 20px;
-  box-shadow: 0 8px 20px rgba(180, 100, 130, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   z-index: 100;
   cursor: pointer;
   transition: .2s ease;
@@ -728,7 +726,9 @@ img { max-width: 100%; display: block; }
   to { transform: rotate(360deg); }
 }
 
-/* ==================== CONFETTI ==================== */
+/* ============================================================
+   CONFETTI
+   ============================================================ */
 .confetti {
   position: fixed;
   pointer-events: none;
@@ -740,7 +740,9 @@ img { max-width: 100%; display: block; }
   100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
 }
 
-/* ==================== RESPONSIVE ==================== */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 600px) {
   .page { padding: 40px 16px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
   #page2 { padding-top: 50px; }
@@ -764,7 +766,7 @@ img { max-width: 100%; display: block; }
 }
 </style>
 </head>
-<body>
+<body data-theme="romantic" data-color="rose">
 
 <!-- BACKGROUND HEARTS -->
 <div class="bg-hearts" id="bgHearts" aria-hidden="true"></div>
@@ -773,216 +775,11 @@ img { max-width: 100%; display: block; }
 <audio id="music" loop preload="none"></audio>
 <button class="music-btn" id="musicBtn" type="button" aria-label="Toggle music" title="Music">♪</button>
 
-<!-- ==================================================
-     SHARED PAGES (both modes use these)
-     ================================================== -->
-
-<!-- PAGE 1: ASK -->
-<section class="page active" id="page1">
-  <div class="inner">
-    <div class="ask-avatar" id="askAvatar">💌</div>
-    <p class="ask-eyebrow" id="askEyebrow"></p>
-    <h1 class="ask-question" id="askQuestion"></h1>
-    <p class="ask-subtitle" id="askSubtitle"></p>
-
-    <div class="ask-buttons">
-      <button class="btn yes-btn pulse" id="yesBtn" type="button" onclick="handleYes()">
-        <span id="yesBtnText"></span>
-      </button>
-      <button class="no-btn" id="noBtn" type="button" onmouseenter="runAway(this)" onclick="runAway(this)" ontouchstart="runAway(this)">
-        <span id="noBtnText"></span>
-      </button>
-    </div>
-  </div>
-</section>
-
-<!-- PAGE 2: LETTER -->
-<section class="page" id="page2">
-  <div class="inner">
-    <div class="letter-wrap">
-      <div class="letter">
-        <div class="letter-title" id="letterTitle"></div>
-        <h3 id="letterGreeting"></h3>
-        <div id="letterParagraphs"></div>
-        <p class="sig">
-          <span id="letterSignature"></span>
-          <small id="letterSignatureName"></small>
-        </p>
-      </div>
-    </div>
-    <button class="btn" type="button" onclick="goToNextFromLetter()">
-      Okay, I'm listening →
-    </button>
-  </div>
-</section>
-
-<!-- PAGE: GAME (shared between both modes) -->
-<section class="page" id="gamePage">
-  <div class="inner">
-    <div class="game-head">
-      <p class="ask-eyebrow">One more thing</p>
-      <h2 class="game-title" id="gameTitle"></h2>
-      <p class="game-subtitle" id="gameSubtitle"></p>
-    </div>
-
-    <div class="game-hud">
-      <div>Hearts <strong id="scoreValue">0</strong>/<span id="targetValue">10</span></div>
-      <div>Time <strong id="timeValue">30</strong>s</div>
-    </div>
-
-    <div class="game-arena" id="gameArena">
-      <div class="game-start-overlay" id="gameStartOverlay">
-        <p style="font-family:var(--font-script);font-size:24px;color:var(--rose-dark);" id="gameStartText"></p>
-        <button class="btn" type="button" id="gameStartBtn" onclick="startGame()"></button>
-      </div>
-    </div>
-
-    <p class="game-status" id="gameStatus"></p>
-
-    <div id="gameAfter" style="display:none;width:100%">
-      <button class="btn" type="button" onclick="afterGame()">
-        See your answer ♥
-      </button>
-    </div>
-  </div>
-</section>
-
-<!-- ==================================================
-     DATE MODE PAGES
-     ================================================== -->
-
-<!-- PAGE 3 (date): DATE & TIME -->
-<section class="page" id="whenPage">
-  <div class="inner">
-    <p class="ask-eyebrow">The Details</p>
-    <h2 class="when-title" id="whenTitle"></h2>
-    <p class="when-subtitle" id="whenSubtitle"></p>
-
-    <div class="datetime-card">
-      <div class="dt-field">
-        <label class="dt-label" for="dateInput">Pick a day</label>
-        <input class="dt-input" id="dateInput" type="date" aria-label="Pick a date">
-      </div>
-      <div class="dt-field">
-        <label class="dt-label" for="timeInput">Pick a time</label>
-        <input class="dt-input" id="timeInput" type="time" aria-label="Pick a time">
-      </div>
-      <p class="dt-hint" id="whenHint"></p>
-    </div>
-
-    <button class="btn" type="button" onclick="confirmDateTime()">
-      Lock it in ♥
-    </button>
-  </div>
-</section>
-
-<!-- PAGE 5 (date): FINAL CONFIRMATION -->
-<section class="page" id="confirmPage">
-  <div class="inner">
-    <span class="cert-badge" id="confirmEyebrow"></span>
-    <span class="confirm-icon">💗</span>
-    <h2 class="confirm-title" id="finalTitle"></h2>
-    <p class="confirm-body" id="finalBody"></p>
-
-    <div class="confirm-details">
-      <div class="confirm-detail">
-        <div class="confirm-detail-icon">📅</div>
-        <div>
-          <div class="confirm-detail-label">Date</div>
-          <div class="confirm-detail-value" id="confirmDate">—</div>
-        </div>
-      </div>
-      <div class="confirm-detail">
-        <div class="confirm-detail-icon">⏰</div>
-        <div>
-          <div class="confirm-detail-label">Time</div>
-          <div class="confirm-detail-value" id="confirmTime">—</div>
-        </div>
-      </div>
-      <div class="confirm-detail" id="venueRow">
-        <div class="confirm-detail-icon">📍</div>
-        <div>
-          <div class="confirm-detail-label">Where</div>
-          <div class="confirm-detail-value" id="confirmVenue">—</div>
-        </div>
-      </div>
-      <div class="confirm-detail">
-        <div class="confirm-detail-icon">💌</div>
-        <div>
-          <div class="confirm-detail-label">From</div>
-          <div class="confirm-detail-value" id="confirmFrom">—</div>
-        </div>
-      </div>
-    </div>
-
-    <p class="confirm-footer" id="finalFooter"></p>
-
-    <button class="btn ghost" type="button" onclick="restartAll()">
-      <span id="finalBtnText"></span>
-    </button>
-  </div>
-</section>
-
-<!-- ==================================================
-     PROPOSAL MODE PAGES
-     ================================================== -->
-
-<!-- PROPOSAL PAGE (after letter) -->
-<section class="page" id="proposalPage">
-  <div class="inner">
-    <span class="proposal-icon">💍</span>
-    <p class="ask-eyebrow" id="proposalEyebrow"></p>
-    <h2 class="proposal-title" id="proposalTitle"></h2>
-    <p class="proposal-body" id="proposalBody"></p>
-
-    <div class="proposal-buttons">
-      <button class="btn" type="button" onclick="handleProposalYes()" id="proposalYesBtn">
-        💍 Yes, forever
-      </button>
-      <button class="no-btn" type="button" onmouseenter="runAway(this)" onclick="runAway(this)" ontouchstart="runAway(this)" id="proposalNoBtn">
-        <span>Maybe not…</span>
-      </button>
-    </div>
-  </div>
-</section>
-
-<!-- CERTIFICATE PAGE -->
-<section class="page" id="certificatePage">
-  <div class="inner">
-    <span class="cert-badge">OFFICIALLY CONFIRMED</span>
-
-    <div class="certificate-card">
-      <div class="cert-seal">💗</div>
-      <div class="cert-eyebrow">Official &amp; Forever</div>
-      <h2 class="cert-title" id="certTitle"></h2>
-
-      <div class="cert-names" id="certNames"></div>
-
-      <p class="cert-note" id="certNote"></p>
-
-      <div class="cert-meta">
-        <div class="cert-meta-col">
-          <div class="cert-meta-label">Certified on</div>
-          <div class="cert-meta-value" id="certDate">—</div>
-        </div>
-        <div class="cert-meta-col">
-          <div class="cert-meta-label">Love ID</div>
-          <div class="cert-meta-value" id="certId">—</div>
-        </div>
-        <div class="cert-meta-col">
-          <div class="cert-meta-label">Expires</div>
-          <div class="cert-meta-value">Never ♥</div>
-        </div>
-      </div>
-    </div>
-
-    <p class="cert-footer" id="proposalFooter"></p>
-
-    <button class="btn ghost" type="button" onclick="restartAll()">
-      <span id="proposalBtnText"></span>
-    </button>
-  </div>
-</section>
+<!-- ================================================================
+     THE DOM BELOW IS BUILT AT RUNTIME.
+     Only pages for the chosen mode will be injected.
+     ================================================================ -->
+<main id="appRoot"></main>
 
 <script>
 "use strict";
@@ -999,11 +796,57 @@ let musicStarted = false;
 let certSnapshot = null;
 
 /* ============================================================
+   THEME PRESETS — background & foreground
+   ============================================================ */
+const THEMES = {
+  romantic: {
+    bg: "#fff5f7", bgAlt: "#ffe9ee", bgRose: "#ffe0e8", bgCard: "#fffafb",
+    ink: "#4a2b3a", muted: "#9b7b88", line: "#f2d8df"
+  },
+  elegant: {
+    bg: "#fdf8f0", bgAlt: "#f5ebd9", bgRose: "#f0e0c8", bgCard: "#fffdf8",
+    ink: "#3d3428", muted: "#8a7a63", line: "#ecdcbf"
+  },
+  midnight: {
+    bg: "#1a1526", bgAlt: "#241c33", bgRose: "#2f2340", bgCard: "#251c33",
+    ink: "#f0e8f3", muted: "#b8a8c4", line: "#3a2d4a"
+  },
+  sunset: {
+    bg: "#fff5ee", bgAlt: "#ffe5d4", bgRose: "#ffd6bc", bgCard: "#fffcf8",
+    ink: "#4a2e1c", muted: "#956e55", line: "#f5d8c0"
+  },
+  mint: {
+    bg: "#f4faf3", bgAlt: "#e5f2e2", bgRose: "#d4e8ce", bgCard: "#fdfefb",
+    ink: "#2f3d28", muted: "#6e7f65", line: "#dbe8cf"
+  },
+  lavender: {
+    bg: "#f7f3fc", bgAlt: "#efe7f8", bgRose: "#e4d8f3", bgCard: "#fffdfe",
+    ink: "#3d2f4d", muted: "#8a7b98", line: "#e4d6f2"
+  }
+};
+
+/* ============================================================
+   COLOR COMBOS — accents (rose is the primary accent)
+   ============================================================ */
+const COLOR_COMBOS = {
+  rose:     { rose: "#e75a7c", roseDark: "#a83258", roseLight: "#f7b2c1", roseSoft: "#fde7ee", gold: "#d4a456" },
+  coral:    { rose: "#f07a5c", roseDark: "#b8452c", roseLight: "#ffc4ae", roseSoft: "#fee5dd", gold: "#e3a550" },
+  cherry:   { rose: "#c93550", roseDark: "#8a1b30", roseLight: "#f08a9f", roseSoft: "#fbdbe1", gold: "#d4a456" },
+  plum:     { rose: "#8f4ba8", roseDark: "#5f2c73", roseLight: "#c9a3d8", roseSoft: "#eee1f3", gold: "#c9a961" },
+  gold:     { rose: "#c9a961", roseDark: "#8a6d2e", roseLight: "#e8d5a2", roseSoft: "#f7efdc", gold: "#c9a961" },
+  teal:     { rose: "#3f8b8b", roseDark: "#235c5c", roseLight: "#a7d4d4", roseSoft: "#e0f2f2", gold: "#d4a456" },
+  sapphire: { rose: "#3f6fb8", roseDark: "#22457a", roseLight: "#a9c4e8", roseSoft: "#e0eaf7", gold: "#d4a456" },
+  emerald:  { rose: "#4a8f5c", roseDark: "#2b5b38", roseLight: "#b0d4b8", roseSoft: "#e2f2e5", gold: "#c9a961" }
+};
+
+/* ============================================================
    DEFAULTS
    ============================================================ */
 function defaults() {
   return {
     mode: "date",
+    themeStyle: "romantic",
+    colorCombo: "rose",
     fromName: "Aarav",
     toName: "Diya",
     askEyebrow: "I have something to ask you…",
@@ -1057,30 +900,297 @@ function setText(id, v) {
 }
 
 /* ============================================================
+   APPLY THEME + COLOR COMBO
+   ============================================================ */
+function applyTheme(cfg) {
+  const theme = THEMES[cfg.themeStyle] || THEMES.romantic;
+  const combo = COLOR_COMBOS[cfg.colorCombo] || COLOR_COMBOS.rose;
+  const root = document.documentElement.style;
+
+  // Base
+  root.setProperty("--bg", theme.bg);
+  root.setProperty("--bg-alt", theme.bgAlt);
+  root.setProperty("--bg-rose", theme.bgRose);
+  root.setProperty("--bg-card", theme.bgCard);
+  root.setProperty("--ink", theme.ink);
+  root.setProperty("--muted", theme.muted);
+  root.setProperty("--line", theme.line);
+
+  // Accent
+  root.setProperty("--rose", combo.rose);
+  root.setProperty("--rose-dark", combo.roseDark);
+  root.setProperty("--rose-light", combo.roseLight);
+  root.setProperty("--rose-soft", combo.roseSoft);
+  root.setProperty("--gold", combo.gold);
+
+  // Body attributes (helps with theme-specific tweaks)
+  document.body.dataset.theme = cfg.themeStyle || "romantic";
+  document.body.dataset.color = cfg.colorCombo || "rose";
+}
+
+/* ============================================================
+   BUILD DOM FOR THE CHOSEN MODE ONLY
+   ============================================================ */
+function buildDOM(cfg) {
+  const root = document.getElementById("appRoot");
+  const isDate = cfg.mode !== "proposal";
+
+  // Which pages does this mode need?
+  const sharedPages = `
+    <section class="page active" id="page1">
+      <div class="inner">
+        <div class="ask-avatar">${isDate ? "💌" : "💍"}</div>
+        <p class="ask-eyebrow" id="askEyebrow"></p>
+        <h1 class="ask-question" id="askQuestion"></h1>
+        <p class="ask-subtitle" id="askSubtitle"></p>
+        <div class="ask-buttons">
+          <button class="btn yes-btn pulse" id="yesBtn" type="button">
+            <span id="yesBtnText"></span>
+          </button>
+          <button class="no-btn" id="noBtn" type="button">
+            <span id="noBtnText"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page2">
+      <div class="inner">
+        <div class="letter-wrap">
+          <div class="letter">
+            <div class="letter-title" id="letterTitle"></div>
+            <h3 id="letterGreeting"></h3>
+            <div id="letterParagraphs"></div>
+            <p class="sig">
+              <span id="letterSignature"></span>
+              <small id="letterSignatureName"></small>
+            </p>
+          </div>
+        </div>
+        <button class="btn" type="button" id="letterNextBtn">Okay, I'm listening →</button>
+      </div>
+    </section>
+
+    <section class="page" id="gamePage">
+      <div class="inner">
+        <div class="game-head">
+          <p class="ask-eyebrow">One more thing</p>
+          <h2 class="game-title" id="gameTitle"></h2>
+          <p class="game-subtitle" id="gameSubtitle"></p>
+        </div>
+        <div class="game-hud">
+          <div>Hearts <strong id="scoreValue">0</strong>/<span id="targetValue">10</span></div>
+          <div>Time <strong id="timeValue">30</strong>s</div>
+        </div>
+        <div class="game-arena" id="gameArena">
+          <div class="game-start-overlay" id="gameStartOverlay">
+            <p style="font-family:var(--font-script);font-size:24px;color:var(--rose-dark);" id="gameStartText"></p>
+            <button class="btn" type="button" id="gameStartBtn"></button>
+          </div>
+        </div>
+        <p class="game-status" id="gameStatus"></p>
+        <div id="gameAfter" style="display:none;width:100%">
+          <button class="btn" type="button" id="gameNextBtn">See your answer ♥</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  const datePages = `
+    <section class="page" id="whenPage">
+      <div class="inner">
+        <p class="ask-eyebrow">The Details</p>
+        <h2 class="when-title" id="whenTitle"></h2>
+        <p class="when-subtitle" id="whenSubtitle"></p>
+        <div class="datetime-card">
+          <div class="dt-field">
+            <label class="dt-label" for="dateInput">Pick a day</label>
+            <input class="dt-input" id="dateInput" type="date">
+          </div>
+          <div class="dt-field">
+            <label class="dt-label" for="timeInput">Pick a time</label>
+            <input class="dt-input" id="timeInput" type="time">
+          </div>
+          <p class="dt-hint" id="whenHint"></p>
+        </div>
+        <button class="btn" type="button" id="whenNextBtn">Lock it in ♥</button>
+      </div>
+    </section>
+
+    <section class="page" id="confirmPage">
+      <div class="inner">
+        <span class="cert-badge" id="confirmEyebrow"></span>
+        <span class="confirm-icon">💗</span>
+        <h2 class="confirm-title" id="finalTitle"></h2>
+        <p class="confirm-body" id="finalBody"></p>
+        <div class="confirm-details">
+          <div class="confirm-detail">
+            <div class="confirm-detail-icon">📅</div>
+            <div>
+              <div class="confirm-detail-label">Date</div>
+              <div class="confirm-detail-value" id="confirmDate">—</div>
+            </div>
+          </div>
+          <div class="confirm-detail">
+            <div class="confirm-detail-icon">⏰</div>
+            <div>
+              <div class="confirm-detail-label">Time</div>
+              <div class="confirm-detail-value" id="confirmTime">—</div>
+            </div>
+          </div>
+          <div class="confirm-detail" id="venueRow">
+            <div class="confirm-detail-icon">📍</div>
+            <div>
+              <div class="confirm-detail-label">Where</div>
+              <div class="confirm-detail-value" id="confirmVenue">—</div>
+            </div>
+          </div>
+          <div class="confirm-detail">
+            <div class="confirm-detail-icon">💌</div>
+            <div>
+              <div class="confirm-detail-label">From</div>
+              <div class="confirm-detail-value" id="confirmFrom">—</div>
+            </div>
+          </div>
+        </div>
+        <p class="confirm-footer" id="finalFooter"></p>
+        <button class="btn ghost" type="button" id="finalRestartBtn">
+          <span id="finalBtnText"></span>
+        </button>
+      </div>
+    </section>
+  `;
+
+  const proposalPages = `
+    <section class="page" id="proposalPage">
+      <div class="inner">
+        <span class="proposal-icon">💍</span>
+        <p class="ask-eyebrow" id="proposalEyebrow"></p>
+        <h2 class="proposal-title" id="proposalTitle"></h2>
+        <p class="proposal-body" id="proposalBody"></p>
+        <div class="proposal-buttons">
+          <button class="btn" type="button" id="proposalYesBtn">💍 Yes, forever</button>
+          <button class="no-btn" type="button" id="proposalNoBtn">
+            <span>Maybe not…</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="certificatePage">
+      <div class="inner">
+        <span class="cert-badge">OFFICIALLY CONFIRMED</span>
+        <div class="certificate-card">
+          <div class="cert-seal">💗</div>
+          <div class="cert-eyebrow">Official &amp; Forever</div>
+          <h2 class="cert-title" id="certTitle"></h2>
+          <div class="cert-names" id="certNames"></div>
+          <p class="cert-note" id="certNote"></p>
+          <div class="cert-meta">
+            <div class="cert-meta-col">
+              <div class="cert-meta-label">Certified on</div>
+              <div class="cert-meta-value" id="certDate">—</div>
+            </div>
+            <div class="cert-meta-col">
+              <div class="cert-meta-label">Love ID</div>
+              <div class="cert-meta-value" id="certId">—</div>
+            </div>
+            <div class="cert-meta-col">
+              <div class="cert-meta-label">Expires</div>
+              <div class="cert-meta-value">Never ♥</div>
+            </div>
+          </div>
+        </div>
+        <p class="cert-footer" id="proposalFooter"></p>
+        <button class="btn ghost" type="button" id="proposalRestartBtn">
+          <span id="proposalBtnText"></span>
+        </button>
+      </div>
+    </section>
+  `;
+
+  // Build page1 first, then letter+game, then mode-specific tail
+  let html = sharedPages;
+  if (isDate) {
+    // Insert whenPage between letter and game, and confirmPage after game
+    // Simpler: rebuild order manually
+    html = `
+      ${sharedPages.split('id="gamePage"')[0]}
+      ${datePages.split('id="confirmPage"')[0]}
+      ${'<section class="page" id="gamePage">' + sharedPages.split('id="gamePage"')[1]}
+      ${datePages.split('id="confirmPage"')[1]}
+    `;
+    // Remove leftover whenPage class opening (we appended it after letter)
+  } else {
+    html = `
+      ${sharedPages.split('id="gamePage"')[0]}
+      ${proposalPages.split('id="certificatePage"')[0]}
+      ${'<section class="page" id="gamePage">' + sharedPages.split('id="gamePage"')[1]}
+      ${proposalPages.split('id="certificatePage"')[1]}
+    `;
+  }
+
+  root.innerHTML = html;
+
+  // Wire up buttons
+  document.getElementById("yesBtn")?.addEventListener("click", handleYes);
+  document.getElementById("noBtn")?.addEventListener("mouseenter", (e) => runAway(e.currentTarget));
+  document.getElementById("noBtn")?.addEventListener("click", (e) => runAway(e.currentTarget));
+  document.getElementById("noBtn")?.addEventListener("touchstart", (e) => { e.preventDefault(); runAway(e.currentTarget); }, { passive: false });
+
+  document.getElementById("letterNextBtn")?.addEventListener("click", goToNextFromLetter);
+  document.getElementById("gameStartBtn")?.addEventListener("click", startGame);
+  document.getElementById("gameNextBtn")?.addEventListener("click", afterGame);
+
+  // Date mode wiring
+  document.getElementById("whenNextBtn")?.addEventListener("click", confirmDateTime);
+  document.getElementById("finalRestartBtn")?.addEventListener("click", restartAll);
+  document.getElementById("dateInput")?.addEventListener("focus", () => {
+    // Avoid accidental keyboard obstruction on mobile
+    if (window.innerWidth < 640) {
+      setTimeout(() => document.getElementById("dateInput")?.scrollIntoView({ behavior: "smooth", block: "center" }), 200);
+    }
+  });
+
+  // Proposal mode wiring
+  document.getElementById("proposalYesBtn")?.addEventListener("click", handleProposalYes);
+  document.getElementById("proposalNoBtn")?.addEventListener("mouseenter", (e) => runAway(e.currentTarget));
+  document.getElementById("proposalNoBtn")?.addEventListener("click", (e) => runAway(e.currentTarget));
+  document.getElementById("proposalNoBtn")?.addEventListener("touchstart", (e) => { e.preventDefault(); runAway(e.currentTarget); }, { passive: false });
+  document.getElementById("proposalRestartBtn")?.addEventListener("click", restartAll);
+}
+
+/* ============================================================
    RENDER
    ============================================================ */
 function render(cfg) {
+  applyTheme(cfg);
+  buildDOM(cfg);
+
   const isDate = cfg.mode !== "proposal";
 
-  // Shared: names & letter
-  setText("askEyebrow", cfg.askEyebrow);
-  setText("askQuestion", isDate ? cfg.askQuestion : "Will you be mine, forever?");
+  // Page 1
+  setText("askEyebrow", isDate ? cfg.askEyebrow : cfg.proposalEyebrow);
+  setText("askQuestion", isDate ? cfg.askQuestion : cfg.proposalTitle);
   setText("askSubtitle", isDate ? cfg.askSubtitle : cfg.proposalBody);
   setText("yesBtnText", isDate ? cfg.yesButton : "Yes, forever ♥");
   setText("noBtnText", isDate ? cfg.noButton : "Maybe not…");
 
+  // Letter (shared)
   setText("letterTitle", cfg.letterTitle);
   setText("letterGreeting", cfg.letterGreeting);
   setText("letterSignature", cfg.letterSignature);
   setText("letterSignatureName", cfg.letterSignatureName);
   const lp = document.getElementById("letterParagraphs");
-  lp.innerHTML = "";
-  String(cfg.letterBody || "").split(/\n\s*\n/).forEach(t => {
-    if (!t.trim()) return;
-    const p = document.createElement("p");
-    p.textContent = t;
-    lp.appendChild(p);
-  });
+  if (lp) {
+    lp.innerHTML = "";
+    String(cfg.letterBody || "").split(/\n\s*\n/).forEach(t => {
+      if (!t.trim()) return;
+      const p = document.createElement("p");
+      p.textContent = t;
+      lp.appendChild(p);
+    });
+  }
 
   // Game (shared)
   setText("gameTitle", cfg.gameTitle);
@@ -1091,51 +1201,56 @@ function render(cfg) {
   setText("targetValue", String(gameState.target));
 
   // Date mode
-  setText("whenTitle", cfg.whenTitle);
-  setText("whenSubtitle", cfg.whenSubtitle);
-  setText("whenHint", cfg.whenHint);
-  setText("confirmEyebrow", cfg.finalEyebrow);
-  setText("finalTitle", cfg.finalTitle);
-  setText("finalBody", cfg.finalBody);
-  setText("confirmFrom", cfg.fromName);
-  setText("finalFooter", cfg.finalFooter);
-  setText("finalBtnText", cfg.finalButton);
+  if (isDate) {
+    setText("whenTitle", cfg.whenTitle);
+    setText("whenSubtitle", cfg.whenSubtitle);
+    setText("whenHint", cfg.whenHint);
+    setText("confirmEyebrow", cfg.finalEyebrow);
+    setText("finalTitle", cfg.finalTitle);
+    setText("finalBody", cfg.finalBody);
+    setText("confirmFrom", cfg.fromName);
+    setText("finalFooter", cfg.finalFooter);
+    setText("finalBtnText", cfg.finalButton);
 
-  const venueRow = document.getElementById("venueRow");
-  if (venueRow) {
-    if (cfg.finalVenue && cfg.finalVenue.trim()) {
-      venueRow.style.display = "flex";
-      setText("confirmVenue", cfg.finalVenue);
-    } else {
-      venueRow.style.display = "none";
+    const venueRow = document.getElementById("venueRow");
+    if (venueRow) {
+      if (cfg.finalVenue && cfg.finalVenue.trim()) {
+        venueRow.style.display = "flex";
+        setText("confirmVenue", cfg.finalVenue);
+      } else {
+        venueRow.style.display = "none";
+      }
     }
   }
 
   // Proposal mode
-  setText("proposalEyebrow", cfg.proposalEyebrow);
-  setText("proposalTitle", cfg.proposalTitle);
-  setText("proposalBody", cfg.proposalBody);
-  setText("certTitle", cfg.certificateTitle);
-  setText("certNote", cfg.certificateNote);
-  setText("proposalFooter", cfg.proposalFooter);
-  setText("proposalBtnText", cfg.proposalButton);
+  if (!isDate) {
+    setText("proposalEyebrow", cfg.proposalEyebrow);
+    setText("proposalTitle", cfg.proposalTitle);
+    setText("proposalBody", cfg.proposalBody);
+    setText("certTitle", cfg.certificateTitle);
+    setText("certNote", cfg.certificateNote);
+    setText("proposalFooter", cfg.proposalFooter);
+    setText("proposalBtnText", cfg.proposalButton);
 
-  const certNames = document.getElementById("certNames");
-  certNames.innerHTML =
-    '<span>' + esc(cfg.fromName) + '</span>' +
-    '<span class="amp">&amp;</span>' +
-    '<span>' + esc(cfg.toName) + '</span>';
+    const certNames = document.getElementById("certNames");
+    if (certNames) {
+      certNames.innerHTML =
+        '<span>' + esc(cfg.fromName) + '</span>' +
+        '<span class="amp">&amp;</span>' +
+        '<span>' + esc(cfg.toName) + '</span>';
+    }
 
-  // Certificate snapshot (stable)
-  if (!certSnapshot) {
-    const now = new Date();
-    certSnapshot = {
-      date: now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-      id: "LOVE-" + now.getFullYear() + "-" + Math.floor(100 + Math.random() * 900)
-    };
+    if (!certSnapshot) {
+      const now = new Date();
+      certSnapshot = {
+        date: now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        id: "LOVE-" + now.getFullYear() + "-" + Math.floor(100 + Math.random() * 900)
+      };
+    }
+    setText("certDate", certSnapshot.date);
+    setText("certId", certSnapshot.id);
   }
-  setText("certDate", certSnapshot.date);
-  setText("certId", certSnapshot.id);
 
   // Music
   setupMusic(cfg);
@@ -1186,9 +1301,7 @@ function setupMusic(cfg) {
 
   btn.onclick = () => {
     if (music.paused) {
-      music.play().then(() => {
-        btn.classList.add("playing");
-      }).catch(() => {});
+      music.play().then(() => btn.classList.add("playing")).catch(() => {});
     } else {
       music.pause();
       btn.classList.remove("playing");
@@ -1199,22 +1312,20 @@ function setupMusic(cfg) {
     if (!musicStarted) {
       musicStarted = true;
       music.volume = 0.6;
-      music.play().then(() => {
-        btn.classList.add("playing");
-      }).catch(() => {});
+      music.play().then(() => btn.classList.add("playing")).catch(() => {});
     }
   }, { once: true });
 }
 
 /* ============================================================
-   PAGE NAVIGATION
+   NAVIGATION
    ============================================================ */
 function goTo(pageId) {
   if (!pageId || pageId === currentPage) return;
   const cur = document.getElementById(currentPage);
   const next = document.getElementById(pageId);
   if (!next) return;
-  cur.classList.remove("active");
+  cur?.classList.remove("active");
   next.classList.add("active");
   currentPage = pageId;
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1225,11 +1336,10 @@ function goTo(pageId) {
 }
 
 /* ============================================================
-   PAGE 1 — YES / NO
+   PAGE 1 — YES/NO
    ============================================================ */
 function handleYes() {
   celebrate();
-  const isDate = CONFIG.mode !== "proposal";
   setTimeout(() => goTo("page2"), 600);
 }
 
@@ -1241,16 +1351,15 @@ function runAway(btn) {
   const msgs = ["Nope!", "Try again!", "Not today!", "Can't catch me!", "Nuh-uh ♥", "Please? 🥺"];
   const span = btn.querySelector("span");
   if (span) span.textContent = msgs[Math.floor(Math.random() * msgs.length)];
-  setTimeout(() => {
-    btn.style.transform = "";
-  }, 1500);
+  setTimeout(() => { btn.style.transform = ""; }, 1500);
 }
 
-/* ============================================================
-   LETTER NEXT (branch based on mode)
-   ============================================================ */
 function goToNextFromLetter() {
   if (CONFIG.mode === "proposal") {
+    // Insert proposal page AFTER letter, BEFORE game
+    // We don't have a separate proposal page; letter → game → certificate
+    // But the user wanted proposal also to have a big "Yes" ask. So we go:
+    // page1(ask) → page2(letter) → proposalPage → gamePage → certificatePage
     goTo("proposalPage");
   } else {
     goTo("whenPage");
@@ -1258,21 +1367,13 @@ function goToNextFromLetter() {
 }
 
 /* ============================================================
-   DATE MODE — DATE & TIME
+   DATE MODE
    ============================================================ */
 function confirmDateTime() {
   const dateEl = document.getElementById("dateInput");
   const timeEl = document.getElementById("timeInput");
-  if (!dateEl.value) {
-    alert("Pick a day first ♥");
-    dateEl.focus();
-    return;
-  }
-  if (!timeEl.value) {
-    alert("Pick a time first ♥");
-    timeEl.focus();
-    return;
-  }
+  if (!dateEl.value) { alert("Pick a day first ♥"); dateEl.focus(); return; }
+  if (!timeEl.value) { alert("Pick a time first ♥"); timeEl.focus(); return; }
   selectedDate = dateEl.value;
   selectedTime = timeEl.value;
   goTo("gamePage");
@@ -1284,13 +1385,9 @@ function updateConfirmDetails() {
 
   if (selectedDate) {
     const d = new Date(selectedDate + "T00:00:00");
-    if (!isNaN(d.getTime())) {
-      dateEl.textContent = d.toLocaleDateString("en-IN", {
-        weekday: "long", day: "numeric", month: "long", year: "numeric"
-      });
-    } else {
-      dateEl.textContent = selectedDate;
-    }
+    dateEl.textContent = !isNaN(d.getTime())
+      ? d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+      : selectedDate;
   } else {
     dateEl.textContent = "To be decided";
   }
@@ -1299,9 +1396,7 @@ function updateConfirmDetails() {
     const [h, m] = selectedTime.split(":").map(Number);
     const d = new Date();
     d.setHours(h, m, 0, 0);
-    timeEl.textContent = d.toLocaleTimeString("en-IN", {
-      hour: "numeric", minute: "2-digit", hour12: true
-    });
+    timeEl.textContent = d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
   } else {
     timeEl.textContent = "To be decided";
   }
@@ -1316,14 +1411,11 @@ function handleProposalYes() {
 }
 
 /* ============================================================
-   AFTER GAME — branch by mode
+   AFTER GAME
    ============================================================ */
 function afterGame() {
-  if (CONFIG.mode === "proposal") {
-    goTo("certificatePage");
-  } else {
-    goTo("confirmPage");
-  }
+  if (CONFIG.mode === "proposal") goTo("certificatePage");
+  else goTo("confirmPage");
 }
 
 /* ============================================================
@@ -1331,6 +1423,7 @@ function afterGame() {
    ============================================================ */
 function resetGameUI() {
   const arena = document.getElementById("gameArena");
+  if (!arena) return;
   arena.querySelectorAll(".falling-heart").forEach(el => el.remove());
   document.getElementById("gameStartOverlay").style.display = "flex";
   document.getElementById("scoreValue").textContent = "0";
@@ -1378,21 +1471,12 @@ function spawnHeart() {
   const fallDuration = 3000 + Math.random() * 2500;
   heart.style.transition = `top ${fallDuration}ms linear`;
 
-  const onClick = (e) => {
-    e.stopPropagation();
-    catchHeart(heart);
-  };
-  heart.addEventListener("click", onClick);
-  heart.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    catchHeart(heart);
-  }, { passive: false });
+  heart.addEventListener("click", (e) => { e.stopPropagation(); catchHeart(heart); });
+  heart.addEventListener("touchstart", (e) => { e.preventDefault(); catchHeart(heart); }, { passive: false });
 
   arena.appendChild(heart);
 
-  requestAnimationFrame(() => {
-    heart.style.top = (rect.height + 40) + "px";
-  });
+  requestAnimationFrame(() => { heart.style.top = (rect.height + 40) + "px"; });
 
   setTimeout(() => {
     if (heart.parentNode && !heart.classList.contains("caught")) heart.remove();
@@ -1412,13 +1496,8 @@ function endGame(won) {
   gameState.active = false;
   clearInterval(gameState.spawnTimer);
   clearInterval(gameState.tickTimer);
-
-  const arena = document.getElementById("gameArena");
-  arena.querySelectorAll(".falling-heart").forEach(el => el.remove());
-
-  const status = document.getElementById("gameStatus");
-  status.textContent = won ? CONFIG.gameWin : CONFIG.gameLose;
-
+  document.getElementById("gameArena").querySelectorAll(".falling-heart").forEach(el => el.remove());
+  document.getElementById("gameStatus").textContent = won ? CONFIG.gameWin : CONFIG.gameLose;
   if (won) {
     document.getElementById("gameAfter").style.display = "block";
     celebrate();
@@ -1483,6 +1562,7 @@ function boot() {
     const msg = event.data || {};
     if (msg.type === "NIVA_PREVIEW_UPDATE" && msg.data) {
       CONFIG = { ...defaults(), ...msg.data };
+      certSnapshot = null; // regenerate on change
       render(CONFIG);
     }
     if (msg.type === "NIVA_PREVIEW_PING") {
