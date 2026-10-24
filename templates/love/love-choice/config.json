@@ -73,8 +73,8 @@
       "label": "Which website do you want to publish?",
       "default": "date",
       "options": [
-        { "value": "date", "label": "📅 Date Invitation — ask them out with date & time" },
-        { "value": "proposal", "label": "💍 Love Proposal — a full proposal experience with certificate" }
+        { "value": "date", "label": "📅 Date Invitation" },
+        { "value": "proposal", "label": "💍 Love Proposal" }
       ],
       "help": "The other experience's fields will be hidden. Only the one you pick will be published."
     },

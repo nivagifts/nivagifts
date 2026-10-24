@@ -15,7 +15,6 @@
    THEME PRESETS — applied via data-theme on <body>
    ============================================================ */
 :root {
-  /* Base defaults — overridden by JS */
   --bg: #fff5f7;
   --bg-alt: #ffe9ee;
   --bg-rose: #ffe0e8;
@@ -576,6 +575,9 @@ img { max-width: 100%; display: block; }
   border: 2px solid var(--line);
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .game-start-overlay {
   position: absolute;
@@ -594,11 +596,16 @@ img { max-width: 100%; display: block; }
 }
 .falling-heart {
   position: absolute;
-  font-size: 34px;
+  font-size: 44px;
+  line-height: 1;
   cursor: pointer;
   user-select: none;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
   animation: heartPop .3s ease both;
+  padding: 12px;
+  margin: -12px;
+  touch-action: none;
+  will-change: top;
   transition: transform .1s;
 }
 .falling-heart:active { transform: scale(0.85); }
@@ -775,10 +782,6 @@ img { max-width: 100%; display: block; }
 <audio id="music" loop preload="none"></audio>
 <button class="music-btn" id="musicBtn" type="button" aria-label="Toggle music" title="Music">♪</button>
 
-<!-- ================================================================
-     THE DOM BELOW IS BUILT AT RUNTIME.
-     Only pages for the chosen mode will be injected.
-     ================================================================ -->
 <main id="appRoot"></main>
 
 <script>
@@ -789,45 +792,24 @@ img { max-width: 100%; display: block; }
    ============================================================ */
 let CONFIG = null;
 let currentPage = "page1";
-let gameState = { active: false, score: 0, timeLeft: 30, target: 10, spawnTimer: null, tickTimer: null };
+let gameState = { active: false, score: 0, timeLeft: 30, target: 10, spawnTimer: null, tickTimer: null, pending: [] };
 let selectedDate = "";
 let selectedTime = "";
 let musicStarted = false;
 let certSnapshot = null;
 
 /* ============================================================
-   THEME PRESETS — background & foreground
+   THEME PRESETS
    ============================================================ */
 const THEMES = {
-  romantic: {
-    bg: "#fff5f7", bgAlt: "#ffe9ee", bgRose: "#ffe0e8", bgCard: "#fffafb",
-    ink: "#4a2b3a", muted: "#9b7b88", line: "#f2d8df"
-  },
-  elegant: {
-    bg: "#fdf8f0", bgAlt: "#f5ebd9", bgRose: "#f0e0c8", bgCard: "#fffdf8",
-    ink: "#3d3428", muted: "#8a7a63", line: "#ecdcbf"
-  },
-  midnight: {
-    bg: "#1a1526", bgAlt: "#241c33", bgRose: "#2f2340", bgCard: "#251c33",
-    ink: "#f0e8f3", muted: "#b8a8c4", line: "#3a2d4a"
-  },
-  sunset: {
-    bg: "#fff5ee", bgAlt: "#ffe5d4", bgRose: "#ffd6bc", bgCard: "#fffcf8",
-    ink: "#4a2e1c", muted: "#956e55", line: "#f5d8c0"
-  },
-  mint: {
-    bg: "#f4faf3", bgAlt: "#e5f2e2", bgRose: "#d4e8ce", bgCard: "#fdfefb",
-    ink: "#2f3d28", muted: "#6e7f65", line: "#dbe8cf"
-  },
-  lavender: {
-    bg: "#f7f3fc", bgAlt: "#efe7f8", bgRose: "#e4d8f3", bgCard: "#fffdfe",
-    ink: "#3d2f4d", muted: "#8a7b98", line: "#e4d6f2"
-  }
+  romantic: { bg: "#fff5f7", bgAlt: "#ffe9ee", bgRose: "#ffe0e8", bgCard: "#fffafb", ink: "#4a2b3a", muted: "#9b7b88", line: "#f2d8df" },
+  elegant:  { bg: "#fdf8f0", bgAlt: "#f5ebd9", bgRose: "#f0e0c8", bgCard: "#fffdf8", ink: "#3d3428", muted: "#8a7a63", line: "#ecdcbf" },
+  midnight: { bg: "#1a1526", bgAlt: "#241c33", bgRose: "#2f2340", bgCard: "#251c33", ink: "#f0e8f3", muted: "#b8a8c4", line: "#3a2d4a" },
+  sunset:   { bg: "#fff5ee", bgAlt: "#ffe5d4", bgRose: "#ffd6bc", bgCard: "#fffcf8", ink: "#4a2e1c", muted: "#956e55", line: "#f5d8c0" },
+  mint:     { bg: "#f4faf3", bgAlt: "#e5f2e2", bgRose: "#d4e8ce", bgCard: "#fdfefb", ink: "#2f3d28", muted: "#6e7f65", line: "#dbe8cf" },
+  lavender: { bg: "#f7f3fc", bgAlt: "#efe7f8", bgRose: "#e4d8f3", bgCard: "#fffdfe", ink: "#3d2f4d", muted: "#8a7b98", line: "#e4d6f2" }
 };
 
-/* ============================================================
-   COLOR COMBOS — accents (rose is the primary accent)
-   ============================================================ */
 const COLOR_COMBOS = {
   rose:     { rose: "#e75a7c", roseDark: "#a83258", roseLight: "#f7b2c1", roseSoft: "#fde7ee", gold: "#d4a456" },
   coral:    { rose: "#f07a5c", roseDark: "#b8452c", roseLight: "#ffc4ae", roseSoft: "#fee5dd", gold: "#e3a550" },
@@ -890,9 +872,7 @@ function defaults() {
    HELPERS
    ============================================================ */
 function esc(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 function setText(id, v) {
   const el = document.getElementById(id);
@@ -907,7 +887,6 @@ function applyTheme(cfg) {
   const combo = COLOR_COMBOS[cfg.colorCombo] || COLOR_COMBOS.rose;
   const root = document.documentElement.style;
 
-  // Base
   root.setProperty("--bg", theme.bg);
   root.setProperty("--bg-alt", theme.bgAlt);
   root.setProperty("--bg-rose", theme.bgRose);
@@ -916,26 +895,23 @@ function applyTheme(cfg) {
   root.setProperty("--muted", theme.muted);
   root.setProperty("--line", theme.line);
 
-  // Accent
   root.setProperty("--rose", combo.rose);
   root.setProperty("--rose-dark", combo.roseDark);
   root.setProperty("--rose-light", combo.roseLight);
   root.setProperty("--rose-soft", combo.roseSoft);
   root.setProperty("--gold", combo.gold);
 
-  // Body attributes (helps with theme-specific tweaks)
   document.body.dataset.theme = cfg.themeStyle || "romantic";
   document.body.dataset.color = cfg.colorCombo || "rose";
 }
 
 /* ============================================================
-   BUILD DOM FOR THE CHOSEN MODE ONLY
+   BUILD DOM
    ============================================================ */
 function buildDOM(cfg) {
   const root = document.getElementById("appRoot");
   const isDate = cfg.mode !== "proposal";
 
-  // Which pages does this mode need?
   const sharedPages = `
     <section class="page active" id="page1">
       <div class="inner">
@@ -1109,18 +1085,14 @@ function buildDOM(cfg) {
     </section>
   `;
 
-  // Build page1 first, then letter+game, then mode-specific tail
   let html = sharedPages;
   if (isDate) {
-    // Insert whenPage between letter and game, and confirmPage after game
-    // Simpler: rebuild order manually
     html = `
       ${sharedPages.split('id="gamePage"')[0]}
       ${datePages.split('id="confirmPage"')[0]}
       ${'<section class="page" id="gamePage">' + sharedPages.split('id="gamePage"')[1]}
       ${datePages.split('id="confirmPage"')[1]}
     `;
-    // Remove leftover whenPage class opening (we appended it after letter)
   } else {
     html = `
       ${sharedPages.split('id="gamePage"')[0]}
@@ -1132,7 +1104,6 @@ function buildDOM(cfg) {
 
   root.innerHTML = html;
 
-  // Wire up buttons
   document.getElementById("yesBtn")?.addEventListener("click", handleYes);
   document.getElementById("noBtn")?.addEventListener("mouseenter", (e) => runAway(e.currentTarget));
   document.getElementById("noBtn")?.addEventListener("click", (e) => runAway(e.currentTarget));
@@ -1142,17 +1113,14 @@ function buildDOM(cfg) {
   document.getElementById("gameStartBtn")?.addEventListener("click", startGame);
   document.getElementById("gameNextBtn")?.addEventListener("click", afterGame);
 
-  // Date mode wiring
   document.getElementById("whenNextBtn")?.addEventListener("click", confirmDateTime);
   document.getElementById("finalRestartBtn")?.addEventListener("click", restartAll);
   document.getElementById("dateInput")?.addEventListener("focus", () => {
-    // Avoid accidental keyboard obstruction on mobile
     if (window.innerWidth < 640) {
       setTimeout(() => document.getElementById("dateInput")?.scrollIntoView({ behavior: "smooth", block: "center" }), 200);
     }
   });
 
-  // Proposal mode wiring
   document.getElementById("proposalYesBtn")?.addEventListener("click", handleProposalYes);
   document.getElementById("proposalNoBtn")?.addEventListener("mouseenter", (e) => runAway(e.currentTarget));
   document.getElementById("proposalNoBtn")?.addEventListener("click", (e) => runAway(e.currentTarget));
@@ -1169,14 +1137,12 @@ function render(cfg) {
 
   const isDate = cfg.mode !== "proposal";
 
-  // Page 1
   setText("askEyebrow", isDate ? cfg.askEyebrow : cfg.proposalEyebrow);
   setText("askQuestion", isDate ? cfg.askQuestion : cfg.proposalTitle);
   setText("askSubtitle", isDate ? cfg.askSubtitle : cfg.proposalBody);
   setText("yesBtnText", isDate ? cfg.yesButton : "Yes, forever ♥");
   setText("noBtnText", isDate ? cfg.noButton : "Maybe not…");
 
-  // Letter (shared)
   setText("letterTitle", cfg.letterTitle);
   setText("letterGreeting", cfg.letterGreeting);
   setText("letterSignature", cfg.letterSignature);
@@ -1192,7 +1158,6 @@ function render(cfg) {
     });
   }
 
-  // Game (shared)
   setText("gameTitle", cfg.gameTitle);
   setText("gameSubtitle", cfg.gameSubtitle);
   setText("gameStartText", cfg.gameSubtitle);
@@ -1200,7 +1165,6 @@ function render(cfg) {
   gameState.target = parseInt(cfg.gameTarget) || 10;
   setText("targetValue", String(gameState.target));
 
-  // Date mode
   if (isDate) {
     setText("whenTitle", cfg.whenTitle);
     setText("whenSubtitle", cfg.whenSubtitle);
@@ -1223,7 +1187,6 @@ function render(cfg) {
     }
   }
 
-  // Proposal mode
   if (!isDate) {
     setText("proposalEyebrow", cfg.proposalEyebrow);
     setText("proposalTitle", cfg.proposalTitle);
@@ -1252,10 +1215,7 @@ function render(cfg) {
     setText("certId", certSnapshot.id);
   }
 
-  // Music
   setupMusic(cfg);
-
-  // Background hearts
   buildBgHearts();
 }
 
@@ -1356,10 +1316,6 @@ function runAway(btn) {
 
 function goToNextFromLetter() {
   if (CONFIG.mode === "proposal") {
-    // Insert proposal page AFTER letter, BEFORE game
-    // We don't have a separate proposal page; letter → game → certificate
-    // But the user wanted proposal also to have a big "Yes" ask. So we go:
-    // page1(ask) → page2(letter) → proposalPage → gamePage → certificatePage
     goTo("proposalPage");
   } else {
     goTo("whenPage");
@@ -1419,12 +1375,15 @@ function afterGame() {
 }
 
 /* ============================================================
-   GAME
+   GAME — FIXED FOR MOBILE
    ============================================================ */
 function resetGameUI() {
   const arena = document.getElementById("gameArena");
   if (!arena) return;
   arena.querySelectorAll(".falling-heart").forEach(el => el.remove());
+  gameState.pending.forEach(t => clearTimeout(t));
+  gameState.pending = [];
+
   document.getElementById("gameStartOverlay").style.display = "flex";
   document.getElementById("scoreValue").textContent = "0";
   document.getElementById("timeValue").textContent = "30";
@@ -1445,14 +1404,20 @@ function startGame() {
   gameState.score = 0;
   gameState.timeLeft = 30;
 
+  // Timer
   gameState.tickTimer = setInterval(() => {
     gameState.timeLeft--;
     document.getElementById("timeValue").textContent = String(Math.max(0, gameState.timeLeft));
     if (gameState.timeLeft <= 0) endGame(false);
   }, 1000);
 
-  gameState.spawnTimer = setInterval(spawnHeart, 700);
+  // Faster spawn rate for mobile — hearts appear every 380ms
+  gameState.spawnTimer = setInterval(spawnHeart, 380);
+
+  // Instant burst of 3 hearts so the player has targets immediately
   spawnHeart();
+  setTimeout(spawnHeart, 120);
+  setTimeout(spawnHeart, 240);
 }
 
 function spawnHeart() {
@@ -1464,23 +1429,34 @@ function spawnHeart() {
   heart.className = "falling-heart";
   heart.textContent = ["💕", "💖", "💗", "❤️", "💘", "💝"][Math.floor(Math.random() * 6)];
 
-  const x = Math.random() * Math.max(10, rect.width - 50);
+  // Bigger tap target: padding of 12px on each side (emoji is 44px → ~68px hit area)
+  const x = Math.random() * Math.max(10, rect.width - 70);
   heart.style.left = x + "px";
   heart.style.top = "-40px";
 
-  const fallDuration = 3000 + Math.random() * 2500;
+  // Faster but still catchable fall
+  const fallDuration = 2200 + Math.random() * 1600; // 2.2s – 3.8s
   heart.style.transition = `top ${fallDuration}ms linear`;
 
-  heart.addEventListener("click", (e) => { e.stopPropagation(); catchHeart(heart); });
-  heart.addEventListener("touchstart", (e) => { e.preventDefault(); catchHeart(heart); }, { passive: false });
+  // Use pointerdown — works for both mouse and touch, no double-fire
+  heart.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    catchHeart(heart);
+  });
 
   arena.appendChild(heart);
 
-  requestAnimationFrame(() => { heart.style.top = (rect.height + 40) + "px"; });
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      heart.style.top = (rect.height + 40) + "px";
+    });
+  });
 
-  setTimeout(() => {
+  const cleanup = setTimeout(() => {
     if (heart.parentNode && !heart.classList.contains("caught")) heart.remove();
   }, fallDuration + 100);
+  gameState.pending.push(cleanup);
 }
 
 function catchHeart(heart) {
@@ -1496,8 +1472,12 @@ function endGame(won) {
   gameState.active = false;
   clearInterval(gameState.spawnTimer);
   clearInterval(gameState.tickTimer);
+  gameState.pending.forEach(t => clearTimeout(t));
+  gameState.pending = [];
+
   document.getElementById("gameArena").querySelectorAll(".falling-heart").forEach(el => el.remove());
   document.getElementById("gameStatus").textContent = won ? CONFIG.gameWin : CONFIG.gameLose;
+
   if (won) {
     document.getElementById("gameAfter").style.display = "block";
     celebrate();
@@ -1562,7 +1542,7 @@ function boot() {
     const msg = event.data || {};
     if (msg.type === "NIVA_PREVIEW_UPDATE" && msg.data) {
       CONFIG = { ...defaults(), ...msg.data };
-      certSnapshot = null; // regenerate on change
+      certSnapshot = null;
       render(CONFIG);
     }
     if (msg.type === "NIVA_PREVIEW_PING") {
