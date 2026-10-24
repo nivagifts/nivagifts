@@ -24,6 +24,7 @@ const TEMPLATE_PRICES = {
   "memory-box": 99,
   "apologyletter": 39,
   "date-invite": 299,
+  "constellation-proposal": 299,
 };
 
 const TEMPLATE_PLAN_NAMES = {

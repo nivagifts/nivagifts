@@ -42,6 +42,14 @@ const NivaTemplates = (() => {
       id: "date-invite",
       configPath: "/templates/love/date-invite/config.json",
     },
+    {
+      id: "date-invite",
+      configPath: "/templates/love/date-invite/config.json",
+    },
+    {
+      id: "constellation-proposal",
+      configPath: "/templates/love/constellation-proposal/config.json",
+    },
     // ▼▼▼ ADD NEW TEMPLATES BELOW ▼▼▼
   ];
 

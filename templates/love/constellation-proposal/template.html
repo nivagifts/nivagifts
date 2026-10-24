@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0b1e">
+<title>A Proposal in the Stars</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   THEME TOKENS
+   ============================================================ */
+:root {
+  --sky-top: #0a0b1e;
+  --sky-mid: #151329;
+  --sky-bottom: #1d1430;
+  --star-color: #fff;
+  --glow: #ffb7d5;
+  --glow-soft: rgba(255,183,213,.15);
+  --glow-strong: rgba(255,183,213,.6);
+  --ink: #f4eaf2;
+  --muted: #a99ab3;
+  --gold: #e8c88a;
+  --paper: #fdf6e3;
+  --paper-ink: #4a3326;
+  --wax: #a83244;
+  --wax-light: #d04a5a;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-script: 'Caveat', cursive;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+
+body {
+  min-height: 100vh; min-height: 100dvh;
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-mid) 50%, var(--sky-bottom));
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background 1s ease;
+}
+
+button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; touch-action: manipulation; }
+
+/* ============================================================
+   STARFIELD
+   ============================================================ */
+#sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.sky-star {
+  position: absolute;
+  background: var(--star-color);
+  border-radius: 50%;
+  animation: twinkle var(--speed, 3s) ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+  0%   { opacity: .15; transform: scale(.7); }
+  100% { opacity: 1;   transform: scale(1.3); }
+}
+#sky::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%; height: 55%;
+  background: radial-gradient(ellipse at 50% 100%, var(--glow-soft), transparent 70%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   SCENE SYSTEM
+   ============================================================ */
+#app { position: relative; z-index: 2; }
+.scene {
+  display: none;
+  min-height: 100vh; min-height: 100dvh;
+  padding: 40px 20px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+.scene.active {
+  display: flex;
+  animation: sceneFadeIn 1s ease both;
+}
+@keyframes sceneFadeIn {
+  from { opacity: 0; transform: translateY(20px); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+.scene-inner { width: min(100%, 720px); position: relative; z-index: 2; }
+
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--glow);
+  opacity: 0.8;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+h1, h2 { font-family: var(--font-display); font-weight: 400; line-height: 1.1; }
+h1 { font-size: clamp(36px, 9vw, 72px); }
+h2 { font-size: clamp(28px, 6vw, 48px); }
+.script { font-family: var(--font-script); font-weight: 600; color: var(--glow); }
+
+/* ============================================================
+   SCENE 1: MOONRISE
+   ============================================================ */
+.moon-wrap {
+  position: relative;
+  width: 220px; height: 220px;
+  margin: 40px auto;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  animation: moonFloat 6s ease-in-out infinite;
+}
+@keyframes moonFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+.moon {
+  width: 130px; height: 130px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 32%, rgba(0,0,0,.06) 4%, transparent 10%),
+    radial-gradient(circle at 60% 55%, rgba(0,0,0,.08) 6%, transparent 12%),
+    radial-gradient(circle at 42% 70%, rgba(0,0,0,.06) 3%, transparent 8%),
+    radial-gradient(circle at 35% 35%, #fffaf0, #f5ead6 40%, var(--gold) 100%);
+  box-shadow:
+    0 0 60px var(--glow-strong),
+    0 0 120px var(--glow-soft),
+    inset -10px -10px 30px rgba(0,0,0,.15);
+  transition: transform .4s ease;
+}
+.moon-wrap:hover .moon { transform: scale(1.06); }
+.moon-wrap:active .moon { transform: scale(0.94); }
+
+.moon-halo {
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow-soft), transparent 70%);
+  animation: haloPulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes haloPulse {
+  0%, 100% { opacity: .6; transform: scale(1); }
+  50%      { opacity: 1;  transform: scale(1.1); }
+}
+
+.moon-hint {
+  font-family: var(--font-script);
+  font-size: 22px;
+  color: var(--glow);
+  opacity: .85;
+  margin-top: 20px;
+  animation: hintPulse 2.5s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%, 100% { opacity: .5; }
+  50%      { opacity: 1; }
+}
+
+/* ============================================================
+   SCENE 2: WAX SEAL ENVELOPE
+   ============================================================ */
+.envelope-wrap {
+  width: min(440px, 100%);
+  margin: 30px auto 0;
+  position: relative;
+  aspect-ratio: 4 / 3;
+  cursor: pointer;
+  animation: envelopeFloat 5s ease-in-out infinite;
+  transition: opacity .6s ease, transform .6s ease;
+}
+@keyframes envelopeFloat {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-8px) rotate(1deg); }
+}
+.envelope-wrap.broken {
+  animation: none;
+  opacity: 0;
+  transform: scale(.9);
+  pointer-events: none;
+}
+
+.envelope {
+  position: absolute; inset: 0;
+  background: linear-gradient(145deg, var(--paper), #ede0c8);
+  border-radius: 6px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.45),
+    inset 0 0 40px rgba(255,255,255,.15);
+  border: 1px solid rgba(200,170,130,.4);
+  overflow: hidden;
+}
+/* Flap (triangle from top) */
+.envelope::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, #f2e4c6, #e8d9ba);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-bottom: 1px solid rgba(180,140,90,.3);
+  box-shadow: 0 3px 12px rgba(0,0,0,.1);
+  transition: transform .9s cubic-bezier(.6,0,.4,1), opacity .5s ease .5s;
+  transform-origin: top center;
+}
+.envelope-wrap.opening::before {
+  transform: rotateX(180deg);
+  opacity: 0;
+}
+.envelope-wrap.broken .envelope::before {
+  transform: rotateX(180deg);
+  opacity: 0;
+}
+
+/* Bottom body crease */
+.envelope::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(0deg, #f2e4c6, transparent);
+  opacity: .4;
+  pointer-events: none;
+}
+
+.wax-seal {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--wax-light), var(--wax) 60%, #7c1f2c);
+  box-shadow:
+    0 4px 20px rgba(0,0,0,.4),
+    inset -4px -4px 12px rgba(0,0,0,.3),
+    inset 4px 4px 12px rgba(255,150,150,.3);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-script);
+  font-size: 40px;
+  color: #fff5f0;
+  text-shadow: 0 2px 3px rgba(0,0,0,.4);
+  transition: transform .3s ease, opacity .4s ease;
+  z-index: 2;
+}
+.envelope-wrap:hover .wax-seal { transform: translate(-50%, -50%) scale(1.08); }
+.envelope-wrap.broken .wax-seal {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.4) rotate(25deg);
+}
+
+/* Crack line on seal */
+.wax-seal::after {
+  content: "";
+  position: absolute;
+  inset: 12% 48%;
+  width: 4%;
+  background: rgba(0,0,0,.35);
+  transform: rotate(18deg);
+  border-radius: 2px;
+  box-shadow: inset 0 0 2px rgba(255,255,255,.3);
+}
+
+.seal-hint {
+  font-family: var(--font-script);
+  font-size: 20px;
+  color: var(--glow);
+  margin-top: 24px;
+  opacity: .8;
+  animation: hintPulse 2.5s ease-in-out infinite;
+}
+.seal-caption {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+  margin-top: 8px;
+  opacity: .8;
+}
+
+/* ============================================================
+   SCENE 3: HANDWRITTEN LETTER
+   ============================================================ */
+#scene-letter { justify-content: flex-start; padding-top: 60px; }
+
+.letter-paper {
+  width: min(620px, 100%);
+  margin: 0 auto;
+  padding: clamp(30px, 6vw, 60px);
+  background:
+    repeating-linear-gradient(transparent 0 32px, rgba(150,100,60,.10) 33px),
+    var(--paper);
+  color: var(--paper-ink);
+  border-radius: 4px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.4),
+    inset 0 0 60px rgba(200,170,120,.15);
+  transform: rotate(-0.4deg);
+  text-align: left;
+  position: relative;
+}
+.letter-paper::before {
+  content: "✧";
+  position: absolute;
+  top: 14px; right: 20px;
+  font-size: 22px;
+  color: var(--wax);
+  opacity: .6;
+}
+
+.letter-dear {
+  font-family: var(--font-script);
+  font-size: clamp(28px, 6vw, 40px);
+  color: var(--wax);
+  margin-bottom: 20px;
+}
+
+.letter-text {
+  font-family: var(--font-script);
+  font-size: clamp(19px, 4vw, 26px);
+  line-height: 1.8;
+  color: var(--paper-ink);
+  min-height: 200px;
+}
+.letter-text br { line-height: inherit; }
+
+.pen-cursor {
+  display: none;
+  width: 2px;
+  height: 1.1em;
+  background: var(--paper-ink);
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: penBlink .7s step-end infinite;
+}
+.pen-cursor.visible { display: inline-block; }
+@keyframes penBlink {
+  0%, 50%   { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.letter-sig {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--wax);
+  text-align: right;
+  margin-top: 24px;
+  opacity: 0;
+  transition: opacity 1s ease .3s;
+}
+.letter-sig.visible { opacity: 1; }
+
+/* ============================================================
+   SCENE 4: STAR CONNECT PUZZLE
+   ============================================================ */
+#scene-puzzle { justify-content: flex-start; padding-top: 40px; }
+
+.puzzle-head { text-align: center; margin-bottom: 20px; }
+.puzzle-title {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 5vw, 36px);
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.puzzle-hint {
+  font-family: var(--font-script);
+  font-size: 18px;
+  color: var(--glow);
+  opacity: .85;
+}
+
+.puzzle-arena {
+  position: relative;
+  width: min(100%, 500px);
+  aspect-ratio: 1;
+  margin: 20px auto;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,183,213,.06), transparent 70%),
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.02), transparent 40%);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
+  max-height: 70vh;
+}
+
+/* SVG overlay */
+.puzzle-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.puzzle-line {
+  stroke: var(--glow);
+  stroke-width: 0.6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px var(--glow-strong));
+  opacity: 0;
+  animation: lineReveal .4s ease forwards;
+}
+@keyframes lineReveal {
+  to { opacity: .9; }
+}
+
+/* Stars — pinned by percentage, centered via translate */
+.puzzle-star {
+  position: absolute;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  transition: transform .3s ease;
+  border: none;
+  background: none;
+}
+.puzzle-star:active { transform: translate(-50%, -50%) scale(0.9); }
+
+.star-core {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff, var(--star-color) 40%, transparent 100%);
+  box-shadow:
+    0 0 20px var(--glow-strong),
+    0 0 40px var(--glow-soft);
+  animation: starPulse 2s ease-in-out infinite;
+  transition: all .4s ease;
+}
+@keyframes starPulse {
+  0%, 100% { transform: scale(1);    opacity: .8; }
+  50%      { transform: scale(1.2);  opacity: 1; }
+}
+
+.puzzle-star .num {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--glow);
+  opacity: .6;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.puzzle-star.next .star-core {
+  background: radial-gradient(circle, #fff, var(--glow) 40%, transparent 100%);
+  box-shadow:
+    0 0 30px var(--glow-strong),
+    0 0 60px var(--glow-soft);
+  animation: starNext 1.2s ease-in-out infinite;
+}
+@keyframes starNext {
+  0%, 100% { transform: scale(1.15); }
+  50%      { transform: scale(1.4); }
+}
+
+.puzzle-star.connected .star-core {
+  background: radial-gradient(circle, #fff, var(--glow) 30%, #fff 100%);
+  box-shadow:
+    0 0 40px var(--glow-strong),
+    0 0 80px var(--glow);
+  animation: none;
+}
+.puzzle-star.connected .num {
+  opacity: 1;
+  color: var(--ink);
+}
+
+.puzzle-star.wrong { animation: wrongShake .4s ease; }
+@keyframes wrongShake {
+  0%, 100% { transform: translate(-50%, -50%); }
+  25%      { transform: translate(calc(-50% - 6px), -50%); }
+  75%      { transform: translate(calc(-50% + 6px), -50%); }
+}
+
+.puzzle-arena.complete {
+  animation: puzzleGlow 1.5s ease-in-out infinite;
+}
+@keyframes puzzleGlow {
+  0%, 100% { box-shadow: 0 0 40px var(--glow-soft), inset 0 0 60px transparent; }
+  50%      { box-shadow: 0 0 80px var(--glow-strong), inset 0 0 80px var(--glow-soft); }
+}
+
+.puzzle-status {
+  font-family: var(--font-script);
+  font-size: 20px;
+  color: var(--glow);
+  text-align: center;
+  min-height: 30px;
+  margin-top: 16px;
+  transition: color .3s ease;
+}
+
+/* ============================================================
+   CONTINUE BUTTON (shared)
+   ============================================================ */
+.continue-btn {
+  display: none;
+  margin: 24px auto 0;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--glow), var(--glow));
+  color: #1a0a14;
+  font-weight: 600;
+  border-radius: 50px;
+  box-shadow: 0 8px 24px var(--glow-strong);
+  font-size: 14px;
+  letter-spacing: 1px;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.continue-btn.show {
+  display: inline-block;
+  animation: btnPop .5s ease both;
+}
+@keyframes btnPop {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.continue-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px var(--glow-strong);
+}
+
+/* ============================================================
+   SCENE 5: RING REVEAL
+   ============================================================ */
+.ring-stage {
+  width: 280px; height: 280px;
+  margin: 40px auto;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.ring-constellation {
+  position: absolute;
+  inset: 0;
+  transition: opacity 1.5s ease;
+}
+.ring-constellation.fade { opacity: 0; }
+
+.mini-star {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 16px var(--glow), 0 0 32px var(--glow-soft);
+  transform: translate(-50%, -50%);
+  animation: miniStarPulse 1.5s ease-in-out infinite;
+  transition: all 1.5s cubic-bezier(.6,0,.4,1);
+}
+@keyframes miniStarPulse {
+  0%, 100% { opacity: .7; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;  transform: translate(-50%, -50%) scale(1.3); }
+}
+.ring-constellation.fade .mini-star {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.2);
+}
+
+.ring {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  border: 6px solid transparent;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,.2), transparent 50%),
+    conic-gradient(from 45deg, #fff9e8, var(--gold), #fff9e8, var(--gold), #fff9e8);
+  background-clip: padding-box;
+  position: relative;
+  opacity: 0;
+  transform: scale(0.2) rotate(-180deg);
+  transition: opacity 1.2s ease .3s, transform 1.4s cubic-bezier(.34,1.4,.64,1) .3s;
+  box-shadow:
+    0 0 40px var(--glow),
+    0 0 80px var(--glow-soft),
+    inset 0 0 20px rgba(255,255,255,.3);
+  /* Hollow center */
+  -webkit-mask: radial-gradient(circle, transparent 55%, #000 56%);
+          mask: radial-gradient(circle, transparent 55%, #000 56%);
+}
+.ring.show {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.ring::before {
+  content: "💎";
+  position: absolute;
+  top: -26px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 34px;
+  filter: drop-shadow(0 0 12px var(--glow-strong));
+  animation: diamondGlow 2s ease-in-out infinite;
+}
+@keyframes diamondGlow {
+  0%, 100% { filter: drop-shadow(0 0 12px var(--glow-strong)); transform: translateX(-50%) scale(1); }
+  50%      { filter: drop-shadow(0 0 25px var(--glow));        transform: translateX(-50%) scale(1.05); }
+}
+
+/* Golden shine sweep on reveal */
+.ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.6) 50%, transparent 70%);
+  opacity: 0;
+  animation: shineSweep 2.5s ease-in-out .8s infinite;
+  -webkit-mask: radial-gradient(circle, transparent 55%, #000 56%);
+          mask: radial-gradient(circle, transparent 55%, #000 56%);
+}
+@keyframes shineSweep {
+  0%, 60% { opacity: 0; transform: rotate(0); }
+  70%     { opacity: 1; }
+  100%    { opacity: 0; transform: rotate(360deg); }
+}
+
+.ring-caption {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--glow);
+  margin-top: 20px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.ring-caption.show { opacity: 1; }
+
+/* ============================================================
+   SCENE 6: PROPOSAL
+   ============================================================ */
+.question-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 7vw, 60px);
+  color: var(--ink);
+  margin-bottom: 24px;
+  line-height: 1.15;
+  opacity: 0;
+  animation: fadeUp 1.2s ease .3s forwards;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.question-body {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(16px, 3.5vw, 20px);
+  color: var(--muted);
+  max-width: 520px;
+  margin: 0 auto 40px;
+  line-height: 1.9;
+  opacity: 0;
+  animation: fadeUp 1.2s ease .6s forwards;
+}
+
+.answer-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 1.2s ease .9s forwards;
+}
+.answer-buttons.hidden { display: none; }
+
+.yes-btn {
+  padding: 16px 42px;
+  background: linear-gradient(135deg, var(--glow), var(--glow));
+  color: #1a0a14;
+  font-weight: 700;
+  border-radius: 50px;
+  font-size: 15px;
+  letter-spacing: 1px;
+  box-shadow: 0 10px 30px var(--glow-strong);
+  min-height: 52px;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.yes-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 15px 40px var(--glow);
+}
+
+.no-btn {
+  padding: 16px 32px;
+  background: rgba(255,255,255,.06);
+  color: var(--ink);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50px;
+  font-size: 15px;
+  min-height: 52px;
+  transition: background .3s ease, border-color .3s ease;
+}
+.no-btn:hover {
+  background: rgba(255,255,255,.1);
+  border-color: rgba(255,255,255,.35);
+}
+
+.answer-message {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 28px);
+  color: var(--glow);
+  margin: 30px auto 0;
+  max-width: 500px;
+  line-height: 1.5;
+  min-height: 40px;
+  opacity: 0;
+  transition: opacity .6s ease;
+}
+.answer-message.show { opacity: 1; }
+
+.replay-btn {
+  margin-top: 40px;
+  padding: 12px 28px;
+  background: rgba(255,255,255,.06);
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 50px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all .3s ease;
+}
+.replay-btn:hover {
+  background: rgba(255,255,255,.1);
+  color: var(--ink);
+}
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+.confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(-30px) rotate(0);    opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* ============================================================
+   MUSIC TOGGLE
+   ============================================================ */
+.music-toggle {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  right: 20px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.15);
+  display: none;
+  place-items: center;
+  font-size: 18px;
+  z-index: 90;
+  transition: all .3s ease;
+  color: var(--glow);
+  will-change: transform;
+}
+.music-toggle:hover {
+  background: rgba(255,255,255,.15);
+  transform: scale(1.08);
+}
+.music-toggle.playing {
+  animation: musicSpin 3s linear infinite;
+}
+@keyframes musicSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 550px) {
+  .scene { padding: 30px 16px; padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
+  .moon-wrap { width: 180px; height: 180px; }
+  .moon { width: 110px; height: 110px; }
+  .envelope-wrap { aspect-ratio: 5 / 4; }
+  .wax-seal { width: 74px; height: 74px; font-size: 32px; }
+  .letter-paper { padding: 26px 20px; }
+  .puzzle-star { width: 40px; height: 40px; }
+  .star-core { width: 20px; height: 20px; }
+  .puzzle-star .num { font-size: 10px; bottom: -18px; }
+  .ring { width: 110px; height: 110px; }
+  .ring-stage { width: 220px; height: 220px; }
+  .yes-btn, .no-btn { min-width: 140px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .sky-star, .confetti, .ring::after { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="sky" aria-hidden="true"></div>
+<audio id="bgSong" loop preload="none"></audio>
+<button class="music-toggle" id="musicToggle" type="button" aria-label="Toggle music">♪</button>
+
+<main id="app">
+
+  <!-- ============================================================
+       SCENE 1: MOONRISE
+       ============================================================ -->
+  <section class="scene active" id="scene-moon">
+    <div class="scene-inner">
+      <p class="eyebrow">A proposal in the stars</p>
+
+      <div class="moon-wrap" id="moonWrap" role="button" tabindex="0" aria-label="Tap the moon to begin">
+        <div class="moon-halo"></div>
+        <div class="moon"></div>
+      </div>
+
+      <h1 class="script" id="moon-line" style="font-size: clamp(28px, 6vw, 44px); line-height: 1.3;"></h1>
+
+      <p class="moon-hint" id="moon-hint"></p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 2: WAX SEAL
+       ============================================================ -->
+  <section class="scene" id="scene-seal">
+    <div class="scene-inner">
+      <p class="eyebrow">For your eyes only</p>
+
+      <div class="envelope-wrap" id="envelopeWrap" role="button" tabindex="0" aria-label="Break the seal to open">
+        <div class="envelope"></div>
+        <div class="wax-seal">✧</div>
+      </div>
+
+      <p class="seal-hint" id="seal-hint"></p>
+      <p class="seal-caption" id="seal-caption"></p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 3: HANDWRITTEN LETTER
+       ============================================================ -->
+  <section class="scene" id="scene-letter">
+    <div class="scene-inner">
+      <div class="letter-paper">
+        <div class="letter-dear" id="letter-dear"></div>
+        <div class="letter-text" id="letter-text"></div>
+        <span class="pen-cursor" id="pen-cursor"></span>
+        <div class="letter-sig" id="letter-sig"></div>
+      </div>
+
+      <button class="continue-btn" id="letter-continue" type="button">
+        Continue →
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 4: STAR CONNECT PUZZLE
+       ============================================================ -->
+  <section class="scene" id="scene-puzzle">
+    <div class="scene-inner">
+      <div class="puzzle-head">
+        <p class="eyebrow">Your turn</p>
+        <h2 class="puzzle-title" id="puzzle-title"></h2>
+        <p class="puzzle-hint" id="puzzle-hint"></p>
+      </div>
+
+      <div class="puzzle-arena" id="puzzleArena">
+        <svg class="puzzle-svg" id="puzzleSvg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <!-- Stars injected by JS -->
+      </div>
+
+      <p class="puzzle-status" id="puzzleStatus"></p>
+
+      <button class="continue-btn" id="puzzle-continue" type="button">
+        Continue →
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 5: RING REVEAL
+       ============================================================ -->
+  <section class="scene" id="scene-ring">
+    <div class="scene-inner">
+      <p class="eyebrow">What you drew</p>
+
+      <div class="ring-stage">
+        <div class="ring-constellation" id="ringConstellation"></div>
+        <div class="ring" id="ringReveal"></div>
+      </div>
+
+      <p class="ring-caption" id="ring-caption"></p>
+
+      <button class="continue-btn" id="ring-continue" type="button">
+        One last thing →
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 6: THE QUESTION
+       ============================================================ -->
+  <section class="scene" id="scene-question">
+    <div class="scene-inner">
+      <p class="eyebrow" id="proposal-eyebrow"></p>
+
+      <h1 class="question-title" id="proposal-question"></h1>
+      <p class="question-body" id="proposal-body"></p>
+
+      <div class="answer-buttons" id="answerButtons">
+        <button class="yes-btn" type="button" id="yesBtn"></button>
+        <button class="no-btn" type="button" id="noBtn"></button>
+      </div>
+
+      <p class="answer-message" id="answer-message"></p>
+
+      <button class="replay-btn" type="button" id="replayBtn">↻ Replay our story</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+"use strict";
+
+/* ============================================================
+   DEFAULTS
+   ============================================================ */
+function defaults() {
+  return {
+    recipientName: "Diya",
+    senderName: "Aarav",
+    themeStyle: "midnight",
+    colorCombo: "rose",
+    welcomeLine: "Some things are written in the stars.",
+    moonHint: "Tap the moon when you're ready",
+    sealHint: "Break the seal to open",
+    sealedEnvelopeCaption: "A letter, sealed just for you",
+    letterBody: "I've been trying to find the right words for a while now. Not the kind of words you say in passing, but the kind you mean with your whole heart.\n\nSomewhere between the first hello and every moment since, you became my favourite person. The one I think of first. The one I want to tell everything to. The one I hope I get to keep choosing, again and again.\n\nSo tonight, under this sky, I'm asking you something I've been carrying for a long time.",
+    puzzleTitle: "Draw our constellation",
+    puzzleHint: "Connect the stars in order — 1 through 6",
+    puzzleWrongHint: "Not that one — try the next star.",
+    puzzleSuccessHint: "You drew us — a heart in the sky.",
+    ringCaption: "The stars have become something more.",
+    proposalEyebrow: "The moment I've been waiting for",
+    proposalQuestion: "Will you be mine, forever?",
+    proposalBody: "Every day with you feels like the universe arranged itself just so. I don't want to imagine a life that doesn't have you in it. So — with my whole heart — will you be mine?",
+    yesButton: "Yes — always 💫",
+    noButton: "Not yet 🌙",
+    yesMessage: "You just lit up every star in the sky, {name}. Every one of them is yours now — just like I always have been.",
+    noMessage: "That's okay — thank you for being honest. The stars will keep shining for you, {name}. They always will.",
+    songEnabled: "yes",
+    songSrc: "song.mp3"
+  };
+}
+
+/* ============================================================
+   THEMES + COMBOS
+   ============================================================ */
+const THEMES = {
+  midnight:     { skyTop:"#0a0b1e", skyMid:"#151329", skyBottom:"#1d1430" },
+  midnightRose: { skyTop:"#150a1a", skyMid:"#22112a", skyBottom:"#3a1a30" },
+  moonlit:      { skyTop:"#0c1226", skyMid:"#1a2340", skyBottom:"#2a3454" },
+  dusk:         { skyTop:"#1a0f24", skyMid:"#3a1a35", skyBottom:"#6a2a40" },
+  aurora:       { skyTop:"#061220", skyMid:"#0a2438", skyBottom:"#0d3a42" },
+  void:         { skyTop:"#000", skyMid:"#050505", skyBottom:"#0a0a0a" }
+};
+
+const COMBOS = {
+  rose:   { glow:"#ffb7d5", starColor:"#fff" },
+  gold:   { glow:"#f2d59a", starColor:"#fff9e8" },
+  silver: { glow:"#d8e0f0", starColor:"#fff" },
+  violet: { glow:"#c9a8f0", starColor:"#f0e8ff" },
+  coral:  { glow:"#ffab9a", starColor:"#fff5f0" },
+  mint:   { glow:"#a8e8d8", starColor:"#f0fffa" }
+};
+
+/* Star positions — heart shape in % */
+const PUZZLE_STARS = [
+  { x: 50, y: 22 },
+  { x: 78, y: 38 },
+  { x: 68, y: 68 },
+  { x: 50, y: 88 },
+  { x: 32, y: 68 },
+  { x: 22, y: 38 }
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let CONFIG = defaults();
+let currentScene = 1;
+let typingTimer = null;
+let letterStarted = false;
+let puzzleOrder = [];
+let puzzleComplete = false;
+let songStarted = false;
+let answerLocked = false;
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function fillName(text) {
+  return String(text || "").replace(/\{name\}/g, CONFIG.recipientName);
+}
+function setText(id, v) {
+  const el = document.getElementById(id);
+  if (el && v != null) el.textContent = v;
+}
+
+/* ============================================================
+   APPLY THEME
+   ============================================================ */
+function applyTheme(cfg) {
+  const t = THEMES[cfg.themeStyle] || THEMES.midnight;
+  const c = COMBOS[cfg.colorCombo] || COMBOS.rose;
+  const root = document.documentElement.style;
+
+  root.setProperty("--sky-top", t.skyTop);
+  root.setProperty("--sky-mid", t.skyMid);
+  root.setProperty("--sky-bottom", t.skyBottom);
+  root.setProperty("--glow", c.glow);
+  root.setProperty("--star-color", c.starColor);
+
+  const hex = c.glow.replace("#", "");
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  root.setProperty("--glow-soft", `rgba(${r},${g},${b},.15)`);
+  root.setProperty("--glow-strong", `rgba(${r},${g},${b},.6)`);
+
+  document.body.style.background = `linear-gradient(180deg, ${t.skyTop}, ${t.skyMid} 50%, ${t.skyBottom})`;
+}
+
+/* ============================================================
+   STARFIELD
+   ============================================================ */
+function buildSky() {
+  const sky = document.getElementById("sky");
+  if (!sky) return;
+  sky.innerHTML = "";
+  for (let i = 0; i < 140; i++) {
+    const star = document.createElement("span");
+    star.className = "sky-star";
+    const size = Math.random() * 2.5 + 0.5;
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+    star.style.setProperty("--speed", (2 + Math.random() * 4) + "s");
+    star.style.animationDelay = Math.random() * 4 + "s";
+    sky.appendChild(star);
+  }
+}
+
+/* ============================================================
+   RENDER TEXT FROM CONFIG
+   ============================================================ */
+function render(cfg) {
+  CONFIG = cfg;
+  applyTheme(cfg);
+
+  setText("moon-line", cfg.welcomeLine);
+  setText("moon-hint", cfg.moonHint);
+
+  setText("seal-hint", cfg.sealHint);
+  setText("seal-caption", cfg.sealedEnvelopeCaption || "");
+
+  setText("letter-dear", "Dear " + cfg.recipientName + ",");
+  const sigEl = document.getElementById("letter-sig");
+  if (sigEl) {
+    sigEl.innerHTML = "With all my heart,<br>" + escapeHtml(cfg.senderName);
+    sigEl.classList.remove("visible");
+  }
+
+  setText("puzzle-title", cfg.puzzleTitle);
+  setText("puzzle-hint", cfg.puzzleHint);
+  setText("ring-caption", cfg.ringCaption);
+
+  setText("proposal-eyebrow", cfg.proposalEyebrow);
+  setText("proposal-question", cfg.proposalQuestion);
+  setText("proposal-body", cfg.proposalBody);
+  setText("yesBtn", cfg.yesButton);
+  setText("noBtn", cfg.noButton);
+
+  // Reset letter state
+  letterStarted = false;
+  if (typingTimer) clearTimeout(typingTimer);
+  const textEl = document.getElementById("letter-text");
+  if (textEl) textEl.textContent = "";
+  const contBtn = document.getElementById("letter-continue");
+  if (contBtn) contBtn.classList.remove("show");
+  const cursor = document.getElementById("pen-cursor");
+  if (cursor) cursor.classList.remove("visible");
+
+  // Reset answer state
+  answerLocked = false;
+  const btns = document.getElementById("answerButtons");
+  if (btns) btns.classList.remove("hidden");
+  const msg = document.getElementById("answer-message");
+  if (msg) { msg.textContent = ""; msg.classList.remove("show"); }
+}
+
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+/* ============================================================
+   SONG
+   ============================================================ */
+function setupSong(cfg) {
+  const audio = document.getElementById("bgSong");
+  const btn = document.getElementById("musicToggle");
+  if (!audio || !btn) return;
+
+  audio.innerHTML = "";
+  audio.pause();
+  audio.currentTime = 0;
+
+  if (cfg.songEnabled !== "yes" || !cfg.songSrc) {
+    btn.style.display = "none";
+    return;
+  }
+
+  const src = document.createElement("source");
+  src.src = cfg.songSrc;
+  src.type = "audio/mpeg";
+  audio.appendChild(src);
+  audio.load();
+
+  btn.style.display = "grid";
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    if (audio.paused) {
+      audio.play().then(() => btn.classList.add("playing")).catch(() => {});
+    } else {
+      audio.pause();
+      btn.classList.remove("playing");
+    }
+  };
+
+  if (!songStarted) {
+    document.body.addEventListener("click", () => {
+      if (!songStarted) {
+        songStarted = true;
+        audio.volume = 0.35;
+        audio.play().then(() => btn.classList.add("playing")).catch(() => {});
+      }
+    }, { once: true });
+  }
+}
+
+/* ============================================================
+   SCENE NAVIGATION
+   ============================================================ */
+function goToScene(n) {
+  // Scene IDs are descriptive (scene-moon, scene-seal, etc.),
+  // so map the step number to the correct element ID.
+  const sceneIds = {
+    1: "scene-moon",
+    2: "scene-seal",
+    3: "scene-letter",
+    4: "scene-puzzle",
+    5: "scene-ring",
+    6: "scene-question"
+  };
+
+  const targetId = sceneIds[n];
+  const target = targetId ? document.getElementById(targetId) : null;
+  if (!target) {
+    console.error("NIVA proposal: scene not found for step", n);
+    return;
+  }
+
+  document.querySelectorAll(".scene").forEach(scene => {
+    scene.classList.remove("active");
+  });
+  target.classList.add("active");
+  currentScene = n;
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (n === 3) startLetterTyping();
+  if (n === 4) buildPuzzle();
+  if (n === 5) playRingReveal();
+  if (n === 6) resetAnswer();
+}
+
+/* ============================================================
+   SCENE 1 → 2
+   ============================================================ */
+function onMoonClick() {
+  burstStars(8);
+  goToScene(2);
+}
+document.getElementById("moonWrap")?.addEventListener("click", onMoonClick);
+document.getElementById("moonWrap")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onMoonClick(); }
+});
+
+/* ============================================================
+   SCENE 2: BREAK SEAL
+   ============================================================ */
+function onSealClick() {
+  const wrap = document.getElementById("envelopeWrap");
+  if (!wrap || wrap.classList.contains("broken") || wrap.classList.contains("opening")) return;
+  wrap.classList.add("opening");
+  burstStars(10);
+  setTimeout(() => {
+    wrap.classList.add("broken");
+    burstStars(8);
+  }, 500);
+  setTimeout(() => goToScene(3), 1300);
+}
+document.getElementById("envelopeWrap")?.addEventListener("click", onSealClick);
+document.getElementById("envelopeWrap")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSealClick(); }
+});
+
+/* ============================================================
+   SCENE 3: HANDWRITING LETTER
+   ============================================================ */
+function startLetterTyping() {
+  if (letterStarted) return;
+  letterStarted = true;
+
+  const textEl = document.getElementById("letter-text");
+  const cursor = document.getElementById("pen-cursor");
+  const sigEl = document.getElementById("letter-sig");
+  const contBtn = document.getElementById("letter-continue");
+  if (!textEl || !cursor) return;
+
+  textEl.innerHTML = "";
+  cursor.classList.add("visible");
+  if (sigEl) sigEl.classList.remove("visible");
+  if (contBtn) contBtn.classList.remove("show");
+
+  const fullText = CONFIG.letterBody || "";
+  let i = 0;
+
+  function typeNext() {
+    if (i >= fullText.length) {
+      cursor.classList.remove("visible");
+      if (sigEl) sigEl.classList.add("visible");
+      if (contBtn) contBtn.classList.add("show");
+      return;
+    }
+
+    const ch = fullText[i];
+
+    // Handle newline: single <br> (not double)
+    if (ch === "\n") {
+      textEl.appendChild(document.createElement("br"));
+      i++;
+      typingTimer = setTimeout(typeNext, 320);
+      return;
+    }
+
+    textEl.appendChild(document.createTextNode(ch));
+    i++;
+
+    // Dramatic pauses at punctuation
+    let delay = 42;
+    if (ch === "." || ch === "!" || ch === "?") delay = 380;
+    else if (ch === ",") delay = 180;
+    else if (ch === ";") delay = 220;
+
+    typingTimer = setTimeout(typeNext, delay);
+  }
+
+  typeNext();
+}
+
+document.getElementById("letter-continue")?.addEventListener("click", () => goToScene(4));
+
+/* ============================================================
+   SCENE 4: STAR CONNECT PUZZLE
+   ============================================================ */
+function buildPuzzle() {
+  if (puzzleComplete) return;
+
+  const arena = document.getElementById("puzzleArena");
+  const svg = document.getElementById("puzzleSvg");
+  if (!arena || !svg) return;
+
+  arena.querySelectorAll(".puzzle-star").forEach(el => el.remove());
+  svg.innerHTML = "";
+
+  puzzleOrder = [];
+  puzzleComplete = false;
+
+  const statusEl = document.getElementById("puzzleStatus");
+  if (statusEl) statusEl.textContent = "";
+  const contBtn = document.getElementById("puzzle-continue");
+  if (contBtn) contBtn.classList.remove("show");
+  arena.classList.remove("complete");
+
+  PUZZLE_STARS.forEach((pos, i) => {
+    const star = document.createElement("button");
+    star.type = "button";
+    star.className = "puzzle-star";
+    if (i === 0) star.classList.add("next");
+    star.style.left = pos.x + "%";
+    star.style.top = pos.y + "%";
+    star.dataset.index = i;
+    star.setAttribute("aria-label", "Star " + (i + 1));
+
+    star.innerHTML = `
+      <div class="star-core"></div>
+      <div class="num">${i + 1}</div>
+    `;
+
+    star.addEventListener("click", () => onStarClick(i, star));
+    arena.appendChild(star);
+  });
+}
+
+function onStarClick(index, starEl) {
+  if (puzzleComplete) return;
+
+  const expectedIndex = puzzleOrder.length;
+
+  // Enforce strict order: must click the next expected number
+  if (index !== expectedIndex) {
+    starEl.classList.add("wrong");
+    setTimeout(() => starEl.classList.remove("wrong"), 400);
+
+    const statusEl = document.getElementById("puzzleStatus");
+    if (statusEl) {
+      statusEl.textContent = CONFIG.puzzleWrongHint || "Not that one — try the next star.";
+      statusEl.style.color = "#ff9e9e";
+      setTimeout(() => { statusEl.style.color = ""; }, 1500);
+    }
+    return;
+  }
+
+  starEl.classList.remove("next");
+  starEl.classList.add("connected");
+
+  if (puzzleOrder.length > 0) {
+    drawLine(puzzleOrder[puzzleOrder.length - 1], index);
+  }
+  puzzleOrder.push(index);
+
+  if (puzzleOrder.length < PUZZLE_STARS.length) {
+    const nextStar = document.querySelector(`.puzzle-star[data-index="${puzzleOrder.length}"]`);
+    if (nextStar) nextStar.classList.add("next");
+  }
+
+  if (puzzleOrder.length === PUZZLE_STARS.length) {
+    drawLine(index, 0); // close the heart loop
+    puzzleComplete = true;
+    onPuzzleComplete();
+  }
+}
+
+function drawLine(fromIdx, toIdx) {
+  const svg = document.getElementById("puzzleSvg");
+  if (!svg) return;
+
+  const from = PUZZLE_STARS[fromIdx];
+  const to = PUZZLE_STARS[toIdx];
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", from.x);
+  line.setAttribute("y1", from.y);
+  line.setAttribute("x2", to.x);
+  line.setAttribute("y2", to.y);
+  line.setAttribute("class", "puzzle-line");
+  line.setAttribute("vector-effect", "non-scaling-stroke");
+
+  svg.appendChild(line);
+}
+
+function onPuzzleComplete() {
+  const arena = document.getElementById("puzzleArena");
+  const statusEl = document.getElementById("puzzleStatus");
+  const contBtn = document.getElementById("puzzle-continue");
+
+  if (arena) arena.classList.add("complete");
+  if (statusEl) statusEl.textContent = CONFIG.puzzleSuccessHint || "You drew us — a heart in the sky.";
+
+  burstStars(20);
+
+  setTimeout(() => {
+    if (contBtn) contBtn.classList.add("show");
+  }, 800);
+}
+
+document.getElementById("puzzle-continue")?.addEventListener("click", () => goToScene(5));
+
+/* ============================================================
+   SCENE 5: RING REVEAL
+   ============================================================ */
+function playRingReveal() {
+  const container = document.getElementById("ringConstellation");
+  const ring = document.getElementById("ringReveal");
+  const caption = document.getElementById("ring-caption");
+  const contBtn = document.getElementById("ring-continue");
+  if (!container || !ring || !caption) return;
+
+  container.classList.remove("fade");
+  container.innerHTML = "";
+  ring.classList.remove("show");
+  caption.classList.remove("show");
+  if (contBtn) contBtn.classList.remove("show");
+
+  PUZZLE_STARS.forEach(pos => {
+    const s = document.createElement("div");
+    s.className = "mini-star";
+    s.style.left = pos.x + "%";
+    s.style.top = pos.y + "%";
+    container.appendChild(s);
+  });
+
+  setTimeout(() => {
+    container.classList.add("fade");
+    setTimeout(() => {
+      ring.classList.add("show");
+      setTimeout(() => {
+        caption.classList.add("show");
+        if (contBtn) contBtn.classList.add("show");
+      }, 900);
+    }, 900);
+  }, 1200);
+}
+
+document.getElementById("ring-continue")?.addEventListener("click", () => goToScene(6));
+
+/* ============================================================
+   SCENE 6: ANSWER
+   ============================================================ */
+function resetAnswer() {
+  answerLocked = false;
+  const msg = document.getElementById("answer-message");
+  if (msg) { msg.textContent = ""; msg.classList.remove("show"); }
+  const btns = document.getElementById("answerButtons");
+  if (btns) btns.classList.remove("hidden");
+}
+
+document.getElementById("yesBtn")?.addEventListener("click", () => {
+  if (answerLocked) return;
+  answerLocked = true;
+
+  const msg = document.getElementById("answer-message");
+  if (msg) {
+    msg.textContent = fillName(CONFIG.yesMessage);
+    msg.classList.add("show");
+  }
+  burstHearts(40);
+  setTimeout(() => burstStars(30), 400);
+
+  setTimeout(() => {
+    const btns = document.getElementById("answerButtons");
+    if (btns) btns.classList.add("hidden");
+  }, 600);
+});
+
+document.getElementById("noBtn")?.addEventListener("click", () => {
+  if (answerLocked) return;
+  answerLocked = true;
+
+  const msg = document.getElementById("answer-message");
+  if (msg) {
+    msg.textContent = fillName(CONFIG.noMessage);
+    msg.classList.add("show");
+  }
+  const btns = document.getElementById("answerButtons");
+  if (btns) btns.classList.add("hidden");
+});
+
+document.getElementById("replayBtn")?.addEventListener("click", () => {
+  letterStarted = false;
+  if (typingTimer) clearTimeout(typingTimer);
+  puzzleComplete = false;
+  puzzleOrder = [];
+  answerLocked = false;
+
+  const wrap = document.getElementById("envelopeWrap");
+  if (wrap) { wrap.classList.remove("broken"); wrap.classList.remove("opening"); }
+
+  const arena = document.getElementById("puzzleArena");
+  if (arena) arena.classList.remove("complete");
+  const svg = document.getElementById("puzzleSvg");
+  if (svg) svg.innerHTML = "";
+  const contBtn = document.getElementById("puzzle-continue");
+  if (contBtn) contBtn.classList.remove("show");
+
+  const ring = document.getElementById("ringReveal");
+  if (ring) ring.classList.remove("show");
+  const caption = document.getElementById("ring-caption");
+  if (caption) caption.classList.remove("show");
+  const ringCont = document.getElementById("ring-continue");
+  if (ringCont) ringCont.classList.remove("show");
+
+  resetAnswer();
+  goToScene(1);
+});
+
+/* ============================================================
+   EFFECTS
+   ============================================================ */
+function burstStars(count = 10) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const symbols = ["✨", "⭐", "🌟", "💫", "✦"];
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement("div");
+      el.className = "confetti";
+      el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      el.style.left = Math.random() * 100 + "vw";
+      el.style.top = "-20px";
+      el.style.fontSize = (14 + Math.random() * 20) + "px";
+      el.style.animationDuration = (2.5 + Math.random() * 2) + "s";
+      el.style.color = "var(--glow)";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 6000);
+    }, i * 80);
+  }
+}
+
+function burstHearts(count = 20) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const symbols = ["💖", "💕", "💗", "❤️", "💝"];
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement("div");
+      el.className = "confetti";
+      el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      el.style.left = Math.random() * 100 + "vw";
+      el.style.top = "-20px";
+      el.style.fontSize = (16 + Math.random() * 22) + "px";
+      el.style.animationDuration = (2.8 + Math.random() * 2.5) + "s";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 6000);
+    }, i * 60);
+  }
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function boot() {
+  buildSky();
+  render(defaults());
+  setupSong(defaults());
+
+  fetch("config.json", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : null)
+    .then(json => {
+      if (!json) return;
+      const merged = { ...defaults(), ...json };
+      render(merged);
+      setupSong(merged);
+    })
+    .catch(() => {});
+
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin) return;
+    const msg = event.data || {};
+    if (msg.type === "NIVA_PREVIEW_UPDATE" && msg.data) {
+      const merged = { ...defaults(), ...msg.data };
+      render(merged);
+      setupSong(merged);
+    }
+    if (msg.type === "NIVA_PREVIEW_PING") {
+      try { window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin); } catch {}
+    }
+  });
+
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin);
+    }
+  } catch {}
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot, { once: true });
+} else {
+  boot();
+}
+</script>
+</body>
+</html>

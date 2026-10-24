@@ -1,0 +1,231 @@
+{
+  "id": "constellation-proposal",
+  "name": "Constellation of Us",
+  "category": "love",
+  "description": "A cinematic proposal in the stars — moonrise, wax-sealed letter, handwriting animation, connect-the-stars heart puzzle, ring reveal, and an emotional runaway-No proposal finale.",
+  "templatePath": "/templates/love/constellation-proposal/template.html",
+  "thumbnail": "/templates/love/constellation-proposal/thumb.jpg",
+
+  "templateLimits": {
+    "photoSlots": 0
+  },
+
+  "sections": [
+    {
+      "title": "The Couple",
+      "subtitle": "Who is this for?",
+      "fields": ["recipientName", "senderName"]
+    },
+    {
+      "title": "Theme & Mood",
+      "subtitle": "Choose the sky",
+      "fields": ["themeStyle", "colorCombo"]
+    },
+    {
+      "title": "Scene 1 — Moonrise",
+      "subtitle": "The opening",
+      "fields": ["welcomeLine", "moonHint"]
+    },
+    {
+      "title": "Scene 2 — Wax Seal",
+      "subtitle": "The sealed letter",
+      "fields": ["sealHint", "sealedEnvelopeCaption"]
+    },
+    {
+      "title": "Scene 3 — The Letter",
+      "subtitle": "Handwritten, word by word",
+      "fields": ["letterBody"]
+    },
+    {
+      "title": "Scene 4 — Star Puzzle",
+      "subtitle": "Connect the stars",
+      "fields": ["puzzleTitle", "puzzleHint", "puzzleWrongHint", "puzzleSuccessHint"]
+    },
+    {
+      "title": "Scene 5 — Ring Reveal",
+      "subtitle": "The constellation becomes a ring",
+      "fields": ["ringCaption"]
+    },
+    {
+      "title": "Scene 6 — The Question",
+      "subtitle": "The final ask",
+      "fields": ["proposalEyebrow", "proposalQuestion", "proposalBody", "yesButton", "noButton", "yesMessage"]
+    },
+    {
+      "title": "Not Yet — Emotional Letter",
+      "subtitle": "Shown if she keeps trying to say no",
+      "fields": ["runawayMaxAttempts", "emotionalLetterTitle", "emotionalLetterBody", "emotionalLetterSignoff"]
+    },
+    {
+      "title": "Song",
+      "subtitle": "Background music",
+      "fields": ["songEnabled", "songSrc"]
+    }
+  ],
+
+  "customization": {
+    "recipientName": {
+      "type": "text", "label": "Their name",
+      "placeholder": "e.g. Diya", "default": "Diya",
+      "required": true, "maxLength": 30
+    },
+    "senderName": {
+      "type": "text", "label": "Your name",
+      "placeholder": "e.g. Aarav", "default": "Aarav",
+      "required": true, "maxLength": 30
+    },
+
+    "themeStyle": {
+      "type": "select", "label": "Sky mood", "default": "midnight",
+      "options": [
+        { "value": "midnight",     "label": "🌌 Midnight — deep indigo" },
+        { "value": "midnightRose", "label": "🌹 Midnight Rose — indigo + rose" },
+        { "value": "moonlit",      "label": "🌙 Moonlit — silver-blue" },
+        { "value": "dusk",         "label": "🌆 Dusk — twilight" },
+        { "value": "aurora",       "label": "🌠 Aurora — green-teal" },
+        { "value": "void",         "label": "⚫ Void — pure black" }
+      ]
+    },
+    "colorCombo": {
+      "type": "select", "label": "Star accent", "default": "rose",
+      "options": [
+        { "value": "rose",   "label": "Rose — pink" },
+        { "value": "gold",   "label": "Gold — champagne" },
+        { "value": "silver", "label": "Silver — cool white" },
+        { "value": "violet", "label": "Violet — purple" },
+        { "value": "coral",  "label": "Coral — warm coral" },
+        { "value": "mint",   "label": "Mint — pale teal" }
+      ]
+    },
+
+    "welcomeLine": {
+      "type": "text", "label": "Opening line",
+      "placeholder": "Some things are written in the stars.",
+      "default": "Some things are written in the stars.", "maxLength": 80
+    },
+    "moonHint": {
+      "type": "text", "label": "Moon hint",
+      "placeholder": "Tap the moon when you're ready",
+      "default": "Tap the moon when you're ready", "maxLength": 60
+    },
+
+    "sealHint": {
+      "type": "text", "label": "Seal hint",
+      "placeholder": "Break the seal to open",
+      "default": "Break the seal to open", "maxLength": 60
+    },
+    "sealedEnvelopeCaption": {
+      "type": "text", "label": "Envelope caption",
+      "placeholder": "A letter, sealed just for you",
+      "default": "A letter, sealed just for you", "maxLength": 80
+    },
+
+    "letterBody": {
+      "type": "textarea", "label": "Letter body",
+      "placeholder": "Write from the heart…",
+      "default": "I've been trying to find the right words for a while now. Not the kind of words you say in passing, but the kind you mean with your whole heart.\n\nSomewhere between the first hello and every moment since, you became my favourite person. The one I think of first. The one I want to tell everything to. The one I hope I get to keep choosing, again and again.\n\nSo tonight, under this sky, I'm asking you something I've been carrying for a long time.",
+      "required": true, "maxLength": 2000
+    },
+
+    "puzzleTitle": {
+      "type": "text", "label": "Puzzle title",
+      "placeholder": "Draw our constellation",
+      "default": "Draw our constellation", "maxLength": 60
+    },
+    "puzzleHint": {
+      "type": "text", "label": "Puzzle hint",
+      "placeholder": "Connect the stars in order — 1 through 6",
+      "default": "Connect the stars in order — 1 through 6", "maxLength": 100
+    },
+    "puzzleWrongHint": {
+      "type": "text", "label": "Wrong line hint",
+      "placeholder": "Not that one — try the next star",
+      "default": "Not that one — try the next star.", "maxLength": 80
+    },
+    "puzzleSuccessHint": {
+      "type": "text", "label": "Success message",
+      "placeholder": "You drew us — a heart in the sky",
+      "default": "You drew us — a heart in the sky.", "maxLength": 80
+    },
+
+    "ringCaption": {
+      "type": "text", "label": "Ring reveal caption",
+      "placeholder": "The stars have become something more.",
+      "default": "The stars have become something more.", "maxLength": 80
+    },
+
+    "proposalEyebrow": {
+      "type": "text", "label": "Proposal label",
+      "placeholder": "The moment I've been waiting for",
+      "default": "The moment I've been waiting for", "maxLength": 60
+    },
+    "proposalQuestion": {
+      "type": "text", "label": "The question",
+      "placeholder": "Will you be mine, forever?",
+      "default": "Will you be mine, forever?",
+      "required": true, "maxLength": 100
+    },
+    "proposalBody": {
+      "type": "textarea", "label": "Proposal body",
+      "placeholder": "Every day with you…",
+      "default": "Every day with you feels like the universe arranged itself just so. I don't want to imagine a life that doesn't have you in it. So — with my whole heart — will you be mine?",
+      "maxLength": 400
+    },
+    "yesButton": {
+      "type": "text", "label": "Yes button",
+      "placeholder": "Yes — always 💫",
+      "default": "Yes — always 💫", "maxLength": 40
+    },
+    "noButton": {
+      "type": "text", "label": "Not Yet button (runs away)",
+      "placeholder": "Not yet 🌙",
+      "default": "Not yet 🌙", "maxLength": 40
+    },
+    "yesMessage": {
+      "type": "textarea", "label": "Message on Yes",
+      "placeholder": "You just lit up every star…",
+      "default": "You just lit up every star in the sky, {name}. Every one of them is yours now — just like I always have been.",
+      "maxLength": 300,
+      "help": "Use {name} to insert the recipient's name."
+    },
+
+    "runawayMaxAttempts": {
+      "type": "text", "label": "Attempts before emotional letter",
+      "placeholder": "5",
+      "default": "5",
+      "maxLength": 2,
+      "help": "How many times she can chase the button before the emotional letter appears."
+    },
+    "emotionalLetterTitle": {
+      "type": "text", "label": "Emotional letter title",
+      "placeholder": "Wait — read this first.",
+      "default": "Wait — read this first.",
+      "maxLength": 60
+    },
+    "emotionalLetterBody": {
+      "type": "textarea", "label": "Emotional letter body",
+      "placeholder": "You don't have to answer right now…",
+      "default": "You don't have to answer right now. I know that's not what you expected, and I know this isn't a small question.\n\nI'm not asking you to decide in this moment. I'm not asking you to say yes just because I made something beautiful. That's not what love is — and that's not what I want from you.\n\nWhat I want is for you to feel safe. To feel free. To know that whatever you choose, I'll respect it with my whole heart.\n\nIf the answer is yes, I'll be the luckiest person alive. If it's not yet — or never — I'll still be grateful I got to know you, and I'll still wish you every good thing the universe has to offer.\n\nYou matter to me. More than any answer ever could.",
+      "maxLength": 1500
+    },
+    "emotionalLetterSignoff": {
+      "type": "text", "label": "Signoff line",
+      "placeholder": "With all my heart — {senderName}",
+      "default": "With all my heart — {senderName}",
+      "maxLength": 60,
+      "help": "Use {senderName} to insert the sender's name."
+    },
+
+    "songEnabled": {
+      "type": "select", "label": "Enable song?", "default": "yes",
+      "options": [
+        { "value": "yes", "label": "Yes — play music" },
+        { "value": "no",  "label": "No — silent experience" }
+      ]
+    },
+    "songSrc": {
+      "type": "text", "label": "Song file name",
+      "placeholder": "song.mp3", "default": "song.mp3", "maxLength": 100
+    }
+  }
+}

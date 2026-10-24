@@ -1,3 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Will You Go Out With Me?</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="googleFontsLink" rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap">
+
+<style>
+:root {
+  --bg: #fff5f7;
+  --bg-alt: #ffe9ee;
+  --bg-rose: #ffe0e8;
+  --bg-card: #fffafb;
+
+  --rose: #e75a7c;
+  --rose-dark: #a83258;
+  --rose-light: #f7b2c1;
+  --rose-soft: #fde7ee;
+
+  --gold: #d4a456;
+  --ink: #4a2b3a;
+  --muted: #9b7b88;
+  --line: #f2d8df;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-script: 'Caveat', cursive;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+button { font: inherit; cursor: pointer; touch-action: manipulation; border: 0; background: none; color: inherit; }
+img { max-width: 100%; display: block; }
+
+/* ==================== PAGE SYSTEM ==================== */
+.page {
+  display: none;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 60px 20px;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  position: relative;
+  overflow-x: hidden;
+}
+.page.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: pageIn .9s ease both;
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(20px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.inner {
+  width: min(100%, 780px);
+  margin: auto;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* ==================== FLOATING HEARTS BG ==================== */
+.bg-hearts {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.bg-hearts span {
+  position: absolute;
+  bottom: -40px;
+  color: var(--rose);
+  opacity: 0;
+  font-size: 22px;
+  animation: floatHeart linear infinite;
+  user-select: none;
+}
+@keyframes floatHeart {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.5; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+}
+
+/* ==================== BUTTONS ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 32px;
+  min-height: 52px;
+  background: var(--rose);
+  color: #fff;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: 0 10px 26px rgba(231, 90, 124, 0.35);
+  transition: .3s ease;
+  margin-top: 24px;
+}
+.btn:hover {
+  background: var(--rose-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(231, 90, 124, 0.45);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--rose-dark);
+  border: 1.5px solid var(--rose);
+  box-shadow: none;
+}
+.btn.ghost:hover { background: var(--rose); color: #fff; }
+
+/* ==================== PAGE 1 — INVITATION ==================== */
+#page1 {
+  background:
+    radial-gradient(circle at 15% 20%, var(--rose-soft) 0, transparent 45%),
+    radial-gradient(circle at 85% 80%, var(--bg-alt) 0, transparent 50%),
+    var(--bg);
+  text-align: center;
+}
+.ask-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--rose-light), var(--rose));
+  border: 3px solid #fff;
+  margin: 0 auto 28px;
+  display: grid;
+  place-items: center;
+  font-size: 42px;
+  box-shadow: 0 12px 30px rgba(231, 90, 124, 0.3);
+  animation: heartbeat 2.4s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.1); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.07); }
+}
+
+.ask-eyebrow {
+  font-size: 12px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--rose-dark);
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+.ask-question {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(32px, 7vw, 52px);
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+.ask-question em {
+  color: var(--rose-dark);
+  font-style: italic;
+}
+.ask-subtitle {
+  max-width: 520px;
+  margin: 0 auto 44px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.ask-buttons {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  min-height: 70px;
+}
+
+.yes-btn {
+  padding: 18px 44px;
+  font-size: 16px;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), background .3s ease;
+}
+.yes-btn.pulse {
+  animation: yesPulse 1.2s ease-in-out infinite;
+}
+@keyframes yesPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.no-btn {
+  padding: 15px 30px;
+  background: transparent;
+  color: var(--muted);
+  border: 1.5px solid var(--line);
+  border-radius: 50px;
+  min-height: 52px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: .2s ease;
+  position: relative;
+}
+
+/* ==================== PAGE 2 — LETTER ==================== */
+#page2 {
+  background: linear-gradient(180deg, var(--bg), var(--bg-alt));
+  justify-content: flex-start;
+  padding-top: 70px;
+}
+
+.letter {
+  width: min(100%, 640px);
+  margin: 0 auto 40px;
+  padding: clamp(30px, 6vw, 60px);
+  background:
+    repeating-linear-gradient(transparent 0 32px, rgba(180, 130, 150, 0.08) 33px),
+    var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 24px 65px rgba(180, 100, 130, 0.15);
+  transform: rotate(-0.5deg);
+  text-align: left;
+  position: relative;
+}
+.letter::before {
+  content: "✿";
+  position: absolute;
+  top: 16px;
+  right: 22px;
+  font-size: 26px;
+  color: var(--rose);
+  opacity: 0.7;
+}
+.letter-title {
+  font-family: var(--font-script);
+  font-size: clamp(34px, 6vw, 46px);
+  color: var(--rose-dark);
+  text-align: center;
+  margin-bottom: 26px;
+}
+.letter h3 {
+  font-family: var(--font-script);
+  font-size: clamp(24px, 5vw, 32px);
+  color: var(--rose-dark);
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.letter p {
+  font-family: var(--font-script);
+  font-size: clamp(20px, 4.4vw, 25px);
+  line-height: 1.8;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+.letter .sig {
+  text-align: right;
+  color: var(--rose-dark);
+  margin-top: 12px;
+  font-size: clamp(22px, 5vw, 28px);
+  font-family: var(--font-script);
+}
+.letter .sig small {
+  display: block;
+  font-size: 1.05em;
+}
+
+/* ==================== PAGE 3 — DATE & TIME ==================== */
+#page3 {
+  background:
+    radial-gradient(circle at 50% 0%, var(--rose-soft) 0, transparent 55%),
+    var(--bg);
+}
+
+.when-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(30px, 6vw, 48px);
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.when-subtitle {
+  max-width: 500px;
+  margin: 0 auto 32px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.datetime-card {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 44px);
+  background: var(--bg-card);
+  border: 1.5px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(180, 100, 130, 0.12);
+}
+.dt-field {
+  margin-bottom: 22px;
+  text-align: left;
+}
+.dt-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--rose-dark);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.dt-input {
+  width: 100%;
+  padding: 15px 18px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--bg);
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.dt-input:focus {
+  outline: none;
+  border-color: var(--rose);
+  box-shadow: 0 0 0 4px rgba(231, 90, 124, 0.12);
+}
+.dt-hint {
+  margin-top: 18px;
+  font-family: var(--font-script);
+  font-size: 20px;
+  color: var(--rose-dark);
+  text-align: center;
+}
+
+/* ==================== PAGE 4 — GAME ==================== */
+#page4 {
+  background: linear-gradient(180deg, var(--bg-alt), var(--bg-rose));
+}
+
+.game-head { margin-bottom: 22px; }
+.game-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(30px, 6vw, 46px);
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.15;
+}
+.game-subtitle {
+  max-width: 460px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.game-hud {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 20px auto;
+  max-width: 400px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.game-hud strong {
+  color: var(--rose-dark);
+  font-size: 20px;
+  font-family: var(--font-display);
+  margin-left: 4px;
+}
+
+.game-arena {
+  position: relative;
+  width: min(100%, 480px);
+  height: clamp(340px, 58vh, 500px);
+  margin: 0 auto;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.8), transparent 60%),
+    linear-gradient(180deg, var(--rose-soft), var(--bg-alt));
+  border-radius: 24px;
+  border: 2px solid var(--line);
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(180, 100, 130, 0.15), inset 0 0 40px rgba(180, 100, 130, 0.06);
+  touch-action: manipulation;
+}
+
+.game-start-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(255, 250, 251, 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 5;
+  text-align: center;
+}
+
+.falling-heart {
+  position: absolute;
+  font-size: 34px;
+  cursor: pointer;
+  user-select: none;
+  filter: drop-shadow(0 4px 8px rgba(231, 90, 124, 0.35));
+  animation: heartPop .25s ease both;
+  transition: transform .1s;
+  will-change: top;
+  /* ✅ Bigger touch target on mobile */
+  padding: 6px;
+  line-height: 1;
+  touch-action: manipulation;
+}
+.falling-heart:active { transform: scale(0.85); }
+@keyframes heartPop {
+  from { transform: scale(0.2); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.falling-heart.caught {
+  animation: caught .5s ease forwards;
+  pointer-events: none;
+}
+@keyframes caught {
+  0% { transform: scale(1); opacity: 1; }
+  60% { transform: scale(1.6) translateY(-20px); opacity: 0.9; }
+  100% { transform: scale(0.3) translateY(-40px); opacity: 0; }
+}
+
+.game-status {
+  min-height: 30px;
+  margin-top: 20px;
+  font-family: var(--font-script);
+  font-size: 22px;
+  color: var(--rose-dark);
+  text-align: center;
+}
+
+/* ==================== PAGE 5 — CONFIRMATION ==================== */
+#page5 {
+  background:
+    radial-gradient(circle at 50% 100%, var(--rose-light) 0, transparent 60%),
+    radial-gradient(circle at 50% 0%, var(--rose-soft) 0, transparent 55%),
+    var(--bg);
+}
+
+.confirm-badge {
+  display: inline-block;
+  padding: 8px 22px;
+  background: var(--rose);
+  color: #fff;
+  border-radius: 50px;
+  font-size: 12px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(231, 90, 124, 0.35);
+}
+
+.confirm-icon {
+  font-size: clamp(72px, 16vw, 104px);
+  display: block;
+  margin-bottom: 12px;
+  animation: heartbeat 2s infinite;
+}
+
+.confirm-title {
+  font-family: var(--font-script);
+  font-size: clamp(52px, 11vw, 88px);
+  color: var(--rose-dark);
+  line-height: 1.05;
+  margin-bottom: 22px;
+}
+.confirm-body {
+  max-width: 500px;
+  margin: 0 auto 24px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.confirm-details {
+  max-width: 460px;
+  margin: 0 auto 24px;
+  padding: 28px 24px;
+  background: var(--bg-card);
+  border: 1.5px dashed var(--rose);
+  border-radius: 20px;
+  text-align: left;
+}
+.confirm-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.confirm-detail:last-child { border-bottom: none; }
+.confirm-detail-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+.confirm-detail-label {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--rose-dark);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.confirm-detail-value {
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.confirm-footer {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--rose-dark);
+  margin-top: 20px;
+}
+
+/* ==================== MUSIC CONTROL ==================== */
+.music-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1.5px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 8px 20px rgba(180, 100, 130, 0.2);
+  z-index: 100;
+  cursor: pointer;
+  transition: .2s ease;
+}
+.music-btn:hover { transform: scale(1.08); }
+.music-btn.playing { animation: spin 3s linear infinite; }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== CONFETTI ==================== */
+.confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 300;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 600px) {
+  .page { padding: 40px 16px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+  #page2 { padding-top: 50px; }
+  .letter { transform: none; padding: 28px 22px; }
+  .ask-buttons { flex-direction: column; gap: 16px; }
+  .yes-btn, .no-btn { width: 100%; max-width: 320px; }
+  .confirm-details { padding: 20px 18px; }
+
+  /* ✅ Bigger hearts on mobile for easier tapping */
+  .falling-heart { font-size: 40px; padding: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .bg-hearts { display: none; }
+  .yes-btn.pulse { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND FLOATING HEARTS -->
+<div class="bg-hearts" id="bgHearts" aria-hidden="true"></div>
+
+<!-- AUDIO -->
+<audio id="music" loop preload="none"></audio>
+
+<!-- MUSIC CONTROL -->
+<button class="music-btn" id="musicBtn" type="button" aria-label="Toggle music" title="Music">♪</button>
+
+<!-- ==================== PAGE 1 — INVITATION ==================== -->
+<section class="page active" id="page1">
+  <div class="inner">
+    <div class="ask-avatar">💌</div>
+    <p class="ask-eyebrow" id="askEyebrow"></p>
+    <h1 class="ask-question" id="askQuestion"></h1>
+    <p class="ask-subtitle" id="askSubtitle"></p>
+
+    <div class="ask-buttons">
+      <button class="btn yes-btn pulse" id="yesBtn" type="button" onclick="sayYes()">
+        <span id="yesBtnText"></span>
+      </button>
+      <button class="no-btn" id="noBtn" type="button" onmouseenter="runAway(this)" onclick="runAway(this)" ontouchstart="runAway(this)">
+        <span id="noBtnText"></span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== PAGE 2 — LETTER ==================== -->
+<section class="page" id="page2">
+  <div class="inner">
+    <div class="letter">
+      <div class="letter-title" id="letterTitle"></div>
+      <h3 id="letterGreeting"></h3>
+      <div id="letterParagraphs"></div>
+      <p class="sig">
+        <span id="letterSignature"></span>
+        <small id="letterSignatureName"></small>
+      </p>
+    </div>
+    <button class="btn" type="button" onclick="goTo(3)">
+      Okay, I'm listening →
+    </button>
+  </div>
+</section>
+
+<!-- ==================== PAGE 3 — DATE & TIME ==================== -->
+<section class="page" id="page3">
+  <div class="inner">
+    <p class="ask-eyebrow">The Details</p>
+    <h2 class="when-title" id="whenTitle"></h2>
+    <p class="when-subtitle" id="whenSubtitle"></p>
+
+    <div class="datetime-card">
+      <div class="dt-field">
+        <label class="dt-label" for="dateInput">Pick a day</label>
+        <input class="dt-input" id="dateInput" type="date" aria-label="Pick a date">
+      </div>
+      <div class="dt-field">
+        <label class="dt-label" for="timeInput">Pick a time</label>
+        <input class="dt-input" id="timeInput" type="time" aria-label="Pick a time">
+      </div>
+      <p class="dt-hint" id="whenHint"></p>
+    </div>
+
+    <button class="btn" type="button" onclick="confirmDateTime()">
+      Lock it in ♥
+    </button>
+  </div>
+</section>
+
+<!-- ==================== PAGE 4 — GAME ==================== -->
+<section class="page" id="page4">
+  <div class="inner">
+    <div class="game-head">
+      <p class="ask-eyebrow">One more thing</p>
+      <h2 class="game-title" id="gameTitle"></h2>
+      <p class="game-subtitle" id="gameSubtitle"></p>
+    </div>
+
+    <div class="game-hud">
+      <div>Hearts <strong id="scoreValue">0</strong>/<span id="targetValue">10</span></div>
+      <div>Time <strong id="timeValue">30</strong>s</div>
+    </div>
+
+    <div class="game-arena" id="gameArena">
+      <div class="game-start-overlay" id="gameStartOverlay">
+        <p style="font-family:var(--font-script);font-size:24px;color:var(--rose-dark);" id="gameStartText"></p>
+        <button class="btn" type="button" id="gameStartBtn" onclick="startGame()"></button>
+      </div>
+    </div>
+
+    <p class="game-status" id="gameStatus"></p>
+
+    <div id="gameAfter" style="display:none;width:100%">
+      <button class="btn" type="button" onclick="goTo(5)">
+        See your answer ♥
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== PAGE 5 — CONFIRMATION ==================== -->
+<section class="page" id="page5">
+  <div class="inner">
+    <span class="confirm-badge" id="confirmEyebrow"></span>
+    <span class="confirm-icon">💗</span>
+    <h2 class="confirm-title" id="finalTitle"></h2>
+    <p class="confirm-body" id="finalBody"></p>
+
+    <div class="confirm-details">
+      <div class="confirm-detail">
+        <div class="confirm-detail-icon">📅</div>
+        <div>
+          <div class="confirm-detail-label">Date</div>
+          <div class="confirm-detail-value" id="confirmDate">—</div>
+        </div>
+      </div>
+      <div class="confirm-detail">
+        <div class="confirm-detail-icon">⏰</div>
+        <div>
+          <div class="confirm-detail-label">Time</div>
+          <div class="confirm-detail-value" id="confirmTime">—</div>
+        </div>
+      </div>
+      <div class="confirm-detail" id="venueRow">
+        <div class="confirm-detail-icon">📍</div>
+        <div>
+          <div class="confirm-detail-label">Where</div>
+          <div class="confirm-detail-value" id="confirmVenue">—</div>
+        </div>
+      </div>
+      <div class="confirm-detail">
+        <div class="confirm-detail-icon">💌</div>
+        <div>
+          <div class="confirm-detail-label">From</div>
+          <div class="confirm-detail-value" id="confirmFrom">—</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="confirm-footer" id="finalFooter"></p>
+
+    <button class="btn ghost" type="button" onclick="restartAll()">
+      <span id="finalBtnText"></span>
+    </button>
+  </div>
+</section>
+
 <script>
 "use strict";
 
@@ -6,7 +778,18 @@
    ============================================================ */
 let CONFIG = null;
 let currentPage = 1;
-let gameState = { active: false, score: 0, timeLeft: 30, target: 10, spawnTimer: null, tickTimer: null };
+let gameState = {
+  active: false,
+  score: 0,
+  timeLeft: 30,
+  target: 10,
+  spawnTimer: null,
+  tickTimer: null,
+  spawnInterval: 420,
+  activeHearts: 0,
+  maxActiveHearts: 7,
+  consecutiveMissed: 0,
+};
 let selectedDate = "";
 let selectedTime = "";
 let musicStarted = false;
@@ -44,7 +827,7 @@ function defaults() {
     finalFooter: "With all my heart ♥",
     finalButton: "Ask me again ↻",
     songEnabled: "yes",
-    songSrc: ""          // ✅ uploaded song URL (set by editor)
+    songSrc: ""            // no default — user must upload
   };
 }
 
@@ -55,26 +838,21 @@ function setText(id, v) {
   const el = document.getElementById(id);
   if (el && v != null) el.textContent = v;
 }
-function safeText(v) { return String(v ?? ""); }
 
 /* ============================================================
    ✅ LOAD USER CUSTOMIZATION FROM THE GIFT LINK
-   Priority order:
+   Priority:
      1. window.__NIVA_GIFT__ (injected by unlock page)
-     2. ?config=<base64-json>     (fallback share format)
-     3. ?data=<base64-json>       (alternate)
-     4. /api/gifts/<id>/config    (fetch by gift id)
-     5. config.json               (template defaults)
+     2. ?config=<base64-json>
+     3. ?data=<base64-json>
+     4. ?g=<id> → /api/gifts/<id>/config
+     5. config.json (template defaults)
    ============================================================ */
 async function loadUserConfig() {
-  // 1. Injected by unlock page (most secure / most common)
   if (window.__NIVA_GIFT__ && typeof window.__NIVA_GIFT__ === "object") {
     return window.__NIVA_GIFT__;
   }
-
   const params = new URLSearchParams(location.search);
-
-  // 2. Base64 config param
   for (const key of ["config", "data", "c"]) {
     const raw = params.get(key);
     if (raw) {
@@ -84,8 +862,6 @@ async function loadUserConfig() {
       } catch {}
     }
   }
-
-  // 3. Gift id → fetch from API
   const giftId = params.get("g") || params.get("gift") || params.get("id");
   if (giftId) {
     try {
@@ -99,8 +875,6 @@ async function loadUserConfig() {
       }
     } catch {}
   }
-
-  // 4. Fall back to static config.json (template defaults)
   try {
     const res = await fetch("config.json", { cache: "no-store" });
     if (res.ok) {
@@ -108,7 +882,6 @@ async function loadUserConfig() {
       if (json) return json;
     }
   } catch {}
-
   return null;
 }
 
@@ -128,7 +901,7 @@ function render(cfg) {
   setText("letterSignatureName", cfg.letterSignatureName);
   const lp = document.getElementById("letterParagraphs");
   lp.innerHTML = "";
-  safeText(cfg.letterBody).split(/\n\s*\n/).forEach(t => {
+  String(cfg.letterBody || "").split(/\n\s*\n/).forEach(t => {
     if (!t.trim()) return;
     const p = document.createElement("p");
     p.textContent = t;
@@ -188,27 +961,23 @@ function buildBgHearts() {
 }
 
 /* ============================================================
-   MUSIC — supports uploaded URL from songSrc
+   MUSIC — plays uploaded song from songSrc
    ============================================================ */
 function setupMusic(cfg) {
   const music = document.getElementById("music");
   const btn = document.getElementById("musicBtn");
   if (!music || !btn) return;
 
-  // ✅ Use uploaded song URL (cfg.songSrc). Hide if disabled or missing.
   const src = (cfg.songEnabled === "yes" && cfg.songSrc) ? String(cfg.songSrc) : "";
-
   if (!src) {
     btn.style.display = "none";
     music.removeAttribute("src");
     music.innerHTML = "";
     return;
   }
-
   btn.style.display = "";
   music.innerHTML = "";
 
-  // Detect type from extension (fallback: audio/mpeg)
   let type = "audio/mpeg";
   if (/\.m4a$/i.test(src)) type = "audio/mp4";
   else if (/\.ogg$/i.test(src)) type = "audio/ogg";
@@ -222,15 +991,13 @@ function setupMusic(cfg) {
 
   btn.onclick = () => {
     if (music.paused) {
-      music.play().then(() => btn.classList.add("playing"))
-        .catch(() => {});
+      music.play().then(() => btn.classList.add("playing")).catch(() => {});
     } else {
       music.pause();
       btn.classList.remove("playing");
     }
   };
 
-  // Auto-start on first interaction (browsers block autoplay otherwise)
   const tryAutoplay = () => {
     if (musicStarted) return;
     musicStarted = true;
@@ -315,35 +1082,40 @@ function updateConfirmDetails() {
 }
 
 /* ============================================================
-   PAGE 4 — GAME  (mobile-optimised: faster spawns, better taps)
+   PAGE 4 — GAME (✅ MOBILE-FRIENDLY SPAWN LOOP)
    ============================================================ */
-const GAME_DURATION = 30;      // seconds
-const MIN_SPAWN_GAP  = 220;    // ms between heart spawns (was 700)
-const MAX_SPAWN_GAP  = 420;
-
 function resetGameUI() {
   const arena = document.getElementById("gameArena");
   arena.querySelectorAll(".falling-heart").forEach(el => el.remove());
   document.getElementById("gameStartOverlay").style.display = "flex";
   document.getElementById("scoreValue").textContent = "0";
-  document.getElementById("timeValue").textContent = String(GAME_DURATION);
+  document.getElementById("timeValue").textContent = "30";
   document.getElementById("gameStatus").textContent = "";
   document.getElementById("gameAfter").style.display = "none";
+
   gameState.active = false;
   gameState.score = 0;
-  gameState.timeLeft = GAME_DURATION;
+  gameState.timeLeft = 30;
+  gameState.activeHearts = 0;
+  gameState.consecutiveMissed = 0;
   clearInterval(gameState.spawnTimer);
   clearInterval(gameState.tickTimer);
+  clearTimeout(gameState._firstSpawn);
 }
 
-/* ✅ Adaptive spawn: hearts spawn fast enough to hit the target
-   even on mobile. More target → tighter spawn gap. */
-function getSpawnInterval() {
-  const target = Math.max(3, gameState.target || 10);
-  // Give roughly target*2.2 spawns in 30s → plenty of margin
-  const idealMs = (GAME_DURATION * 1000) / (target * 2.2);
-  const clamped = Math.max(MIN_SPAWN_GAP, Math.min(MAX_SPAWN_GAP, idealMs));
-  return clamped;
+/* ✅ Compute spawn cadence from screen size + target */
+function computeSpawnInterval() {
+  const isMobile = window.innerWidth < 600;
+  const target = Math.max(3, gameState.target);
+  const durationMs = 30000;
+
+  // We want at least target*2.2 hearts total so the player always
+  // has a realistic chance, but never more than one every 350ms.
+  const idealCount = Math.ceil(target * 2.2);
+  const idealInterval = Math.floor(durationMs / idealCount);
+  const base = isMobile ? 380 : 460;
+
+  return Math.max(340, Math.min(base, idealInterval));
 }
 
 function startGame() {
@@ -351,7 +1123,17 @@ function startGame() {
   document.getElementById("gameStartOverlay").style.display = "none";
   gameState.active = true;
   gameState.score = 0;
-  gameState.timeLeft = GAME_DURATION;
+  gameState.timeLeft = 30;
+  gameState.activeHearts = 0;
+  gameState.consecutiveMissed = 0;
+
+  // ✅ Fewer hearts on screen but frequent spawns → snappier feel
+  const isMobile = window.innerWidth < 600;
+  gameState.maxActiveHearts = isMobile ? 6 : 8;
+  gameState.spawnInterval = computeSpawnInterval();
+
+  // ✅ Spawn the FIRST heart immediately — no 700ms delay
+  spawnHeart();
 
   gameState.tickTimer = setInterval(() => {
     gameState.timeLeft--;
@@ -359,70 +1141,74 @@ function startGame() {
     if (gameState.timeLeft <= 0) endGame(false);
   }, 1000);
 
-  // ✅ Spawn loop — variable timing so it's not metronomic
-  const spawnLoop = () => {
+  gameState.spawnTimer = setInterval(() => {
     if (!gameState.active) return;
-    spawnHeart();
-    const base = getSpawnInterval();
-    const jitter = base * (0.6 + Math.random() * 0.8);
-    gameState.spawnTimer = setTimeout(spawnLoop, jitter);
-  };
-  spawnLoop();
-  // Seed a couple of hearts immediately so mobile users don't wait
-  spawnHeart();
-  setTimeout(spawnHeart, 150);
+    // Keep the arena lively: spawn extra if it's been empty for a while
+    if (gameState.activeHearts < gameState.maxActiveHearts) spawnHeart();
+    if (gameState.activeHearts === 0) spawnHeart(); // never leave it empty
+  }, gameState.spawnInterval);
+
+  // ✅ Guarantee at least one extra heart in the first 1.5s
+  gameState._firstSpawn = setTimeout(() => {
+    if (gameState.active && gameState.activeHearts < gameState.maxActiveHearts) spawnHeart();
+  }, 650);
 }
 
 function spawnHeart() {
   if (!gameState.active) return;
   const arena = document.getElementById("gameArena");
+  if (!arena) return;
   const rect = arena.getBoundingClientRect();
-  if (!rect.width) return;
+
+  // Hard cap — don't overfill
+  if (gameState.activeHearts >= gameState.maxActiveHearts) return;
 
   const heart = document.createElement("div");
   heart.className = "falling-heart";
   heart.textContent = ["💕", "💖", "💗", "❤️", "💘", "💝"][Math.floor(Math.random() * 6)];
 
-  // ✅ Larger tap target on mobile (44px minimum)
-  const isMobile = window.matchMedia("(max-width: 600px)").matches;
-  heart.style.fontSize = isMobile ? "40px" : "34px";
-  heart.style.padding = isMobile ? "10px" : "4px";
-  heart.style.boxSizing = "border-box";
-  heart.style.display = "grid";
-  heart.style.placeItems = "center";
-
-  const size = isMobile ? 60 : 50;
-  const x = Math.random() * Math.max(10, rect.width - size);
+  // ✅ Account for heart padding so it never spawns partly off-screen
+  const heartSize = window.innerWidth < 600 ? 56 : 46;
+  const maxX = Math.max(0, rect.width - heartSize - 8);
+  const x = Math.random() * maxX;
   heart.style.left = x + "px";
-  heart.style.top = "-" + size + "px";
+  heart.style.top = "-56px";
 
-  // ✅ Slightly faster fall on mobile so hearts reach the tap zone
-  const fallDuration = isMobile
-    ? 2600 + Math.random() * 1800
-    : 3000 + Math.random() * 2500;
+  // ✅ Shorter fall time = faster cycle = more chances to catch
+  const fallDuration = 2600 + Math.random() * 1800; // 2.6s – 4.4s
   heart.style.transition = `top ${fallDuration}ms linear`;
 
-  // ✅ Use pointerdown (single event, no tap delay) — covers mouse + touch
-  let caught = false;
-  const onCatch = (e) => {
-    e.preventDefault();
+  const onClick = (e) => {
     e.stopPropagation();
-    if (caught) return;
-    caught = true;
+    e.preventDefault();
     catchHeart(heart);
   };
-  if (window.PointerEvent) {
-    heart.addEventListener("pointerdown", onCatch, { passive: false });
-  } else {
-    heart.addEventListener("touchstart", onCatch, { passive: false });
-    heart.addEventListener("mousedown", onCatch);
-  }
+  heart.addEventListener("click", onClick);
+  heart.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    catchHeart(heart);
+  }, { passive: false });
 
   arena.appendChild(heart);
-  requestAnimationFrame(() => { heart.style.top = (rect.height + size) + "px"; });
+  gameState.activeHearts++;
 
+  requestAnimationFrame(() => {
+    heart.style.top = (rect.height + 60) + "px";
+  });
+
+  // Remove if it falls off without being caught
   setTimeout(() => {
-    if (heart.parentNode && !heart.classList.contains("caught")) heart.remove();
+    if (heart.parentNode && !heart.classList.contains("caught")) {
+      heart.remove();
+      gameState.activeHearts = Math.max(0, gameState.activeHearts - 1);
+      gameState.consecutiveMissed++;
+      // If we miss too many in a row, force an immediate spawn
+      if (gameState.active && gameState.consecutiveMissed >= 2) {
+        gameState.consecutiveMissed = 0;
+        spawnHeart();
+      }
+    }
   }, fallDuration + 100);
 }
 
@@ -430,19 +1216,28 @@ function catchHeart(heart) {
   if (!gameState.active || heart.classList.contains("caught")) return;
   heart.classList.add("caught");
   gameState.score++;
+  gameState.consecutiveMissed = 0;
   document.getElementById("scoreValue").textContent = String(gameState.score);
-  setTimeout(() => heart.remove(), 500);
+  setTimeout(() => {
+    if (heart.parentNode) heart.remove();
+    gameState.activeHearts = Math.max(0, gameState.activeHearts - 1);
+  }, 500);
   if (gameState.score >= gameState.target) endGame(true);
 }
 
 function endGame(won) {
   gameState.active = false;
   clearInterval(gameState.spawnTimer);
-  clearTimeout(gameState.spawnTimer);
   clearInterval(gameState.tickTimer);
-  document.getElementById("gameArena").querySelectorAll(".falling-heart").forEach(el => el.remove());
+  clearTimeout(gameState._firstSpawn);
+
+  const arena = document.getElementById("gameArena");
+  arena.querySelectorAll(".falling-heart").forEach(el => el.remove());
+  gameState.activeHearts = 0;
+
   const status = document.getElementById("gameStatus");
   status.textContent = won ? CONFIG.gameWin : CONFIG.gameLose;
+
   if (won) {
     document.getElementById("gameAfter").style.display = "block";
     celebrate();
@@ -500,7 +1295,7 @@ async function boot() {
     render(CONFIG);
   }
 
-  // ✅ Editor live preview (unchanged)
+  // ✅ Editor live preview
   window.addEventListener("message", (event) => {
     if (event.origin !== window.location.origin) return;
     const msg = event.data || {};
@@ -513,7 +1308,6 @@ async function boot() {
     }
   });
 
-  // Tell the editor iframe we're ready
   try {
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({ type: "NIVA_PREVIEW_READY" }, window.location.origin);
@@ -527,3 +1321,5 @@ if (document.readyState === "loading") {
   boot();
 }
 </script>
+</body>
+</html>
