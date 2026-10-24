@@ -1021,40 +1021,23 @@ function validateEncryptedEnvelope(envelope) {
 }
 
 /* =========================================================
-   ⚠️  CRITICAL PAYMENT GATE ⚠️
-   This is the ONLY endpoint that creates gift links.
-   It requires:
-     1) orderId referencing an app.payments row
-     2) that row has status = 'paid'
-     3) that row belongs to the current user
-     4) that row's template_id matches the requested template
-     5) that row's amount_inr matches the fixed price
-     6) that row hasn't already been consumed (one gift per payment)
-   
-   If ANY check fails → gift link is NOT generated.
+   GIFT CREATION — NO PAYMENT GATE (TEST MODE)
+   ⚠️  PRODUCTION-ൽ PAYMENT GATE തിരികെ വേണം ⚠️
+   Gift link generate ചെയ്യാൻ payment ആവശ്യമില്ല.
    ========================================================= */
 app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
   const client = await pool.connect();
   try {
-    const { templateId, envelope, orderId } = req.body || {};
+    const { templateId, envelope } = req.body || {};
 
-    // 1. Template must be valid
+    // 1. Template valid ആണോ
     if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
       return res.status(400).json({ success: false, message: "Unsupported gift template." });
     }
 
-    // 2. Encrypted envelope must be well-formed
+    // 2. Envelope valid ആണോ
     if (!validateEncryptedEnvelope(envelope)) {
       return res.status(400).json({ success: false, message: "Invalid encrypted gift payload." });
-    }
-
-    // 3. orderId is REQUIRED — no payment = no gift link
-    if (!orderId || typeof orderId !== "string") {
-      return res.status(402).json({
-        success: false,
-        code: "PAYMENT_REQUIRED",
-        message: "Payment is required before generating a gift link.",
-      });
     }
 
     const expectedPrice = TEMPLATE_PRICES[templateId];
@@ -1062,80 +1045,16 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Unknown template price." });
     }
 
-    await client.query("BEGIN");
-
-    // 4. Lock the payment row and verify everything
-    const payResult = await client.query(
-      `SELECT id, amount_inr, status, template_id, consumed, user_id
-       FROM app.payments
-       WHERE provider_order_id = $1 AND user_id = $2
-       FOR UPDATE`,
-      [orderId, req.session.userId]
-    );
-
-    if (!payResult.rows.length) {
-      await client.query("ROLLBACK");
-      return res.status(402).json({
-        success: false,
-        code: "PAYMENT_NOT_FOUND",
-        message: "No payment found for this order. Please pay first.",
-      });
-    }
-
-    const pay = payResult.rows[0];
-
-    if (pay.status !== "paid") {
-      await client.query("ROLLBACK");
-      return res.status(402).json({
-        success: false,
-        code: "PAYMENT_NOT_PAID",
-        message: "Payment has not been completed. Please complete payment first.",
-      });
-    }
-
-    if (pay.consumed) {
-      await client.query("ROLLBACK");
-      return res.status(409).json({
-        success: false,
-        code: "PAYMENT_ALREADY_USED",
-        message: "This payment has already been used to create a gift. Please make a new payment.",
-      });
-    }
-
-    if (Number(pay.amount_inr) !== expectedPrice) {
-      await client.query("ROLLBACK");
-      return res.status(402).json({
-        success: false,
-        code: "AMOUNT_MISMATCH",
-        message: `Paid amount ₹${pay.amount_inr} does not match template price ₹${expectedPrice}.`,
-      });
-    }
-
-    if (pay.template_id && pay.template_id !== templateId) {
-      await client.query("ROLLBACK");
-      return res.status(402).json({
-        success: false,
-        code: "TEMPLATE_MISMATCH",
-        message: `Payment was made for template "${pay.template_id}" but gift is for "${templateId}".`,
-      });
-    }
-
-    // 5. Mark payment as consumed (single-use)
-    await client.query(
-      `UPDATE app.payments SET consumed = TRUE WHERE id = $1`,
-      [pay.id]
-    );
-
-    // 6. Build the encrypted payload
+    // 3. Envelope bytes build
     const encryptedPayload = Buffer.from(JSON.stringify(envelope), "utf8");
     if (encryptedPayload.length > MAX_ENVELOPE_BYTES) {
-      await client.query("ROLLBACK");
       return res.status(413).json({ success: false, message: "The encrypted gift is too large." });
     }
 
-    // 7. Generate the public ID (THE GIFT LINK)
+    // 4. Public ID generate (THE GIFT LINK)
     const publicId = crypto.randomBytes(24).toString("base64url");
 
+    // 5. Insert gift — no payment verification
     const result = await client.query(
       `INSERT INTO app.gifts
         (owner_user_id, public_id, template_id, status,
@@ -1143,20 +1062,18 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
          created_at, updated_at, published_at,
          paid, amount_inr, payment_id, published)
        VALUES ($1, $2, $3, 'published', $4, NULL, NOW(), NOW(), NOW(),
-               TRUE, $5, $6, TRUE)
+               FALSE, $5, NULL, TRUE)
        RETURNING public_id, template_id, status, created_at`,
-      [req.session.userId, publicId, templateId, encryptedPayload, expectedPrice, pay.id]
+      [req.session.userId, publicId, templateId, encryptedPayload, expectedPrice]
     );
 
     const gift = result.rows[0];
 
-    // 8. Clear the draft — the gift is now real
+    // 6. Draft clear
     await client.query(
       `DELETE FROM app.drafts WHERE user_id = $1 AND template_id = $2`,
       [req.session.userId, templateId]
     );
-
-    await client.query("COMMIT");
 
     res.status(201).json({
       success: true,
@@ -1169,7 +1086,6 @@ app.post("/api/gifts", requireAuthenticated, async (req, res, next) => {
       },
     });
   } catch (err) {
-    try { await client.query("ROLLBACK"); } catch {}
     next(err);
   } finally {
     client.release();
