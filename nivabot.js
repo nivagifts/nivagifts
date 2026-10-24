@@ -1215,6 +1215,18 @@
           </a>
         </div>
       </div>
+      <div class="nivi-contact-card" id="niviContactCard" aria-label="Contact NIVA">
+        <div class="nivi-contact-title">Talk to Me</div>
+        <div class="nivi-contact-links">
+          <a class="nivi-contact-link insta"
+             href="https://instagram.com/nivitherobo"
+             target="_blank" rel="noopener noreferrer"
+             aria-label="NIVA on Instagram">
+            <span class="nivi-contact-icon" aria-hidden="true">◎</span>
+            <span class="nivi-contact-text">@nivitherobo</span>
+          </a>
+        </div>
+      </div>  
 
       <form class="niva-bot-input" id="nivaBotForm">
         <input id="nivaBotInput" type="text" placeholder="Ask your little robot..." autocomplete="off" maxlength="300" aria-label="Type your question">

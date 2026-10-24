@@ -28,6 +28,7 @@ const TEMPLATE_PRICES = {
   "eternal-anniversary": 599,
   "besties": 299,
   "memory-box": 99,
+  "apologyletter": 39,
 };
 
 const TEMPLATE_PLAN_NAMES = {
