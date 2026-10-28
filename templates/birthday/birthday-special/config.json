@@ -3,28 +3,25 @@
   "name": "Birthday Special",
   "category": "birthday",
   "price": 99,
-  "description": "A joyful 4-scene birthday surprise — welcome with gift box, wax-sealed handwritten letter, interactive cake-blowing (mic or manual), and a confetti-filled finale with a custom character GIF.",
+  "description": "A joyful 4-scene birthday surprise — welcome gift box, wax-sealed handwritten letter, interactive cake-blowing (mic or manual), and a confetti-filled finale with a custom animated character video or GIF.",
+
   "templatePath": "/templates/birthday/birthday-special/template.html",
   "thumbnail": "/templates/birthday/birthday-special/thumb.jpg",
+
   "templateLimits": {
     "photoSlots": 0
   },
+
   "sections": [
     {
       "title": "The Birthday Star",
       "subtitle": "Who is this gift for?",
-      "fields": [
-        "recipientName",
-        "senderName"
-      ]
+      "fields": ["recipientName", "senderName"]
     },
     {
       "title": "Theme & Colors",
       "subtitle": "Pick a party palette",
-      "fields": [
-        "themeStyle",
-        "colorCombo"
-      ]
+      "fields": ["themeStyle", "colorCombo"]
     },
     {
       "title": "Page 1 — Welcome",
@@ -72,6 +69,7 @@
         "finaleTitleLine2",
         "finaleToLabel",
         "finaleMessage",
+        "characterVideo",
         "characterImage",
         "finalButton",
         "replayButton"
@@ -80,12 +78,10 @@
     {
       "title": "Song",
       "subtitle": "Background music",
-      "fields": [
-        "songEnabled",
-        "songSrc"
-      ]
+      "fields": ["songEnabled", "songSrc"]
     }
   ],
+
   "customization": {
     "recipientName": {
       "type": "text",
@@ -103,35 +99,18 @@
       "required": true,
       "maxLength": 40
     },
+
     "themeStyle": {
       "type": "select",
       "label": "Theme style",
       "default": "berry",
       "options": [
-        {
-          "value": "berry",
-          "label": "🍇 Berry — dark plum & pink (default)"
-        },
-        {
-          "value": "rose",
-          "label": "🌹 Rose — warm deep rose"
-        },
-        {
-          "value": "midnight",
-          "label": "🌙 Midnight — deep indigo"
-        },
-        {
-          "value": "golden",
-          "label": "✨ Golden — warm amber glow"
-        },
-        {
-          "value": "mint",
-          "label": "🌿 Mint — soft teal night"
-        },
-        {
-          "value": "violet",
-          "label": "💜 Violet — rich purple"
-        }
+        { "value": "berry",    "label": "🍇 Berry — dark plum & pink (default)" },
+        { "value": "rose",     "label": "🌹 Rose — warm deep rose" },
+        { "value": "midnight", "label": "🌙 Midnight — deep indigo" },
+        { "value": "golden",   "label": "✨ Golden — warm amber glow" },
+        { "value": "mint",     "label": "🌿 Mint — soft teal night" },
+        { "value": "violet",   "label": "💜 Violet — rich purple" }
       ],
       "help": "Changes the background gradient and glow."
     },
@@ -140,41 +119,18 @@
       "label": "Accent color",
       "default": "pink",
       "options": [
-        {
-          "value": "pink",
-          "label": "Pink — classic birthday"
-        },
-        {
-          "value": "rose",
-          "label": "Rose — deep romantic rose"
-        },
-        {
-          "value": "coral",
-          "label": "Coral — warm coral"
-        },
-        {
-          "value": "gold",
-          "label": "Gold — champagne gold"
-        },
-        {
-          "value": "lavender",
-          "label": "Lavender — soft purple"
-        },
-        {
-          "value": "mint",
-          "label": "Mint — fresh mint"
-        },
-        {
-          "value": "cherry",
-          "label": "Cherry — bold red"
-        },
-        {
-          "value": "sky",
-          "label": "Sky — cool blue"
-        }
+        { "value": "pink",     "label": "Pink — classic birthday" },
+        { "value": "rose",     "label": "Rose — deep romantic rose" },
+        { "value": "coral",    "label": "Coral — warm coral" },
+        { "value": "gold",     "label": "Gold — champagne gold" },
+        { "value": "lavender", "label": "Lavender — soft purple" },
+        { "value": "mint",     "label": "Mint — fresh mint" },
+        { "value": "cherry",   "label": "Cherry — bold red" },
+        { "value": "sky",      "label": "Sky — cool blue" }
       ],
       "help": "Changes the accent used on buttons, candles, and highlights."
     },
+
     "welcomeEyebrow": {
       "type": "text",
       "label": "Welcome label",
@@ -212,6 +168,7 @@
       "default": "Open Your Surprise ✨",
       "maxLength": 40
     },
+
     "letterEyebrow": {
       "type": "text",
       "label": "Letter section label",
@@ -237,7 +194,7 @@
       "type": "text",
       "label": "Greeting",
       "placeholder": "Dear {name},",
-      "default": "Dear {name},",
+      "default": "Dear {name}, ♡",
       "maxLength": 60,
       "help": "Use {name} for recipient's name."
     },
@@ -257,6 +214,7 @@
       "default": "With lots of love,",
       "maxLength": 40
     },
+
     "cakeEyebrow": {
       "type": "text",
       "label": "Cake section label",
@@ -313,6 +271,7 @@
       "default": "Wish made! Your birthday magic is on its way… ✨",
       "maxLength": 100
     },
+
     "finaleEyebrow": {
       "type": "text",
       "label": "Finale label",
@@ -343,7 +302,7 @@
       "placeholder": "To {name} ♡",
       "default": "To {name} ♡",
       "maxLength": 60,
-      "help": "Use {name} for recipient's name — shown under HAPPY BIRTHDAY."
+      "help": "Use {name} for recipient's name."
     },
     "finaleMessage": {
       "type": "textarea",
@@ -352,13 +311,24 @@
       "default": "May your day be filled with love, endless laughter, sweet surprises, and all the happiness you deserve!",
       "maxLength": 300
     },
+
+    "characterVideo": {
+      "type": "video",
+      "label": "Animated birthday character (MP4 / WebM)",
+      "accept": "video/mp4,video/webm,video/*",
+      "maxSizeMB": 30,
+      "default": "templates/birthday/birthday-special/assets/1028 (2).mp4",
+      "help": "Upload a short looping video of a singing/dancing character. Recommend vertical 9:16 or square 1:1, under 15 seconds. Leave empty to use the image field below."
+    },
     "characterImage": {
       "type": "image",
-      "label": "Funny birthday character (GIF or PNG)",
+      "label": "Or a still image / GIF (fallback)",
       "accept": "image/*",
       "maxSizeMB": 5,
-      "help": "Upload a small singing/dancing birthday GIF. Leave empty to show the default 🥳 emoji."
+      "default": "",
+      "help": "Used only if no video is set. Upload a GIF or PNG to show as the character."
     },
+
     "finalButton": {
       "type": "text",
       "label": "Finale button",
@@ -373,28 +343,23 @@
       "default": "Replay the birthday surprise ↻",
       "maxLength": 50
     },
+
     "songEnabled": {
       "type": "select",
       "label": "Play background song?",
       "default": "yes",
       "options": [
-        {
-          "value": "yes",
-          "label": "Yes — play birthday song"
-        },
-        {
-          "value": "no",
-          "label": "No — silent experience"
-        }
+        { "value": "yes", "label": "Yes — play birthday song" },
+        { "value": "no",  "label": "No — silent experience" }
       ]
     },
     "songSrc": {
-      "type": "text",
-      "label": "Song file name",
-      "placeholder": "templates/birthday/birthday-special/assets/1026.mp3",
+      "type": "audio",
+      "label": "Birthday song (MP3 / OGG)",
+      "accept": "audio/mpeg,audio/mp3,audio/ogg,audio/*",
+      "maxSizeMB": 20,
       "default": "templates/birthday/birthday-special/assets/1026.mp3",
-      "maxLength": 100,
-      "help": "Uses the birthday song at templates/birthday/birthday-special/assets/1026.mp3. Music starts on the finale page."
+      "help": "Upload an MP3 or OGG. Plays on the finale page after the candles are blown out."
     }
   }
 }
