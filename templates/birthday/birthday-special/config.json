@@ -1,0 +1,400 @@
+{
+  "id": "birthday-special",
+  "name": "Birthday Special",
+  "category": "birthday",
+  "price": 99,
+  "description": "A joyful 4-scene birthday surprise — welcome with gift box, wax-sealed handwritten letter, interactive cake-blowing (mic or manual), and a confetti-filled finale with a custom character GIF.",
+  "templatePath": "/templates/birthday/birthday-special/template.html",
+  "thumbnail": "/templates/birthday/birthday-special/thumb.jpg",
+  "templateLimits": {
+    "photoSlots": 0
+  },
+  "sections": [
+    {
+      "title": "The Birthday Star",
+      "subtitle": "Who is this gift for?",
+      "fields": [
+        "recipientName",
+        "senderName"
+      ]
+    },
+    {
+      "title": "Theme & Colors",
+      "subtitle": "Pick a party palette",
+      "fields": [
+        "themeStyle",
+        "colorCombo"
+      ]
+    },
+    {
+      "title": "Page 1 — Welcome",
+      "subtitle": "The opening screen",
+      "fields": [
+        "welcomeEyebrow",
+        "welcomeTitle",
+        "welcomeText",
+        "welcomeHint",
+        "welcomeButton"
+      ]
+    },
+    {
+      "title": "Page 2 — Handwritten Letter",
+      "subtitle": "The wax-sealed envelope",
+      "fields": [
+        "letterEyebrow",
+        "letterTitle",
+        "envelopeHint",
+        "letterGreeting",
+        "letterBody",
+        "letterSignature"
+      ]
+    },
+    {
+      "title": "Page 3 — Blow the Candles",
+      "subtitle": "The cake moment",
+      "fields": [
+        "cakeEyebrow",
+        "cakeTitle",
+        "cakeSubtitle",
+        "micButton",
+        "manualButton",
+        "micHint",
+        "micNote",
+        "wishMessage"
+      ]
+    },
+    {
+      "title": "Page 4 — Happy Birthday Finale",
+      "subtitle": "The big celebration",
+      "fields": [
+        "finaleEyebrow",
+        "finaleTitleLine1",
+        "finaleTitleLine2",
+        "finaleToLabel",
+        "finaleMessage",
+        "characterImage",
+        "finalButton",
+        "replayButton"
+      ]
+    },
+    {
+      "title": "Song",
+      "subtitle": "Background music",
+      "fields": [
+        "songEnabled",
+        "songSrc"
+      ]
+    }
+  ],
+  "customization": {
+    "recipientName": {
+      "type": "text",
+      "label": "Birthday star's name",
+      "placeholder": "e.g. Riya",
+      "default": "Someone Special",
+      "required": true,
+      "maxLength": 30
+    },
+    "senderName": {
+      "type": "text",
+      "label": "Your name (sender)",
+      "placeholder": "e.g. Aarav",
+      "default": "Someone who cares",
+      "required": true,
+      "maxLength": 40
+    },
+    "themeStyle": {
+      "type": "select",
+      "label": "Theme style",
+      "default": "berry",
+      "options": [
+        {
+          "value": "berry",
+          "label": "🍇 Berry — dark plum & pink (default)"
+        },
+        {
+          "value": "rose",
+          "label": "🌹 Rose — warm deep rose"
+        },
+        {
+          "value": "midnight",
+          "label": "🌙 Midnight — deep indigo"
+        },
+        {
+          "value": "golden",
+          "label": "✨ Golden — warm amber glow"
+        },
+        {
+          "value": "mint",
+          "label": "🌿 Mint — soft teal night"
+        },
+        {
+          "value": "violet",
+          "label": "💜 Violet — rich purple"
+        }
+      ],
+      "help": "Changes the background gradient and glow."
+    },
+    "colorCombo": {
+      "type": "select",
+      "label": "Accent color",
+      "default": "pink",
+      "options": [
+        {
+          "value": "pink",
+          "label": "Pink — classic birthday"
+        },
+        {
+          "value": "rose",
+          "label": "Rose — deep romantic rose"
+        },
+        {
+          "value": "coral",
+          "label": "Coral — warm coral"
+        },
+        {
+          "value": "gold",
+          "label": "Gold — champagne gold"
+        },
+        {
+          "value": "lavender",
+          "label": "Lavender — soft purple"
+        },
+        {
+          "value": "mint",
+          "label": "Mint — fresh mint"
+        },
+        {
+          "value": "cherry",
+          "label": "Cherry — bold red"
+        },
+        {
+          "value": "sky",
+          "label": "Sky — cool blue"
+        }
+      ],
+      "help": "Changes the accent used on buttons, candles, and highlights."
+    },
+    "welcomeEyebrow": {
+      "type": "text",
+      "label": "Welcome label",
+      "placeholder": "A very special day",
+      "default": "A very special day",
+      "maxLength": 60
+    },
+    "welcomeTitle": {
+      "type": "text",
+      "label": "Welcome title",
+      "placeholder": "Birthday Surprise",
+      "default": "Birthday Surprise",
+      "required": true,
+      "maxLength": 60
+    },
+    "welcomeText": {
+      "type": "textarea",
+      "label": "Welcome message",
+      "placeholder": "You make the world brighter…",
+      "default": "You make the world brighter, kinder, and so much more beautiful.",
+      "maxLength": 300,
+      "help": "Use {name} to insert the recipient's name."
+    },
+    "welcomeHint": {
+      "type": "text",
+      "label": "Line under the gift box",
+      "placeholder": "A little surprise is waiting just for you…",
+      "default": "A little surprise is waiting just for you…",
+      "maxLength": 100
+    },
+    "welcomeButton": {
+      "type": "text",
+      "label": "Welcome button",
+      "placeholder": "Open Your Surprise ✨",
+      "default": "Open Your Surprise ✨",
+      "maxLength": 40
+    },
+    "letterEyebrow": {
+      "type": "text",
+      "label": "Letter section label",
+      "placeholder": "A little note from the heart",
+      "default": "A little note from the heart",
+      "maxLength": 60
+    },
+    "letterTitle": {
+      "type": "text",
+      "label": "Letter section title",
+      "placeholder": "Words just for you",
+      "default": "Words just for you",
+      "maxLength": 60
+    },
+    "envelopeHint": {
+      "type": "text",
+      "label": "Envelope tap hint",
+      "placeholder": "TAP THE ENVELOPE TO OPEN YOUR LETTER",
+      "default": "TAP THE ENVELOPE TO OPEN YOUR LETTER",
+      "maxLength": 60
+    },
+    "letterGreeting": {
+      "type": "text",
+      "label": "Greeting",
+      "placeholder": "Dear {name},",
+      "default": "Dear {name},",
+      "maxLength": 60,
+      "help": "Use {name} for recipient's name."
+    },
+    "letterBody": {
+      "type": "textarea",
+      "label": "Letter body",
+      "placeholder": "Write from the heart…",
+      "default": "Today is not just another day… it's the day the world got a little brighter because you were born.\n\nYou bring so much laughter, warmth, and happiness into the lives of the people around you. I hope this new chapter brings you beautiful surprises, lovely memories, and all the little things that make your heart happy.\n\nKeep being your wonderful self. You deserve more smiles than you can count, more adventures than you can imagine, and love that reminds you how special you are.\n\nHappy Birthday! May your wishes find their way to you. ♡",
+      "required": true,
+      "maxLength": 2000,
+      "help": "Separate paragraphs with a blank line."
+    },
+    "letterSignature": {
+      "type": "text",
+      "label": "Signature line",
+      "placeholder": "With lots of love,",
+      "default": "With lots of love,",
+      "maxLength": 40
+    },
+    "cakeEyebrow": {
+      "type": "text",
+      "label": "Cake section label",
+      "placeholder": "Make a wish, birthday star",
+      "default": "Make a wish, birthday star",
+      "maxLength": 60
+    },
+    "cakeTitle": {
+      "type": "text",
+      "label": "Cake title",
+      "placeholder": "Blow the Candles!",
+      "default": "Blow the Candles!",
+      "maxLength": 60
+    },
+    "cakeSubtitle": {
+      "type": "text",
+      "label": "Cake subtitle",
+      "placeholder": "Close your eyes. Make a wish. ✨",
+      "default": "Close your eyes. Make a wish. ✨",
+      "maxLength": 80
+    },
+    "micButton": {
+      "type": "text",
+      "label": "Mic button text",
+      "placeholder": "🎙️ Blow the Candles",
+      "default": "🎙️ Blow the Candles",
+      "maxLength": 40
+    },
+    "manualButton": {
+      "type": "text",
+      "label": "Manual blow button text",
+      "placeholder": "✧ Blow Manually",
+      "default": "✧ Blow Manually",
+      "maxLength": 40
+    },
+    "micHint": {
+      "type": "text",
+      "label": "Mic hint (before activating)",
+      "placeholder": "Tap the microphone button and gently blow toward your device.",
+      "default": "Tap the microphone button and gently blow toward your device.",
+      "maxLength": 120
+    },
+    "micNote": {
+      "type": "text",
+      "label": "Small note under buttons",
+      "placeholder": "Microphone access is optional.",
+      "default": "Microphone access is optional. If it isn't available, use \"Blow Manually\" to make your wish come true.",
+      "maxLength": 200
+    },
+    "wishMessage": {
+      "type": "text",
+      "label": "Message shown after wish is made",
+      "placeholder": "Wish made! Your birthday magic is on its way… ✨",
+      "default": "Wish made! Your birthday magic is on its way… ✨",
+      "maxLength": 100
+    },
+    "finaleEyebrow": {
+      "type": "text",
+      "label": "Finale label",
+      "placeholder": "Today is all about you",
+      "default": "Today is all about you",
+      "maxLength": 60
+    },
+    "finaleTitleLine1": {
+      "type": "text",
+      "label": "Finale title — line 1",
+      "placeholder": "HAPPY",
+      "default": "HAPPY",
+      "required": true,
+      "maxLength": 20
+    },
+    "finaleTitleLine2": {
+      "type": "text",
+      "label": "Finale title — line 2",
+      "placeholder": "BIRTHDAY!",
+      "default": "BIRTHDAY!",
+      "required": true,
+      "maxLength": 20,
+      "help": "Second line shown under line 1."
+    },
+    "finaleToLabel": {
+      "type": "text",
+      "label": "\"To\" label under the title",
+      "placeholder": "To {name} ♡",
+      "default": "To {name} ♡",
+      "maxLength": 60,
+      "help": "Use {name} for recipient's name — shown under HAPPY BIRTHDAY."
+    },
+    "finaleMessage": {
+      "type": "textarea",
+      "label": "Finale message",
+      "placeholder": "May your day be filled with love…",
+      "default": "May your day be filled with love, endless laughter, sweet surprises, and all the happiness you deserve!",
+      "maxLength": 300
+    },
+    "characterImage": {
+      "type": "image",
+      "label": "Funny birthday character (GIF or PNG)",
+      "accept": "image/*",
+      "maxSizeMB": 5,
+      "help": "Upload a small singing/dancing birthday GIF. Leave empty to show the default 🥳 emoji."
+    },
+    "finalButton": {
+      "type": "text",
+      "label": "Finale button",
+      "placeholder": "You're Truly Special ♥",
+      "default": "You're Truly Special ♥",
+      "maxLength": 40
+    },
+    "replayButton": {
+      "type": "text",
+      "label": "Replay button",
+      "placeholder": "Replay the birthday surprise ↻",
+      "default": "Replay the birthday surprise ↻",
+      "maxLength": 50
+    },
+    "songEnabled": {
+      "type": "select",
+      "label": "Play background song?",
+      "default": "yes",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes — play birthday song"
+        },
+        {
+          "value": "no",
+          "label": "No — silent experience"
+        }
+      ]
+    },
+    "songSrc": {
+      "type": "text",
+      "label": "Song file name",
+      "placeholder": "templates/birthday/birthday-special/assets/1026.mp3",
+      "default": "templates/birthday/birthday-special/assets/1026.mp3",
+      "maxLength": 100,
+      "help": "Uses the birthday song at templates/birthday/birthday-special/assets/1026.mp3. Music starts on the finale page."
+    }
+  }
+}

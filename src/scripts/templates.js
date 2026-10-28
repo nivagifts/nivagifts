@@ -50,6 +50,10 @@ const NivaTemplates = (() => {
       id: "constellation-proposal",
       configPath: "/templates/love/constellation-proposal/config.json",
     },
+    {
+      id: "birthday-special",
+      configPath: "/templates/birthday/birthday-special/config.json",
+    },
     // ▼▼▼ ADD NEW TEMPLATES BELOW ▼▼▼
   ];
 

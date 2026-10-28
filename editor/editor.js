@@ -25,6 +25,7 @@ const TEMPLATE_PRICES = {
   "apologyletter": 39,
   "date-invite": 299,
   "constellation-proposal": 299,
+  "birthday-special": 99,
 };
 
 const TEMPLATE_PLAN_NAMES = {
