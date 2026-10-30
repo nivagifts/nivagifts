@@ -4,7 +4,7 @@
   "category": "memories",
   "price": 299,
   "description": "An interactive 6-page memory journey featuring a vintage camera opening, a creative Polaroid photo album, a personal timeline, favourite places, a memory quiz, and a heartfelt finale.",
-  "templatePath": "/templates/memories/memory-roll/index.html",
+  "templatePath": "/templates/memories/memory-roll/template.html",
   "thumbnail": "/templates/memories/memory-roll/thumb.jpg",
   "templateLimits": {
     "photoSlots": 11
