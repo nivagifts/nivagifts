@@ -32,7 +32,8 @@
       "fields": [
         "coverEyebrow",
         "coverTitle",
-        "coverSubtitle"
+        "coverSubtitle",
+        "coverButton"
       ]
     },
     {
@@ -192,6 +193,12 @@
       "label": "Cover message",
       "default": "Every picture has a story. Every story has a place in my heart.",
       "maxLength": 220
+    },
+    "coverButton": {
+      "type": "text",
+      "label": "Cover button text",
+      "default": "Open the camera",
+      "maxLength": 40
     },
     "albumTitle": {
       "type": "text",
