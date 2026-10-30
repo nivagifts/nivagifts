@@ -2280,6 +2280,103 @@
     })();
   </script>
 
+  <!-- LIVE VISITORS INDICATOR -->
+  <style>
+    .niva-live-presence {
+      position: fixed;
+      left: max(18px, env(safe-area-inset-left));
+      bottom: max(18px, env(safe-area-inset-bottom));
+      z-index: 45;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 15px;
+      border: 1px solid rgba(232, 196, 200, .9);
+      border-radius: 999px;
+      background: rgba(255, 250, 246, .94);
+      color: #6b5557;
+      box-shadow: 0 8px 26px rgba(183, 110, 121, .13);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      font: 500 11px/1.2 Inter, system-ui, sans-serif;
+      letter-spacing: .01em;
+      pointer-events: none;
+    }
+    .niva-live-dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 8px;
+      border-radius: 50%;
+      background: #65ad78;
+      box-shadow: 0 0 0 4px rgba(101, 173, 120, .13);
+      animation: nivaLivePulse 1.8s ease-in-out infinite;
+    }
+    .niva-live-number { color: #b76e79; font-weight: 700; }
+    @keyframes nivaLivePulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(101,173,120,.13); }
+      50% { box-shadow: 0 0 0 7px rgba(101,173,120,.05); }
+    }
+    @media (max-width: 480px) {
+      .niva-live-presence { left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); padding: 9px 12px; font-size: 10px; }
+    }
+  </style>
+  <div class="niva-live-presence" id="nivaLivePresence" role="status" aria-live="polite" aria-label="Website visitors currently active">
+    <span class="niva-live-dot" aria-hidden="true"></span>
+    <span><strong class="niva-live-number" id="nivaLiveCount">—</strong> people online</span>
+  </div>
+  <script>
+    (() => {
+      const countEl = document.getElementById("nivaLiveCount");
+      if (!countEl) return;
+
+      const storageKey = "niva_live_visitor_id";
+      let visitorId = "";
+      try {
+        visitorId = localStorage.getItem(storageKey) || "";
+        if (!/^[a-f0-9-]{36}$/i.test(visitorId)) {
+          visitorId = (crypto.randomUUID && crypto.randomUUID()) ||
+            "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+              const r = Math.random() * 16 | 0;
+              return (c === "x" ? r : (r & 3 | 8)).toString(16);
+            });
+          localStorage.setItem(storageKey, visitorId);
+        }
+      } catch (_) {
+        visitorId = (crypto.randomUUID && crypto.randomUUID()) ||
+          "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === "x" ? r : (r & 3 | 8)).toString(16);
+          });
+      }
+
+      async function updatePresence() {
+        if (document.visibilityState === "hidden") return;
+        try {
+          const response = await fetch("/api/live/heartbeat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ visitorId }),
+            cache: "no-store",
+            keepalive: true
+          });
+          if (!response.ok) throw new Error("Presence unavailable");
+          const data = await response.json();
+          if (data.success && Number.isFinite(data.active)) {
+            countEl.textContent = data.active.toLocaleString();
+          }
+        } catch (_) {
+          // Keep the indicator unobtrusive if the live count is temporarily unavailable.
+        }
+      }
+
+      updatePresence();
+      setInterval(updatePresence, 25000);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") updatePresence();
+      });
+    })();
+  </script>
+
   <!-- NIVI BOT -->
   <script src="/nivabot.js" defer></script>
 </body>

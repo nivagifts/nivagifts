@@ -457,6 +457,18 @@ async function runMigrations() {
       );`);
     await pool.query(`CREATE INDEX IF NOT EXISTS IDX_wishlist_user ON app.wishlist (user_id, created_at DESC);`);
 
+    /* 9. LIVE VISITORS — lightweight heartbeat presence */
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app.live_visitors (
+        visitor_id TEXT PRIMARY KEY,
+        last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS IDX_live_visitors_last_seen
+      ON app.live_visitors (last_seen);
+    `);
+
     console.log("✅ Database migrations complete.");
   } catch (err) {
     console.error("❌ Migration error:", err.message);
@@ -464,7 +476,6 @@ async function runMigrations() {
     throw err;  // Do NOT swallow — fail startup so DB issues are noticed
   }
 }
-
 /* ---------- 12. HEALTH ---------- */
 app.get("/api/health", async (req, res) => {
   try {
@@ -887,7 +898,6 @@ app.post("/api/auth/forgot-password", authLimiter, async (req, res, next) => {
     return res.json({ success: true, message: "If an account exists, a reset code has been sent." });
   } catch (err) { next(err); }
 });
-
 app.post("/api/auth/verify-reset-code", authLimiter, async (req, res, next) => {
   try {
     const { email, code } = req.body || {};
@@ -1196,47 +1206,6 @@ app.get("/api/drafts/:templateId", requireAuthenticated, async (req, res, next) 
     });
   } catch (err) { next(err); }
 });
-
-app.post("/api/drafts", requireAuthenticated, async (req, res, next) => {
-  try {
-    const { templateId, data } = req.body || {};
-    if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
-      return res.status(400).json({ success: false, message: "Invalid template." });
-    }
-    if (!data || typeof data !== "object") {
-      return res.status(400).json({ success: false, message: "Draft data must be an object." });
-    }
-    const json = JSON.stringify(data);
-    if (Buffer.byteLength(json, "utf8") > 5 * 1024 * 1024) {
-      return res.status(413).json({ success: false, message: "Draft is too large (max 5 MB)." });
-    }
-    const result = await pool.query(
-      `INSERT INTO app.drafts (user_id, template_id, data, updated_at)
-       VALUES ($1, $2, $3::jsonb, NOW())
-       ON CONFLICT (user_id, template_id)
-       DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
-       RETURNING id, template_id, data, updated_at`,
-      [req.session.userId, templateId, json]
-    );
-    const d = result.rows[0];
-    res.json({
-      success: true,
-      draft: { id: d.id, templateId: d.template_id, data: d.data, updatedAt: d.updated_at },
-    });
-  } catch (err) { next(err); }
-});
-
-app.delete("/api/drafts/:templateId", requireAuthenticated, async (req, res, next) => {
-  try {
-    const { templateId } = req.params;
-    const result = await pool.query(
-      `DELETE FROM app.drafts WHERE user_id = $1 AND template_id = $2 RETURNING id`,
-      [req.session.userId, templateId]
-    );
-    res.json({ success: true, deleted: result.rows.length > 0 });
-  } catch (err) { next(err); }
-});
-
 /* ---------- 16. WISHLIST ---------- */
 app.get("/api/wishlist", requireAuthenticated, async (req, res, next) => {
   try {
@@ -1576,6 +1545,48 @@ app.post("/api/niva-bot", botLimiter, (req, res) => {
   }
 });
 
+/* ---------- LIVE VISITOR PRESENCE ---------- */
+const liveVisitorLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Please slow down." },
+});
+
+app.post("/api/live/heartbeat", liveVisitorLimiter, async (req, res, next) => {
+  try {
+    const visitorId = req.body && req.body.visitorId;
+    if (typeof visitorId !== "string" || !/^[a-f0-9-]{36}$/i.test(visitorId)) {
+      return res.status(400).json({ success: false, message: "Invalid visitor ID." });
+    }
+    await pool.query(
+      `INSERT INTO app.live_visitors (visitor_id, last_seen)
+       VALUES ($1, NOW())
+       ON CONFLICT (visitor_id) DO UPDATE SET last_seen = NOW()`,
+      [visitorId]
+    );
+    await pool.query(`DELETE FROM app.live_visitors WHERE last_seen < NOW() - INTERVAL '2 minutes'`);
+    const result = await pool.query(
+      `SELECT COUNT(*)::int AS count FROM app.live_visitors
+       WHERE last_seen >= NOW() - INTERVAL '75 seconds'`
+    );
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true, active: result.rows[0].count });
+  } catch (err) { next(err); }
+});
+
+app.get("/api/live/count", async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT(*)::int AS count FROM app.live_visitors
+       WHERE last_seen >= NOW() - INTERVAL '75 seconds'`
+    );
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true, active: result.rows[0].count });
+  } catch (err) { next(err); }
+});
+
 /* ---------- 20. STATIC FILES ---------- */
 app.get("/", (req, res) => res.sendFile(path.join(ROOT, "index.html")));
 app.get("/privacy.html", (req, res) => res.sendFile(path.join(ROOT, "privacy.html")));
@@ -1667,4 +1678,3 @@ async function shutdown() {
 }
 
 process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
