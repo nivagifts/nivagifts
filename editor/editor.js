@@ -26,6 +26,7 @@ const TEMPLATE_PRICES = {
   "date-invite": 299,
   "constellation-proposal": 299,
   "birthday-special": 99,
+  "memory-roll": 299,
 };
 
 const TEMPLATE_PLAN_NAMES = {

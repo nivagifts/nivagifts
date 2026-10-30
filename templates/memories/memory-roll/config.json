@@ -1,0 +1,514 @@
+{
+  "id": "memory-roll",
+  "name": "Memory Roll",
+  "category": "memories",
+  "price": 299,
+  "description": "An interactive 6-page memory journey featuring a vintage camera opening, a creative Polaroid photo album, a personal timeline, favourite places, a memory quiz, and a heartfelt finale.",
+  "templatePath": "/templates/memories/memory-roll/index.html",
+  "thumbnail": "/templates/memories/memory-roll/thumb.jpg",
+  "templateLimits": {
+    "photoSlots": 11
+  },
+  "sections": [
+    {
+      "title": "The Memory Keepers",
+      "subtitle": "Who is this memory gift for?",
+      "fields": [
+        "recipientName",
+        "senderName"
+      ]
+    },
+    {
+      "title": "Theme & Colours",
+      "subtitle": "Choose the scrapbook look",
+      "fields": [
+        "themeStyle",
+        "colorCombo"
+      ]
+    },
+    {
+      "title": "Page 1 — Camera Cover",
+      "subtitle": "The vintage camera opening",
+      "fields": [
+        "coverEyebrow",
+        "coverTitle",
+        "coverSubtitle"
+      ]
+    },
+    {
+      "title": "Page 2 — Photo Album",
+      "subtitle": "Add up to eight favourite photographs",
+      "fields": [
+        "albumTitle",
+        "albumSubtitle",
+        "photo1",
+        "photoCaption1",
+        "photo2",
+        "photoCaption2",
+        "photo3",
+        "photoCaption3",
+        "photo4",
+        "photoCaption4",
+        "photo5",
+        "photoCaption5",
+        "photo6",
+        "photoCaption6",
+        "photo7",
+        "photoCaption7",
+        "photo8",
+        "photoCaption8"
+      ]
+    },
+    {
+      "title": "Page 3 — Memory Timeline",
+      "subtitle": "Add three important moments",
+      "fields": [
+        "timelineTitle",
+        "timeline1Date",
+        "timeline1Title",
+        "timeline1Text",
+        "timeline2Date",
+        "timeline2Title",
+        "timeline2Text",
+        "timeline3Date",
+        "timeline3Title",
+        "timeline3Text"
+      ]
+    },
+    {
+      "title": "Page 4 — Favourite Places",
+      "subtitle": "Places that hold special memories",
+      "fields": [
+        "placesTitle",
+        "place1Name",
+        "place1Note",
+        "place1Image",
+        "place2Name",
+        "place2Note",
+        "place2Image",
+        "place3Name",
+        "place3Note",
+        "place3Image"
+      ]
+    },
+    {
+      "title": "Page 5 — Memory Game",
+      "subtitle": "Create a little quiz for the recipient",
+      "fields": [
+        "gameTitle",
+        "quizQuestion",
+        "quizOption1",
+        "quizOption2",
+        "quizOption3",
+        "quizAnswer"
+      ]
+    },
+    {
+      "title": "Page 6 — Final Message",
+      "subtitle": "End the journey with a personal note",
+      "fields": [
+        "finalTitle",
+        "finalMessage",
+        "finalButton"
+      ]
+    }
+  ],
+  "customization": {
+    "recipientName": {
+      "type": "text",
+      "label": "Recipient's name",
+      "placeholder": "e.g. Riya",
+      "default": "Someone Special",
+      "required": true,
+      "maxLength": 30
+    },
+    "senderName": {
+      "type": "text",
+      "label": "Your name",
+      "placeholder": "e.g. Alex",
+      "default": "Someone who cares",
+      "required": true,
+      "maxLength": 40
+    },
+    "themeStyle": {
+      "type": "select",
+      "label": "Album style",
+      "default": "film",
+      "options": [
+        {
+          "value": "film",
+          "label": "Vintage Film — classic camera scrapbook"
+        },
+        {
+          "value": "polaroid",
+          "label": "Polaroid — playful photo memories"
+        },
+        {
+          "value": "journal",
+          "label": "Memory Journal — soft paper aesthetic"
+        }
+      ],
+      "help": "Choose the overall memory album style."
+    },
+    "colorCombo": {
+      "type": "select",
+      "label": "Colour palette",
+      "default": "warm",
+      "options": [
+        {
+          "value": "warm",
+          "label": "Warm Beige — cream, brown and caramel"
+        },
+        {
+          "value": "rose",
+          "label": "Soft Rose — blush, cream and cocoa"
+        },
+        {
+          "value": "sage",
+          "label": "Sage — muted green and ivory"
+        },
+        {
+          "value": "blue",
+          "label": "Dusty Blue — soft blue and parchment"
+        }
+      ],
+      "help": "Choose the scrapbook accent palette."
+    },
+    "coverEyebrow": {
+      "type": "text",
+      "label": "Cover small heading",
+      "default": "A collection of little forever moments",
+      "maxLength": 70
+    },
+    "coverTitle": {
+      "type": "text",
+      "label": "Cover title",
+      "default": "Our Memory Roll",
+      "required": true,
+      "maxLength": 50
+    },
+    "coverSubtitle": {
+      "type": "textarea",
+      "label": "Cover message",
+      "default": "Every picture has a story. Every story has a place in my heart.",
+      "maxLength": 220
+    },
+    "albumTitle": {
+      "type": "text",
+      "label": "Album title",
+      "default": "The little things we keep",
+      "maxLength": 60
+    },
+    "albumSubtitle": {
+      "type": "text",
+      "label": "Album subtitle",
+      "default": "Tap any photograph to see it a little closer.",
+      "maxLength": 120
+    },
+    "photo1": {
+      "type": "image",
+      "label": "Album photo 1",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "default": "",
+      "help": "Upload a photo for the Polaroid album."
+    },
+    "photo2": {
+      "type": "image",
+      "label": "Album photo 2",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "default": "",
+      "help": "Upload a photo for the Polaroid album."
+    },
+    "photo3": {
+      "type": "image",
+      "label": "Album photo 3",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "default": "",
+      "help": "Upload a photo for the Polaroid album."
+    },
+    "photo4": {
+      "type": "image",
+      "label": "Album photo 4",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "default": "",
+      "help": "Upload a photo for the Polaroid album."
+    },
+    "photo5": {
+      "type": "image",
+      "label": "Album photo 5",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "default": "",
+      "help": "Upload a photo for the Polaroid album."
+    },
+    "photo6": {
+      "type": "image",
+      "label": "Album photo 6",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "default": "",
+      "help": "Upload a photo for the Polaroid album."
+    },
+    "photo7": {
+      "type": "image",
+      "label": "Album photo 7",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "default": "",
+      "help": "Upload a photo for the Polaroid album."
+    },
+    "photo8": {
+      "type": "image",
+      "label": "Album photo 8",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "default": "",
+      "help": "Upload a photo for the Polaroid album."
+    },
+    "photoCaption1": {
+      "type": "text",
+      "label": "Photo 1 caption",
+      "default": "The day everything felt brighter",
+      "maxLength": 90
+    },
+    "photoCaption2": {
+      "type": "text",
+      "label": "Photo 2 caption",
+      "default": "A moment worth keeping",
+      "maxLength": 90
+    },
+    "photoCaption3": {
+      "type": "text",
+      "label": "Photo 3 caption",
+      "default": "The happiest little chaos",
+      "maxLength": 90
+    },
+    "photoCaption4": {
+      "type": "text",
+      "label": "Photo 4 caption",
+      "default": "One for the memory box",
+      "maxLength": 90
+    },
+    "photoCaption5": {
+      "type": "text",
+      "label": "Photo 5 caption",
+      "default": "A favourite kind of day",
+      "maxLength": 90
+    },
+    "photoCaption6": {
+      "type": "text",
+      "label": "Photo 6 caption",
+      "default": "Just us being us",
+      "maxLength": 90
+    },
+    "photoCaption7": {
+      "type": "text",
+      "label": "Photo 7 caption",
+      "default": "A place in my heart",
+      "maxLength": 90
+    },
+    "photoCaption8": {
+      "type": "text",
+      "label": "Photo 8 caption",
+      "default": "More memories to come",
+      "maxLength": 90
+    },
+    "timelineTitle": {
+      "type": "text",
+      "label": "Timeline title",
+      "default": "A timeline of us",
+      "maxLength": 60
+    },
+    "timeline1Date": {
+      "type": "text",
+      "label": "Moment 1 date or label",
+      "default": "The beginning",
+      "maxLength": 50
+    },
+    "timeline1Title": {
+      "type": "text",
+      "label": "Moment 1 title",
+      "default": "The first little memory",
+      "maxLength": 70
+    },
+    "timeline1Text": {
+      "type": "textarea",
+      "label": "Moment 1 story",
+      "default": "Some moments look ordinary until they become unforgettable.",
+      "maxLength": 260
+    },
+    "timeline2Date": {
+      "type": "text",
+      "label": "Moment 2 date or label",
+      "default": "A little later",
+      "maxLength": 50
+    },
+    "timeline2Title": {
+      "type": "text",
+      "label": "Moment 2 title",
+      "default": "The day we laughed",
+      "maxLength": 70
+    },
+    "timeline2Text": {
+      "type": "textarea",
+      "label": "Moment 2 story",
+      "default": "The kind of laughter that stays with you long after the day ends.",
+      "maxLength": 260
+    },
+    "timeline3Date": {
+      "type": "text",
+      "label": "Moment 3 date or label",
+      "default": "One special day",
+      "maxLength": 50
+    },
+    "timeline3Title": {
+      "type": "text",
+      "label": "Moment 3 title",
+      "default": "A memory to revisit",
+      "maxLength": 70
+    },
+    "timeline3Text": {
+      "type": "textarea",
+      "label": "Moment 3 story",
+      "default": "If I could keep one day in a photograph, this would be one of them.",
+      "maxLength": 260
+    },
+    "placesTitle": {
+      "type": "text",
+      "label": "Places section title",
+      "default": "Places with a story",
+      "maxLength": 60
+    },
+    "place1Name": {
+      "type": "text",
+      "label": "Place 1 name",
+      "default": "Our favourite place",
+      "maxLength": 60
+    },
+    "place1Note": {
+      "type": "textarea",
+      "label": "Place 1 memory",
+      "default": "A little corner of the world that means a lot.",
+      "maxLength": 180
+    },
+    "place1Image": {
+      "type": "image",
+      "label": "Place 1 photo",
+      "default": "",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "help": "Upload a photo of this place."
+    },
+    "place2Name": {
+      "type": "text",
+      "label": "Place 2 name",
+      "default": "That beautiful day",
+      "maxLength": 60
+    },
+    "place2Note": {
+      "type": "textarea",
+      "label": "Place 2 memory",
+      "default": "Some places become special because of the memories made there.",
+      "maxLength": 180
+    },
+    "place2Image": {
+      "type": "image",
+      "label": "Place 2 photo",
+      "default": "",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "help": "Upload a photo of this place."
+    },
+    "place3Name": {
+      "type": "text",
+      "label": "Place 3 name",
+      "default": "A place to return to",
+      "maxLength": 60
+    },
+    "place3Note": {
+      "type": "textarea",
+      "label": "Place 3 memory",
+      "default": "Let's make more stories here someday.",
+      "maxLength": 180
+    },
+    "place3Image": {
+      "type": "image",
+      "label": "Place 3 photo",
+      "default": "",
+      "accept": "image/*",
+      "maxSizeMB": 8,
+      "help": "Upload a photo of this place."
+    },
+    "gameTitle": {
+      "type": "text",
+      "label": "Game section title",
+      "default": "How well do you remember?",
+      "maxLength": 60
+    },
+    "quizQuestion": {
+      "type": "text",
+      "label": "Quiz question",
+      "default": "Which kind of moment do we always remember?",
+      "maxLength": 160
+    },
+    "quizOption1": {
+      "type": "text",
+      "label": "Answer option 1",
+      "default": "The little unexpected ones",
+      "maxLength": 90
+    },
+    "quizOption2": {
+      "type": "text",
+      "label": "Answer option 2",
+      "default": "Only the perfect photographs",
+      "maxLength": 90
+    },
+    "quizOption3": {
+      "type": "text",
+      "label": "Answer option 3",
+      "default": "The days with no laughter",
+      "maxLength": 90
+    },
+    "quizAnswer": {
+      "type": "select",
+      "label": "Correct answer",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "Option 1"
+        },
+        {
+          "value": "2",
+          "label": "Option 2"
+        },
+        {
+          "value": "3",
+          "label": "Option 3"
+        }
+      ]
+    },
+    "finalTitle": {
+      "type": "text",
+      "label": "Final page title",
+      "default": "The best is still ahead",
+      "maxLength": 70
+    },
+    "finalMessage": {
+      "type": "textarea",
+      "label": "Final personal message",
+      "default": "Thank you for being part of these moments. The photographs may fade, but the feeling will always stay. Here's to all the memories we haven't made yet.",
+      "maxLength": 700
+    },
+    "finalButton": {
+      "type": "text",
+      "label": "Final button text",
+      "default": "Keep this memory forever",
+      "maxLength": 50
+    }
+  }
+}

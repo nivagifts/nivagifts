@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f4eee4">
+<title>Our Memory Roll — NIVA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f4eee4;--paper2:#e9dfd0;--ink:#30291f;--muted:#817666;--accent:#a56b48;--accent2:#d8a77e;--card:#fffaf2;--line:#d9cdbb;--shadow:0 22px 65px #51402a1c}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",sans-serif;min-height:100vh;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.22;background-image:radial-gradient(#8d795e 0.55px,transparent .55px);background-size:7px 7px}
+button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #c78b60;outline-offset:4px}
+.topbar{position:fixed;z-index:20;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px clamp(16px,4vw,54px);background:#f4eee4d9;backdrop-filter:blur(14px);border-bottom:1px solid #d9cdbb88}
+.brand{display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.22em;font-weight:700}.brand-mark{width:27px;height:27px;border:1px solid var(--accent);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-family:Georgia;font-size:16px}
+.progress{display:flex;align-items:center;gap:7px}.progress span{width:6px;height:6px;border-radius:50%;background:#cfc2b1;transition:.3s}.progress span.active{width:22px;border-radius:10px;background:var(--accent)}
+.page-count{font-size:11px;color:var(--muted);letter-spacing:.12em}
+main{padding-top:62px}.scene{display:none;min-height:100svh;padding:78px 20px 42px;align-items:center;justify-content:center;position:relative;animation:sceneIn .65s ease both}.scene.active{display:flex}@keyframes sceneIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.wrap{width:min(1080px,100%);margin:auto}.eyebrow{text-transform:uppercase;letter-spacing:.2em;font-size:10px;color:var(--accent);font-weight:700}.display{font-family:"DM Serif Display",Georgia,serif;font-weight:400;letter-spacing:-.035em}.script{font-family:"Caveat",cursive;color:var(--accent)}
+.cover-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,7vw,90px);align-items:center}.cover-copy{max-width:490px}.cover-copy h1{font-size:clamp(54px,8vw,100px);line-height:.93;margin:22px 0}.cover-copy p{font-size:15px;line-height:1.9;color:var(--muted);max-width:390px}.cover-to{margin-top:24px;font-family:"Caveat";font-size:25px;color:var(--accent)}
+.camera-stage{display:grid;place-items:center;min-height:420px;position:relative}.camera{width:min(390px,82vw);height:260px;border-radius:32px;background:linear-gradient(145deg,#e6d6c2,#b9a58d);box-shadow:inset 0 5px 10px #fff9,0 28px 45px #4e3b2830;position:relative;transform:rotate(-5deg);animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-12px) rotate(-2deg)}}.camera:before{content:"";position:absolute;inset:18px 22px auto;height:16px;border-radius:9px;background:#fff5}
+.lens{position:absolute;width:170px;height:170px;left:50%;top:50%;transform:translate(-50%,-43%);border-radius:50%;background:radial-gradient(circle,#10151a 0 20%,#27323a 21% 32%,#12191e 33% 48%,#56616a 49% 53%,#222b30 54% 66%,#d7c5ae 67% 72%,#8f7d68 73%);box-shadow:0 8px 20px #2e241b77,inset 0 0 0 7px #d4c1a9}.lens:after{content:"";position:absolute;width:35px;height:35px;border-radius:50%;background:#fff8;top:35px;left:45px;filter:blur(5px)}
+.flash{position:absolute;right:33px;top:48px;width:55px;height:38px;border-radius:9px;background:linear-gradient(145deg,#fff8e8,#b7a58f);box-shadow:inset 0 0 0 3px #8b7965}.shutter{position:absolute;right:42px;top:-13px;width:65px;height:20px;border-radius:10px 10px 3px 3px;background:#9e8a73}.viewfinder{position:absolute;left:42px;top:55px;width:42px;height:27px;border-radius:5px;background:#3b3934;box-shadow:inset 0 0 0 4px #d8c8b3}.camera-label{position:absolute;bottom:23px;left:35px;font-size:10px;letter-spacing:.24em;color:#675642;font-weight:700}
+.camera-strap{position:absolute;width:90px;height:360px;border:10px solid #9b866d;border-left:0;border-radius:0 60px 60px 0;right:-32px;top:25px;z-index:-1;transform:rotate(-8deg)}
+.btn{border:0;border-radius:999px;padding:14px 23px;background:var(--ink);color:#fffaf2;font-weight:600;font-size:12px;letter-spacing:.04em;box-shadow:0 10px 24px #30291f25;transition:.25s}.btn:hover{transform:translateY(-3px);background:var(--accent)}.btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none}.cover-copy .btn{margin-top:18px}
+.section-head{text-align:center;margin-bottom:34px}.section-head h2{font-size:clamp(40px,6vw,68px);line-height:1;margin:12px 0}.section-head p{color:var(--muted);font-size:13px}
+.album-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 18px;align-items:start}.polaroid{background:#fffdf8;padding:10px 10px 16px;box-shadow:0 12px 28px #46351f20;transform:rotate(var(--r));transition:.35s;cursor:pointer;position:relative}.polaroid:hover{transform:rotate(0) translateY(-8px) scale(1.03);z-index:2}.polaroid:nth-child(3n){margin-top:22px}.photo{height:190px;background:linear-gradient(135deg,#d9c7b2,#9b8069);overflow:hidden;position:relative}.photo img{width:100%;height:100%;object-fit:cover;display:block}.photo.empty:after{content:"Add your photo";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(135deg,#9d8770aa,#463b3188)}.caption{font-family:"Caveat";font-size:20px;text-align:center;padding-top:9px;color:#594a3a}
+.viewer{position:fixed;inset:0;background:#17130fee;z-index:60;display:none;align-items:center;justify-content:center;padding:24px}.viewer.open{display:flex}.viewer img{max-width:min(85vw,900px);max-height:72vh;object-fit:contain;box-shadow:0 25px 70px #0008}.viewer-caption{position:absolute;bottom:7vh;color:#fff;font-family:"Caveat";font-size:27px}.viewer-close{position:absolute;right:24px;top:18px;color:white;background:none;border:0;font-size:34px}
+.timeline{max-width:720px;margin:auto;position:relative;padding:12px 0}.timeline:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line)}.moment{width:50%;padding:0 38px 32px 0;position:relative}.moment:nth-child(even){margin-left:50%;padding:0 0 32px 38px}.moment:after{content:"";position:absolute;right:-5px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 6px var(--paper),0 0 0 7px var(--line)}.moment:nth-child(even):after{right:auto;left:-5px}.moment-card{background:#fffaf2;border:1px solid var(--line);padding:22px;border-radius:4px;box-shadow:var(--shadow)}.moment-card small{color:var(--accent);letter-spacing:.15em;text-transform:uppercase;font-size:9px}.moment-card h3{font:25px "DM Serif Display";margin:9px 0}.moment-card p{font-size:12px;color:var(--muted);line-height:1.7;margin:0}
+.places{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.place-card{background:#fffaf2;padding:10px;border:1px solid var(--line);box-shadow:var(--shadow);transform:translateY(var(--lift,0))}.place-img{height:190px;background:linear-gradient(135deg,#c7b49c,#74634f);position:relative;overflow:hidden}.place-img img{width:100%;height:100%;object-fit:cover}.place-img:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#1e1a1640,transparent 60%)}.place-body{padding:13px 10px 17px}.place-body h3{font:24px "DM Serif Display";margin:0 0 6px}.place-body p{font-size:12px;line-height:1.7;color:var(--muted);margin:0}
+.game-wrap{max-width:700px;margin:auto;background:#fffaf2;border:1px solid var(--line);padding:clamp(24px,5vw,48px);box-shadow:var(--shadow);text-align:center}.game-icon{font-size:42px}.game-wrap h3{font:32px "DM Serif Display";margin:15px 0}.game-wrap p{color:var(--muted);font-size:13px}.options{display:grid;grid-template-columns:1fr;gap:10px;margin:24px auto;max-width:440px}.option{padding:14px;border:1px solid var(--line);background:#fff;border-radius:8px;color:var(--ink);font-size:13px;transition:.2s}.option:hover{border-color:var(--accent);transform:translateY(-2px)}.option.correct{background:#e7f2e5;border-color:#84a77e}.option.wrong{background:#f8e5e1;border-color:#d59a8c}.game-result{min-height:24px;color:var(--accent);font-family:"Caveat";font-size:24px}
+.final-card{max-width:760px;margin:auto;text-align:center;background:#fffaf2;border:1px solid var(--line);padding:clamp(28px,7vw,72px);box-shadow:var(--shadow);position:relative}.final-card:before,.final-card:after{content:"";position:absolute;width:55px;height:55px;border-color:var(--accent2);border-style:solid}.final-card:before{left:13px;top:13px;border-width:1px 0 0 1px}.final-card:after{right:13px;bottom:13px;border-width:0 1px 1px 0}.final-card h2{font-size:clamp(43px,7vw,76px);line-height:1;margin:18px 0}.final-card p{max-width:520px;margin:0 auto 25px;line-height:2;color:var(--muted);font-size:14px}.signature{font-family:"Caveat";font-size:29px;color:var(--accent);margin:22px 0 0}
+.nav-controls{position:fixed;z-index:25;bottom:18px;left:0;right:0;display:flex;justify-content:center;gap:10px;padding:0 16px;pointer-events:none}.nav-controls button{pointer-events:auto}
+.toast{position:fixed;bottom:82px;left:50%;transform:translate(-50%,15px);background:#30291f;color:white;padding:10px 16px;border-radius:999px;font-size:12px;opacity:0;transition:.25s;z-index:80}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:760px){.cover-grid{grid-template-columns:1fr;text-align:center;gap:4px}.cover-copy{margin:auto}.cover-copy p{margin:0 auto}.camera-stage{min-height:320px;order:-1}.camera{transform:scale(.82) rotate(-5deg);margin:0 auto}.camera-stage{margin-bottom:-20px}.album-grid{grid-template-columns:repeat(2,1fr);gap:16px 12px}.photo{height:150px}.polaroid:nth-child(3n){margin-top:0}.polaroid:nth-child(even){margin-top:18px}.timeline:before{left:10px}.moment,.moment:nth-child(even){width:100%;margin-left:0;padding:0 0 22px 35px}.moment:after,.moment:nth-child(even):after{left:5px;right:auto}.places{grid-template-columns:1fr;max-width:430px;margin:auto}.place-card{transform:none!important}.place-img{height:210px}.scene{padding-top:84px;padding-bottom:86px}.topbar{padding:12px 16px}.page-count{font-size:10px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">✳</span><span>NIVA · MEMORY ROLL</span></div>
+  <div class="progress" id="progress" aria-label="Page progress"></div>
+  <div class="page-count" id="pageCount">01 / 06</div>
+</header>
+
+<main>
+<section class="scene active" id="page0">
+ <div class="wrap cover-grid">
+  <div class="cover-copy">
+   <div class="eyebrow" id="coverEyebrow">A collection of little forever moments</div>
+   <h1 class="display" id="coverTitle">Our<br><em>Memory Roll</em></h1>
+   <p id="coverSubtitle">Every picture has a story. Every story has a place in my heart.</p>
+   <div class="cover-to">Made for <span data-recipient>Someone Special</span> ♡</div>
+   <button class="btn" id="openCamera">Open the camera ↗</button>
+  </div>
+  <div class="camera-stage">
+   <div class="camera-strap"></div>
+   <div class="camera" id="camera">
+    <div class="viewfinder"></div><div class="flash"></div><div class="shutter"></div>
+    <div class="lens"></div><div class="camera-label">NIVA · MEMORY SERIES</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="scene" id="page1">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">01 · The photo album</div><h2 class="display" id="albumTitle">The little things <em>we keep</em></h2><p id="albumSubtitle">Tap any photograph to see it a little closer.</p></div>
+  <div class="album-grid" id="albumGrid"></div>
+ </div>
+</section>
+
+<section class="scene" id="page2">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">02 · Time capsule</div><h2 class="display" id="timelineTitle">A timeline <em>of us</em></h2><p>Some days deserve their own place in history.</p></div>
+  <div class="timeline" id="timeline"></div>
+ </div>
+</section>
+
+<section class="scene" id="page3">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">03 · Pin the feeling</div><h2 class="display" id="placesTitle">Places with <em>a story</em></h2><p>Little places that hold big feelings.</p></div>
+  <div class="places" id="places"></div>
+ </div>
+</section>
+
+<section class="scene" id="page4">
+ <div class="wrap">
+  <div class="section-head"><div class="eyebrow">04 · A tiny memory game</div><h2 class="display" id="gameTitle">How well do <em>you remember?</em></h2></div>
+  <div class="game-wrap">
+   <div class="game-icon">🎞️</div><h3 id="quizQuestion">Which kind of moment do we always remember?</h3>
+   <p>Choose the answer that feels right.</p>
+   <div class="options" id="options"></div>
+   <div class="game-result" id="gameResult" aria-live="polite"></div>
+   <button class="btn secondary" id="tryAgain" style="display:none">Try again ↻</button>
+  </div>
+ </div>
+</section>
+
+<section class="scene" id="page5">
+ <div class="wrap">
+  <div class="final-card">
+   <div class="eyebrow">One last thing before you go</div>
+   <div class="script" style="font-size:28px">To <span data-recipient>Someone Special</span>, with love</div>
+   <h2 class="display" id="finalTitle">The best is <em>still ahead</em></h2>
+   <p id="finalMessage">Thank you for being part of these moments. The photographs may fade, but the feeling will always stay. Here's to all the memories we haven't made yet.</p>
+   <button class="btn" id="finalButton">Keep this memory forever ♡</button>
+   <div class="signature">Always, <span data-sender>Someone who cares</span></div>
+  </div>
+ </div>
+</section>
+</main>
+
+<div class="nav-controls">
+ <button class="btn secondary" id="prevBtn" style="display:none">← Back</button>
+ <button class="btn" id="nextBtn" style="display:none">Next memory →</button>
+</div>
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Photo viewer">
+ <button class="viewer-close" id="viewerClose" aria-label="Close">×</button>
+ <img id="viewerImage" alt="Memory photograph"><div class="viewer-caption" id="viewerCaption"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const DEFAULTS = {
+ recipientName:"Someone Special",senderName:"Someone who cares",
+ coverEyebrow:"A collection of little forever moments",coverTitle:"Our Memory Roll",
+ coverSubtitle:"Every picture has a story. Every story has a place in my heart.",coverButton:"Open the camera",
+ albumTitle:"The little things we keep",albumSubtitle:"Tap any photograph to see it a little closer.",
+ photo1:"",photo2:"",photo3:"",photo4:"",photo5:"",photo6:"",photo7:"",photo8:"",
+ photoCaption1:"The day everything felt brighter",photoCaption2:"A moment worth keeping",photoCaption3:"The happiest little chaos",photoCaption4:"One for the memory box",
+ photoCaption5:"A favourite kind of day",photoCaption6:"Just us being us",photoCaption7:"A place in my heart",photoCaption8:"More memories to come",
+ timelineTitle:"A timeline of us",
+ timeline1Date:"The beginning",timeline1Title:"The first little memory",timeline1Text:"Some moments look ordinary until they become unforgettable.",
+ timeline2Date:"A little later",timeline2Title:"The day we laughed",timeline2Text:"The kind of laughter that stays with you long after the day ends.",
+ timeline3Date:"One special day",timeline3Title:"A memory to revisit",timeline3Text:"If I could keep one day in a photograph, this would be one of them.",
+ placesTitle:"Places with a story",place1Name:"Our favourite place",place1Note:"A little corner of the world that means a lot.",place1Image:"",
+ place2Name:"That beautiful day",place2Note:"Some places become special because of the memories made there.",place2Image:"",
+ place3Name:"A place to return to",place3Note:"Let's make more stories here someday.",place3Image:"",
+ gameTitle:"How well do you remember?",quizQuestion:"Which kind of moment do we always remember?",
+ quizOption1:"The little unexpected ones",quizOption2:"Only the perfect photographs",quizOption3:"The days with no laughter",quizAnswer:"1",
+ finalTitle:"The best is still ahead",finalMessage:"Thank you for being part of these moments. The photographs may fade, but the feeling will always stay. Here's to all the memories we haven't made yet.",
+ finalButton:"Keep this memory forever"
+};
+let CONFIG={...DEFAULTS},current=0;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function setText(id,v){const el=$(id);if(el&&v!=null)el.textContent=v}
+function resolveImage(path){if(!path)return "";return String(path).trim()}
+function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2400)}
+function imageMarkup(path,alt){if(path)return `<img src="${esc(resolveImage(path))}" alt="${esc(alt)}" loading="lazy">`;return ""}
+function render(cfg){
+ CONFIG={...DEFAULTS,...cfg};
+ ["coverEyebrow","coverTitle","coverSubtitle","albumTitle","albumSubtitle","timelineTitle","placesTitle","gameTitle","quizQuestion","finalTitle","finalMessage","finalButton"].forEach(k=>setText(k,CONFIG[k]));
+ document.querySelectorAll("[data-recipient]").forEach(e=>e.textContent=CONFIG.recipientName||"Someone Special");
+ document.querySelectorAll("[data-sender]").forEach(e=>e.textContent=CONFIG.senderName||"Someone who cares");
+ const album=$("albumGrid");album.innerHTML="";
+ for(let i=1;i<=8;i++){
+  const src=CONFIG["photo"+i],caption=CONFIG["photoCaption"+i]||"A little memory";
+  const card=document.createElement("button");card.type="button";card.className="polaroid";card.style.setProperty("--r",`${[-3,2,-1,3,-2,2,-3,1][i-1]}deg`);
+  card.setAttribute("aria-label",`Open photo ${i}: ${caption}`);
+  card.innerHTML=`<div class="photo ${src?"":"empty"}">${imageMarkup(src,caption)}</div><div class="caption">${esc(caption)}</div>`;
+  card.addEventListener("click",()=>{if(!src){showToast("Add a photo in the NIVA editor to fill this frame.");return}$("viewerImage").src=src;$("viewerCaption").textContent=caption;$("viewer").classList.add("open")});
+  album.appendChild(card);
+ }
+ const timeline=$("timeline");timeline.innerHTML="";
+ for(let i=1;i<=3;i++){const item=document.createElement("article");item.className="moment";item.innerHTML=`<div class="moment-card"><small>${esc(CONFIG["timeline"+i+"Date"])}</small><h3>${esc(CONFIG["timeline"+i+"Title"])}</h3><p>${esc(CONFIG["timeline"+i+"Text"])}</p></div>`;timeline.appendChild(item)}
+ const places=$("places");places.innerHTML="";
+ for(let i=1;i<=3;i++){const src=CONFIG["place"+i+"Image"];const card=document.createElement("article");card.className="place-card";card.style.setProperty("--lift",`${[0,14,4][i-1]}px`);card.innerHTML=`<div class="place-img">${imageMarkup(src,CONFIG["place"+i+"Name"])}</div><div class="place-body"><h3>${esc(CONFIG["place"+i+"Name"])}</h3><p>${esc(CONFIG["place"+i+"Note"])}</p></div>`;places.appendChild(card)}
+ renderGame();
+}
+function renderGame(){
+ const box=$("options");box.innerHTML="";$("gameResult").textContent="";$("tryAgain").style.display="none";
+ for(let i=1;i<=3;i++){const b=document.createElement("button");b.className="option";b.textContent=CONFIG["quizOption"+i];b.addEventListener("click",()=>{if(box.dataset.done)return;box.dataset.done="1";if(String(i)===String(CONFIG.quizAnswer)){b.classList.add("correct");$("gameResult").textContent="You remembered it! Some moments stay forever. ♡"}else{b.classList.add("wrong");$("gameResult").textContent="Not quite — but every memory is worth another look. ♡";const correct=box.children[Number(CONFIG.quizAnswer)-1];if(correct)correct.classList.add("correct")}$("tryAgain").style.display="inline-block"});box.appendChild(b)}
+ delete box.dataset.done;
+}
+function showPage(index){
+ current=Math.max(0,Math.min(5,index));
+ document.querySelectorAll(".scene").forEach((p,i)=>p.classList.toggle("active",i===current));
+ $("pageCount").textContent=String(current+1).padStart(2,"0")+" / 06";
+ $("progress").innerHTML=Array.from({length:6},(_,i)=>`<span class="${i===current?"active":""}"></span>`).join("");
+ $("prevBtn").style.display=current===0?"none":"inline-block";
+ $("nextBtn").style.display=current===5?"none":"inline-block";
+ $("nextBtn").textContent=current===4?"Open the final page →":"Next memory →";
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+$("openCamera").addEventListener("click",()=>{const c=$("camera");c.animate([{transform:"rotate(-5deg) scale(1)"},{transform:"rotate(-5deg) scale(1.08)"},{transform:"rotate(-5deg) scale(1)"}],{duration:550});document.body.animate([{filter:"brightness(1)"},{filter:"brightness(2.5)"},{filter:"brightness(1)"}],{duration:520}).onfinish=()=>showPage(1)});
+$("prevBtn").addEventListener("click",()=>showPage(current-1));
+$("nextBtn").addEventListener("click",()=>showPage(current+1));
+$("viewerClose").addEventListener("click",()=>$("viewer").classList.remove("open"));
+$("viewer").addEventListener("click",e=>{if(e.target===$("viewer"))$("viewer").classList.remove("open")});
+$("tryAgain").addEventListener("click",renderGame);
+$("finalButton").addEventListener("click",()=>showToast("This memory is yours to keep. ♡"));
+async function boot(){
+ render(DEFAULTS);
+ try{const r=await fetch("config.json",{cache:"no-store"});if(r.ok)render({...DEFAULTS,...await r.json()})}catch(e){}
+ window.addEventListener("message",event=>{
+  if(event.origin!==location.origin)return;
+  const msg=event.data||{};
+  if(msg.type==="NIVA_PREVIEW_UPDATE"&&msg.data)render({...DEFAULTS,...msg.data});
+  if(msg.type==="NIVA_PREVIEW_PING")try{parent.postMessage({type:"NIVA_PREVIEW_READY"},location.origin)}catch(e){}
+ });
+ try{if(parent!==window)parent.postMessage({type:"NIVA_PREVIEW_READY"},location.origin)}catch(e){}
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+</script>
+</body>
+</html>

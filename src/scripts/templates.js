@@ -54,6 +54,10 @@ const NivaTemplates = (() => {
       id: "birthday-special",
       configPath: "/templates/birthday/birthday-special/config.json",
     },
+    {
+      id: "memory-roll",
+      configPath: "/templates/memories/memory-roll/config.json",
+    },
     // ▼▼▼ ADD NEW TEMPLATES BELOW ▼▼▼
   ];
 

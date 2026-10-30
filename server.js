@@ -988,7 +988,7 @@ app.get("/api/account", requireAuthenticated, async (req, res, next) => {
 const ALLOWED_TEMPLATE_IDS = new Set([
   "eternal-love", "love-proposal", "birthday-magic", "loveletter",
   "eternal-anniversary", "besties", "memory-box","apologyletter","date-invite",
-  "constellation-proposal", "birthday-special"
+  "constellation-proposal", "birthday-special","memory-roll"
 ]);
 
 const TEMPLATE_PRICES = {
@@ -1003,6 +1003,7 @@ const TEMPLATE_PRICES = {
   "date-invite": 299,
   "constellation-proposal": 299,
   "birthday-special": 99,
+  "memory-roll": 299
 };
 
 const MAX_ENVELOPE_BYTES = 1024 * 1024 * 1024;
