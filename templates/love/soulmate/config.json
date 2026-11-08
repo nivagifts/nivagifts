@@ -1,170 +1,502 @@
 {
-  "siteTitle": "Our Little Universe",
+  "id": "soulmate",
+  "name": "Soulmate",
+  "category": "love",
+  "description": "An emotional 7-page interactive soulmate journey featuring a personalized handwritten love letter, realistic birthday moon phases calculated from both partners' dates of birth, a symbolic shared full moon, a beautiful memory album, a personal relationship timeline, a unique couple quiz, background music, and a heartfelt final wish.",
+  "price": 599,
+  "currency": "INR",
+  "version": "1.0.0",
+  "active": true,
+  "templatePath": "/templates/love/soulmate/template.html",
+  "previewImage": "/templates/love/soulmate/preview.jpg",
 
-  "couple": {
-    "personOne": "Alex",
-    "personTwo": "Sam",
-    "personOneDOB": "2001-04-18",
-    "personTwoDOB": "2002-09-27"
-  },
+  "features": [
+    "7 interactive romantic pages",
+    "Animated romantic welcome experience",
+    "Personalized handwritten love letter",
+    "Date-based birthday moon phases",
+    "Realistic lunar phase visualization",
+    "Symbolic soulmate full moon experience",
+    "Personalized photo memories album",
+    "Relationship timeline",
+    "Interactive couple memory quiz",
+    "Background music with mute/unmute control",
+    "Automatic music playback when browser permits",
+    "Customizable romantic themes and colours",
+    "Personalized final wish",
+    "Responsive mobile and desktop design"
+  ],
 
-  "theme": {
-    "background": "#100d19",
-    "backgroundSecondary": "#21152b",
-    "text": "#fff5f7",
-    "muted": "#c8b7c8",
-    "accent": "#e99ab5",
-    "accentSecondary": "#c8a3ef"
-  },
+  "customization": {
+    "personOne": {
+      "label": "First Person's Name",
+      "type": "text",
+      "default": "Alex",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "Enter first person's name"
+    },
 
-  "behaviour": {
-    "nextButtonDelay": 6500
-  },
+    "personTwo": {
+      "label": "Second Person's Name",
+      "type": "text",
+      "default": "Sam",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "Enter second person's name"
+    },
 
-  "welcome": {
-    "eyebrow": "A little universe of us",
-    "title": "Our Story, Written in the Stars",
-    "subtitle": "Some moments become memories. Some people become home.",
-    "buttonText": "Open our story"
-  },
+    "personOneDOB": {
+      "label": "First Person's Date of Birth",
+      "type": "date",
+      "required": true,
+      "help": "Used to calculate the moon phase on the first person's birthday."
+    },
 
-  "letter": {
-    "eyebrow": "A letter from my heart",
-    "heading": "To My Favourite Person",
-    "paragraphs": [
-      "There are so many things I wish I could tell you, and sometimes words still feel too small.",
-      "You have become a beautiful part of my everyday life. Even the simplest moments feel special when they have you in them.",
-      "If I could keep one thing forever, it would be the feeling of being able to share this life with you."
-    ],
-    "signoff": "With all my love,",
-    "senderName": "Forever yours",
-    "buttonText": "There's something written in the moon"
-  },
+    "personTwoDOB": {
+      "label": "Second Person's Date of Birth",
+      "type": "date",
+      "required": true,
+      "help": "Used to calculate the moon phase on the second person's birthday."
+    },
 
-  "moon": {
-    "eyebrow": "Written in the universe",
-    "heading": "Two Birthdays. Two Moons. One Story.",
-    "description": "The moon was in a different phase on each of your birthdays. Here's what the sky looked like on those dates.",
-    "message": "Two different nights, two different skies — and somehow, your stories found a way to meet.",
-    "combinedHeading": "A Little Universe of Our Own",
-    "combinedMessage": "Not a scientific moon phase — just a symbol of two lives sharing one beautiful sky.",
-    "buttonText": "Let's revisit our memories"
-  },
+    "theme": {
+      "label": "Website Theme",
+      "type": "select",
+      "default": "midnight-romance",
+      "options": [
+        {
+          "label": "Midnight Romance",
+          "value": "midnight-romance"
+        },
+        {
+          "label": "Blush Love",
+          "value": "blush-love"
+        },
+        {
+          "label": "Lavender Dreams",
+          "value": "lavender-dreams"
+        },
+        {
+          "label": "Moonlight Elegance",
+          "value": "moonlight-elegance"
+        },
+        {
+          "label": "Custom Theme",
+          "value": "custom"
+        }
+      ],
+      "required": true
+    },
 
-  "album": {
-    "eyebrow": "Little pieces of forever",
-    "heading": "Our Memory Album",
-    "description": "Every picture holds a moment we never want to lose.",
-    "photos": [
-      {
-        "src": "assets/memories/memory-01.jpg",
-        "alt": "A favourite memory",
-        "caption": "The day everything felt special"
+    "backgroundColor": {
+      "label": "Background Colour",
+      "type": "color",
+      "default": "#100d19",
+      "required": true
+    },
+
+    "secondaryColor": {
+      "label": "Secondary Background Colour",
+      "type": "color",
+      "default": "#21152b",
+      "required": true
+    },
+
+    "textColor": {
+      "label": "Text Colour",
+      "type": "color",
+      "default": "#fff5f7",
+      "required": true
+    },
+
+    "accentColor": {
+      "label": "Primary Accent Colour",
+      "type": "color",
+      "default": "#e99ab5",
+      "required": true
+    },
+
+    "accentSecondaryColor": {
+      "label": "Secondary Accent Colour",
+      "type": "color",
+      "default": "#c8a3ef",
+      "required": true
+    },
+
+    "welcomeEyebrow": {
+      "label": "Welcome Small Heading",
+      "type": "text",
+      "default": "A little universe of us",
+      "required": false,
+      "maxLength": 100
+    },
+
+    "welcomeTitle": {
+      "label": "Welcome Main Heading",
+      "type": "text",
+      "default": "Our Story, Written in the Stars",
+      "required": true,
+      "maxLength": 120
+    },
+
+    "welcomeSubtitle": {
+      "label": "Welcome Message",
+      "type": "textarea",
+      "default": "Some moments become memories. Some people become home.",
+      "required": true,
+      "maxLength": 500
+    },
+
+    "letterHeading": {
+      "label": "Love Letter Heading",
+      "type": "text",
+      "default": "To My Favourite Person",
+      "required": true,
+      "maxLength": 100
+    },
+
+    "letterParagraphs": {
+      "label": "Personal Love Letter",
+      "type": "textarea",
+      "default": [
+        "There are so many things I wish I could tell you, and sometimes words still feel too small.",
+        "You have become a beautiful part of my everyday life. Even the simplest moments feel special when they have you in them.",
+        "If I could keep one thing forever, it would be the feeling of being able to share this life with you."
+      ],
+      "required": true,
+      "maxLength": 5000,
+      "help": "Write your letter. Separate paragraphs with a new line."
+    },
+
+    "letterSignoff": {
+      "label": "Letter Sign-off",
+      "type": "text",
+      "default": "With all my love,",
+      "required": false,
+      "maxLength": 100
+    },
+
+    "letterSenderName": {
+      "label": "Letter Sender Name",
+      "type": "text",
+      "default": "Forever Yours",
+      "required": false,
+      "maxLength": 60
+    },
+
+    "moonHeading": {
+      "label": "Moon Page Heading",
+      "type": "text",
+      "default": "Two Birthdays. Two Moons. One Story.",
+      "required": true,
+      "maxLength": 120
+    },
+
+    "moonDescription": {
+      "label": "Moon Page Description",
+      "type": "textarea",
+      "default": "The moon was in a different phase on each of your birthdays. Here's what the sky looked like on those dates.",
+      "required": false,
+      "maxLength": 500
+    },
+
+    "moonMessage": {
+      "label": "Moon Page Personal Message",
+      "type": "textarea",
+      "default": "Two different nights, two different skies — and somehow, your stories found a way to meet.",
+      "required": false,
+      "maxLength": 1000
+    },
+
+    "combinedMoonHeading": {
+      "label": "Combined Moon Heading",
+      "type": "text",
+      "default": "A Little Universe of Our Own",
+      "required": false,
+      "maxLength": 120
+    },
+
+    "combinedMoonMessage": {
+      "label": "Combined Moon Message",
+      "type": "textarea",
+      "default": "Not a scientific moon phase — just a symbol of two lives sharing one beautiful sky.",
+      "required": false,
+      "maxLength": 500
+    },
+
+    "photos": {
+      "label": "Our Memory Album",
+      "type": "imageGallery",
+      "required": false,
+      "maxFiles": 30,
+      "maxSizeMB": 150,
+      "accept": "image/jpeg,image/png,image/webp,image/gif",
+      "help": "Upload your favourite memories. These photos will appear in the gift website."
+    },
+
+    "captions": {
+      "label": "Memory Captions",
+      "type": "textArray",
+      "default": [
+        "The day everything felt special",
+        "One of my favourite smiles",
+        "A memory worth keeping forever",
+        "Just us, being us"
+      ],
+      "required": false,
+      "maxItems": 30,
+      "help": "Add one caption for each photo, in the same order."
+    },
+
+    "timelineEvents": {
+      "label": "Our Relationship Timeline",
+      "type": "repeater",
+      "required": false,
+      "maxItems": 30,
+      "fields": {
+        "date": {
+          "label": "Date",
+          "type": "text",
+          "placeholder": "e.g. 18 April 2023"
+        },
+        "icon": {
+          "label": "Timeline Icon",
+          "type": "text",
+          "default": "♡",
+          "maxLength": 5
+        },
+        "title": {
+          "label": "Memory Title",
+          "type": "text",
+          "placeholder": "e.g. Our First Hello",
+          "maxLength": 100
+        },
+        "description": {
+          "label": "Memory Description",
+          "type": "textarea",
+          "maxLength": 1000
+        },
+        "image": {
+          "label": "Timeline Photo",
+          "type": "image",
+          "required": false,
+          "accept": "image/jpeg,image/png,image/webp,image/gif"
+        }
       },
-      {
-        "src": "assets/memories/memory-02.jpg",
-        "alt": "A happy moment together",
-        "caption": "One of my favourite smiles"
+      "help": "Add important dates and memories from your relationship."
+    },
+
+    "gameHeading": {
+      "label": "Memory Game Heading",
+      "type": "text",
+      "default": "How Well Do You Know Us?",
+      "required": true,
+      "maxLength": 120
+    },
+
+    "gameQuestions": {
+      "label": "Couple Memory Quiz",
+      "type": "repeater",
+      "required": false,
+      "maxItems": 15,
+      "fields": {
+        "question": {
+          "label": "Question",
+          "type": "text",
+          "required": true,
+          "maxLength": 300
+        },
+        "options": {
+          "label": "Answer Options",
+          "type": "textArray",
+          "required": true,
+          "minItems": 2,
+          "maxItems": 4
+        },
+        "answer": {
+          "label": "Correct Answer",
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "help": "Enter the option position starting from 0."
+        },
+        "success": {
+          "label": "Correct Answer Message",
+          "type": "text",
+          "maxLength": 300
+        },
+        "wrong": {
+          "label": "Other Answer Message",
+          "type": "text",
+          "maxLength": 300
+        }
       },
-      {
-        "src": "assets/memories/memory-03.jpg",
-        "alt": "A special day",
-        "caption": "A memory worth keeping"
-      },
-      {
-        "src": "assets/memories/memory-04.jpg",
-        "alt": "A beautiful memory",
-        "caption": "Just us, being us"
-      }
-    ],
-    "buttonText": "See how our story unfolded"
+      "help": "Create a fun quiz using your favourite shared memories."
+    },
+
+    "gameEndingMessage": {
+      "label": "Game Completion Message",
+      "type": "textarea",
+      "default": "The real prize is the memories we share. ♡",
+      "required": false,
+      "maxLength": 500
+    },
+
+    "musicUrl": {
+      "label": "Background Music",
+      "type": "audio",
+      "required": false,
+      "maxSizeMB": 100,
+      "accept": "audio/mpeg,audio/mp3,audio/wav,audio/ogg",
+      "help": "Upload a song for the gift website. A music icon will let the recipient mute or unmute it."
+    },
+
+    "musicVolume": {
+      "label": "Music Volume",
+      "type": "range",
+      "default": 0.65,
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "required": false
+    },
+
+    "finalHeading": {
+      "label": "Final Page Heading",
+      "type": "text",
+      "default": "May We Keep Choosing Each Other",
+      "required": true,
+      "maxLength": 120
+    },
+
+    "finalMessage": {
+      "label": "Final Wish",
+      "type": "textarea",
+      "default": "I don't know what every tomorrow will look like, but I hope it holds more laughter, more little adventures, more memories, and more reasons to be grateful that our paths crossed.",
+      "required": true,
+      "maxLength": 2000
+    },
+
+    "finalSignature": {
+      "label": "Final Signature",
+      "type": "text",
+      "default": "With love, always.",
+      "required": false,
+      "maxLength": 100
+    },
+
+    "finalDateText": {
+      "label": "Final Page Date Text",
+      "type": "text",
+      "default": "A little gift, made just for you.",
+      "required": false,
+      "maxLength": 150
+    }
   },
 
-  "timeline": {
-    "eyebrow": "Every chapter matters",
-    "heading": "Our Little Timeline",
-    "description": "From the first hello to all the moments that followed.",
-    "events": [
-      {
-        "date": "18 April 2023",
-        "icon": "✦",
-        "title": "The First Hello",
-        "description": "A simple beginning that became a beautiful part of our story.",
-        "image": ""
-      },
-      {
-        "date": "02 June 2023",
-        "icon": "♡",
-        "title": "A Special Memory",
-        "description": "One of those moments that still makes me smile.",
-        "image": "assets/memories/memory-02.jpg"
-      },
-      {
-        "date": "14 February 2024",
-        "icon": "✧",
-        "title": "Another Beautiful Chapter",
-        "description": "A day I would happily experience all over again.",
-        "image": ""
-      }
-    ],
-    "buttonText": "One little game before the final page"
-  },
+  "sections": [
+    {
+      "title": "Couple Details",
+      "subtitle": "Add both names and birthdays for the personalized moon experience.",
+      "fields": [
+        "personOne",
+        "personTwo",
+        "personOneDOB",
+        "personTwoDOB"
+      ]
+    },
+    {
+      "title": "Website Appearance",
+      "subtitle": "Choose a romantic theme and customize the colours.",
+      "fields": [
+        "theme",
+        "backgroundColor",
+        "secondaryColor",
+        "textColor",
+        "accentColor",
+        "accentSecondaryColor"
+      ]
+    },
+    {
+      "title": "Welcome Experience",
+      "subtitle": "Create the first impression of your gift.",
+      "fields": [
+        "welcomeEyebrow",
+        "welcomeTitle",
+        "welcomeSubtitle"
+      ]
+    },
+    {
+      "title": "Handwritten Love Letter",
+      "subtitle": "Express your feelings through a personal letter.",
+      "fields": [
+        "letterHeading",
+        "letterParagraphs",
+        "letterSignoff",
+        "letterSenderName"
+      ]
+    },
+    {
+      "title": "Our Birthday Moons",
+      "subtitle": "Show the moon phases calculated from both birthdays.",
+      "fields": [
+        "moonHeading",
+        "moonDescription",
+        "moonMessage",
+        "combinedMoonHeading",
+        "combinedMoonMessage"
+      ]
+    },
+    {
+      "title": "Memory Album",
+      "subtitle": "Upload photos and write captions for your memories.",
+      "fields": [
+        "photos",
+        "captions"
+      ]
+    },
+    {
+      "title": "Relationship Timeline",
+      "subtitle": "Add important dates and moments from your story.",
+      "fields": [
+        "timelineEvents"
+      ]
+    },
+    {
+      "title": "Couple Memory Game",
+      "subtitle": "Create a fun quiz using your shared memories.",
+      "fields": [
+        "gameHeading",
+        "gameQuestions",
+        "gameEndingMessage"
+      ]
+    },
+    {
+      "title": "Background Music",
+      "subtitle": "Choose a song to accompany the gift experience.",
+      "fields": [
+        "musicUrl",
+        "musicVolume"
+      ]
+    },
+    {
+      "title": "Final Wish",
+      "subtitle": "End the journey with a personal message.",
+      "fields": [
+        "finalHeading",
+        "finalMessage",
+        "finalSignature",
+        "finalDateText"
+      ]
+    }
+  ],
 
-  "game": {
-    "eyebrow": "A tiny test of our story",
-    "heading": "How Well Do You Know Us?",
-    "description": "A little game made from the memories we share.",
-    "questions": [
-      {
-        "question": "What would make an ordinary day special?",
-        "options": [
-          "A little surprise",
-          "Spending time together",
-          "A long conversation"
-        ],
-        "answer": 1,
-        "success": "Exactly! The simplest moments can mean the most. ♡",
-        "wrong": "A lovely answer too. Every little moment matters. ♡"
-      },
-      {
-        "question": "Which memory would we love to relive?",
-        "options": [
-          "Our first meeting",
-          "Our funniest day",
-          "A quiet moment together"
-        ],
-        "answer": 0,
-        "success": "That's one memory worth keeping forever! ♡",
-        "wrong": "That would be a beautiful memory to relive too!"
-      },
-      {
-        "question": "What's the best part of our story?",
-        "options": [
-          "The photos",
-          "The dates",
-          "The people in it"
-        ],
-        "answer": 2,
-        "success": "You found the right answer. It's always about us. ♡",
-        "wrong": "The best part is still the people in the story. ♡"
-      }
-    ],
-    "finishedHeading": "And that's our little story!",
-    "endingMessage": "The real prize is the memories we share. ♡",
-    "buttonText": "One last thing"
-  },
-
-  "finalWish": {
-    "eyebrow": "And this is my wish",
-    "heading": "May We Keep Choosing Each Other",
-    "message": "I don't know what every tomorrow will look like, but I hope it holds more laughter, more little adventures, more memories, and more reasons to be grateful that our paths crossed.",
-    "signature": "With love, always.",
-    "dateText": "A little gift, made just for you."
-  },
-
-  "song": {
-    "src": "assets/our-song.mp3",
-    "volume": 0.65,
-    "loop": true
+  "preview": {
+    "nameField": "personTwo",
+    "senderField": "personOne",
+    "messageField": "letterParagraphs",
+    "photosField": "photos",
+    "themeField": "theme"
   }
 }
