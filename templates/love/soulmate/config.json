@@ -1,0 +1,170 @@
+{
+  "siteTitle": "Our Little Universe",
+
+  "couple": {
+    "personOne": "Alex",
+    "personTwo": "Sam",
+    "personOneDOB": "2001-04-18",
+    "personTwoDOB": "2002-09-27"
+  },
+
+  "theme": {
+    "background": "#100d19",
+    "backgroundSecondary": "#21152b",
+    "text": "#fff5f7",
+    "muted": "#c8b7c8",
+    "accent": "#e99ab5",
+    "accentSecondary": "#c8a3ef"
+  },
+
+  "behaviour": {
+    "nextButtonDelay": 6500
+  },
+
+  "welcome": {
+    "eyebrow": "A little universe of us",
+    "title": "Our Story, Written in the Stars",
+    "subtitle": "Some moments become memories. Some people become home.",
+    "buttonText": "Open our story"
+  },
+
+  "letter": {
+    "eyebrow": "A letter from my heart",
+    "heading": "To My Favourite Person",
+    "paragraphs": [
+      "There are so many things I wish I could tell you, and sometimes words still feel too small.",
+      "You have become a beautiful part of my everyday life. Even the simplest moments feel special when they have you in them.",
+      "If I could keep one thing forever, it would be the feeling of being able to share this life with you."
+    ],
+    "signoff": "With all my love,",
+    "senderName": "Forever yours",
+    "buttonText": "There's something written in the moon"
+  },
+
+  "moon": {
+    "eyebrow": "Written in the universe",
+    "heading": "Two Birthdays. Two Moons. One Story.",
+    "description": "The moon was in a different phase on each of your birthdays. Here's what the sky looked like on those dates.",
+    "message": "Two different nights, two different skies — and somehow, your stories found a way to meet.",
+    "combinedHeading": "A Little Universe of Our Own",
+    "combinedMessage": "Not a scientific moon phase — just a symbol of two lives sharing one beautiful sky.",
+    "buttonText": "Let's revisit our memories"
+  },
+
+  "album": {
+    "eyebrow": "Little pieces of forever",
+    "heading": "Our Memory Album",
+    "description": "Every picture holds a moment we never want to lose.",
+    "photos": [
+      {
+        "src": "assets/memories/memory-01.jpg",
+        "alt": "A favourite memory",
+        "caption": "The day everything felt special"
+      },
+      {
+        "src": "assets/memories/memory-02.jpg",
+        "alt": "A happy moment together",
+        "caption": "One of my favourite smiles"
+      },
+      {
+        "src": "assets/memories/memory-03.jpg",
+        "alt": "A special day",
+        "caption": "A memory worth keeping"
+      },
+      {
+        "src": "assets/memories/memory-04.jpg",
+        "alt": "A beautiful memory",
+        "caption": "Just us, being us"
+      }
+    ],
+    "buttonText": "See how our story unfolded"
+  },
+
+  "timeline": {
+    "eyebrow": "Every chapter matters",
+    "heading": "Our Little Timeline",
+    "description": "From the first hello to all the moments that followed.",
+    "events": [
+      {
+        "date": "18 April 2023",
+        "icon": "✦",
+        "title": "The First Hello",
+        "description": "A simple beginning that became a beautiful part of our story.",
+        "image": ""
+      },
+      {
+        "date": "02 June 2023",
+        "icon": "♡",
+        "title": "A Special Memory",
+        "description": "One of those moments that still makes me smile.",
+        "image": "assets/memories/memory-02.jpg"
+      },
+      {
+        "date": "14 February 2024",
+        "icon": "✧",
+        "title": "Another Beautiful Chapter",
+        "description": "A day I would happily experience all over again.",
+        "image": ""
+      }
+    ],
+    "buttonText": "One little game before the final page"
+  },
+
+  "game": {
+    "eyebrow": "A tiny test of our story",
+    "heading": "How Well Do You Know Us?",
+    "description": "A little game made from the memories we share.",
+    "questions": [
+      {
+        "question": "What would make an ordinary day special?",
+        "options": [
+          "A little surprise",
+          "Spending time together",
+          "A long conversation"
+        ],
+        "answer": 1,
+        "success": "Exactly! The simplest moments can mean the most. ♡",
+        "wrong": "A lovely answer too. Every little moment matters. ♡"
+      },
+      {
+        "question": "Which memory would we love to relive?",
+        "options": [
+          "Our first meeting",
+          "Our funniest day",
+          "A quiet moment together"
+        ],
+        "answer": 0,
+        "success": "That's one memory worth keeping forever! ♡",
+        "wrong": "That would be a beautiful memory to relive too!"
+      },
+      {
+        "question": "What's the best part of our story?",
+        "options": [
+          "The photos",
+          "The dates",
+          "The people in it"
+        ],
+        "answer": 2,
+        "success": "You found the right answer. It's always about us. ♡",
+        "wrong": "The best part is still the people in the story. ♡"
+      }
+    ],
+    "finishedHeading": "And that's our little story!",
+    "endingMessage": "The real prize is the memories we share. ♡",
+    "buttonText": "One last thing"
+  },
+
+  "finalWish": {
+    "eyebrow": "And this is my wish",
+    "heading": "May We Keep Choosing Each Other",
+    "message": "I don't know what every tomorrow will look like, but I hope it holds more laughter, more little adventures, more memories, and more reasons to be grateful that our paths crossed.",
+    "signature": "With love, always.",
+    "dateText": "A little gift, made just for you."
+  },
+
+  "song": {
+    "src": "assets/our-song.mp3",
+    "volume": 0.65,
+    "loop": true
+  }
+}

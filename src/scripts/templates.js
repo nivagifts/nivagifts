@@ -58,6 +58,10 @@ const NivaTemplates = (() => {
       id: "memory-roll",
       configPath: "/templates/memories/memory-roll/config.json",
     },
+    {
+      id: "soulmate",
+      configPath: "/templates/love/soulmate/config.json",
+    },
     // ▼▼▼ ADD NEW TEMPLATES BELOW ▼▼▼
   ];
 

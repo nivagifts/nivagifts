@@ -27,6 +27,7 @@ const TEMPLATE_PRICES = {
   "constellation-proposal": 299,
   "birthday-special": 99,
   "memory-roll": 299,
+  "soulmate": 599,
 };
 
 const TEMPLATE_PLAN_NAMES = {
