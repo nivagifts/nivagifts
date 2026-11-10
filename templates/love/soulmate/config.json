@@ -1,171 +1,178 @@
 {
-  "siteTitle": "Two Souls, One Moon",
-
-  "couple": {
-    "personOne": "Alex",
-    "personTwo": "Sam",
-    "personOneDOB": "1998-04-12",
-    "personTwoDOB": "1999-09-23"
-  },
-
-  "theme": {
-    "background": "#100d19",
-    "backgroundSecondary": "#21152b",
-    "text": "#fff5f7",
-    "muted": "#c8b7c8",
-    "accent": "#e99ab5",
-    "accentSecondary": "#c8a3ef"
-  },
-
-  "welcome": {
-    "eyebrow": "A little universe of us",
-    "title": "Our Story, Written in the Stars",
-    "subtitle": "Some moments become memories. Some people become home.",
-    "buttonText": "Open our story"
-  },
-
-  "letter": {
-    "eyebrow": "A letter from my heart",
-    "heading": "To My Favourite Person",
-    "paragraphs": [
-      "There are so many things I wish I could tell you, and sometimes words still feel too small.",
-      "You have become a beautiful part of my everyday life. Even the simplest moments feel special when they have you in them.",
-      "If I could keep one thing forever, it would be the feeling of being able to share this life with you."
-    ],
-    "signoff": "With all my love,",
-    "senderName": "Forever Yours",
-    "buttonText": "There's something written in the moon"
-  },
-
-  "moon": {
-    "eyebrow": "Written in the universe",
-    "heading": "Two Birthdays. Two Moons. One Story.",
-    "description": "The moon was in a different phase on each of your birthdays. Here's what the sky looked like on those dates.",
-    "message": "Two different nights, two different skies — and somehow, your stories found a way to meet.",
-    "combinedHeading": "A Little Universe of Our Own",
-    "combinedMessage": "Not a scientific moon phase — just a symbol of two lives sharing one beautiful sky.",
-    "buttonText": "Let's revisit our memories"
-  },
-
-  "album": {
-    "eyebrow": "Little pieces of forever",
-    "heading": "Our Memory Album",
-    "description": "Every picture holds a moment we never want to lose.",
-    "buttonText": "See how our story unfolded",
-    "photos": [
-      {
-        "src": "assets/photo1.jpg",
-        "alt": "The day everything felt special",
-        "caption": "The day everything felt special"
-      },
-      {
-        "src": "assets/photo2.jpg",
-        "alt": "One of my favourite smiles",
-        "caption": "One of my favourite smiles"
-      },
-      {
-        "src": "assets/photo3.jpg",
-        "alt": "A memory worth keeping forever",
-        "caption": "A memory worth keeping forever"
-      },
-      {
-        "src": "assets/photo4.jpg",
-        "alt": "Just us, being us",
-        "caption": "Just us, being us"
+  "id": "soulmate",
+  "name": "Soulmate",
+  "category": "love",
+  "description": "A multi-page galaxy-themed soulmate website with combined moon matching, love letter, star-catching game, timeline, and memory album.",
+  "price": 599,
+  "currency": "INR",
+  "version": "1.0.0",
+  "active": true,
+  "templatePath": "/templates/love/soulmate/template.html",
+  "previewImage": "/templates/love/soulmate/preview.jpg",
+  "features": [
+    "Multi-page navigation (no scroll)",
+    "Personalized names and welcome message",
+    "Combined moon phase matching (based on DOB)",
+    "Love letter page",
+    "Galaxy star-catching game",
+    "Animated timeline",
+    "Unique memory album layout",
+    "Custom accent colors and gradients",
+    "Background music (auto-plays after entry)",
+    "Responsive design"
+  ],
+  "customization": {
+    "theme": {
+      "label": "Theme Name",
+      "type": "text",
+      "default": "soulmate",
+      "required": true,
+      "maxLength": 30,
+      "placeholder": "e.g. soulmate, forever, starlight"
+    },
+    "partner1": {
+      "label": "Your Name",
+      "type": "text",
+      "default": "you",
+      "required": true,
+      "maxLength": 40,
+      "placeholder": "e.g. Arjun"
+    },
+    "partner2": {
+      "label": "Partner's Name",
+      "type": "text",
+      "default": "me",
+      "required": true,
+      "maxLength": 40,
+      "placeholder": "e.g. Anjali"
+    },
+    "heroTitle": {
+      "label": "Welcome Title",
+      "type": "text",
+      "default": "soulmate ✦",
+      "required": true,
+      "maxLength": 60,
+      "placeholder": "e.g. soulmate ✦"
+    },
+    "heroSubtitle": {
+      "label": "Welcome Subtitle",
+      "type": "text",
+      "default": "two souls, one galaxy. where every star remembers your name.",
+      "required": true,
+      "maxLength": 150,
+      "placeholder": "e.g. two souls, one galaxy..."
+    },
+    "letter": {
+      "label": "Love Letter",
+      "type": "textarea",
+      "default": "Every star in the sky reminds me of you.\n\nIn this vast universe, I found my home in your eyes. Your love is the gravity that keeps me orbiting, the light that guides me through the darkest nights.\n\nWith every heartbeat, I choose you. With every breath, I love you more.",
+      "required": true,
+      "maxLength": 3000
+    },
+    "letterSalutation": {
+      "label": "Letter Salutation",
+      "type": "text",
+      "default": "my dearest,",
+      "required": false,
+      "maxLength": 60,
+      "placeholder": "e.g. my dearest,"
+    },
+    "letterSignature": {
+      "label": "Letter Signature",
+      "type": "text",
+      "default": "forever yours",
+      "required": false,
+      "maxLength": 60,
+      "placeholder": "e.g. forever yours"
+    },
+    "musicUrl": {
+      "label": "Background Music",
+      "type": "audio",
+      "required": false,
+      "maxSizeMB": 100,
+      "accept": "audio/mpeg,audio/mp3,audio/wav,audio/ogg",
+      "help": "Optional romantic soundtrack. Leave empty for the built-in ambient pad."
+    },
+    "colors": {
+      "label": "Color Theme",
+      "type": "colorGroup",
+      "fields": {
+        "accent": {
+          "label": "Accent Color",
+          "type": "color",
+          "default": "#b7a6ff"
+        },
+        "gradient1": {
+          "label": "Gradient Color 1",
+          "type": "color",
+          "default": "#ffe6c7"
+        },
+        "gradient2": {
+          "label": "Gradient Color 2",
+          "type": "color",
+          "default": "#c7b9ff"
+        },
+        "gradient3": {
+          "label": "Gradient Color 3",
+          "type": "color",
+          "default": "#a5d8ff"
+        },
+        "background": {
+          "label": "Page Background",
+          "type": "color",
+          "default": "#050510"
+        }
       }
-    ],
-    "captions": [
-      "The day everything felt special",
-      "One of my favourite smiles",
-      "A memory worth keeping forever",
-      "Just us, being us"
-    ]
+    },
+    "photos": {
+      "label": "Our Memories",
+      "type": "imageGallery",
+      "required": false,
+      "maxFiles": 20,
+      "maxSizeMB": 150,
+      "accept": "image/jpeg,image/png,image/webp,image/gif",
+      "help": "Photos for the memory album. Up to 50 MB each."
+    },
+    "album": {
+      "label": "Memory Album Items",
+      "type": "textArray",
+      "default": [
+        "🌙 | the first moon we saw together",
+        "⭐ | a star named after us",
+        "☄️ | our midnight comet",
+        "🌌 | galaxy in your eyes",
+        "💫 | shooting star wish",
+        "🌠 | forever orbit"
+      ],
+      "required": false,
+      "maxItems": 20,
+      "help": "Format: emoji | caption. One per line."
+    },
+    "timeline": {
+      "label": "Timeline Events",
+      "type": "textArray",
+      "default": [
+        "first spark | the universe whispered, and two constellations aligned.",
+        "first 'i love you' | under a shared moon, words became gravity.",
+        "infinite loop | still falling, still glowing, still you."
+      ],
+      "required": false,
+      "maxItems": 10,
+      "help": "Format: title | description. One per line."
+    }
   },
-
-  "timeline": {
-    "eyebrow": "Every chapter matters",
-    "heading": "Our Little Timeline",
-    "description": "From the first hello to all the moments that followed.",
-    "buttonText": "One little game before the final page",
-    "events": [
-      {
-        "date": "18 April 2023",
-        "icon": "♡",
-        "title": "Our First Hello",
-        "description": "The day a simple conversation turned into something neither of us expected.",
-        "image": ""
-      },
-      {
-        "date": "2 June 2023",
-        "icon": "✦",
-        "title": "Our First Long Walk",
-        "description": "Hours disappeared while we talked about everything and nothing.",
-        "image": ""
-      },
-      {
-        "date": "14 February 2024",
-        "icon": "❤",
-        "title": "First Valentine's Together",
-        "description": "A small dinner that felt like the whole world.",
-        "image": ""
-      },
-      {
-        "date": "Today",
-        "icon": "♡",
-        "title": "Still Choosing Each Other",
-        "description": "Every ordinary day that quietly becomes a memory.",
-        "image": ""
-      }
-    ]
-  },
-
-  "game": {
-    "eyebrow": "A tiny test of our story",
-    "heading": "How Well Do You Know Us?",
-    "description": "A little game made from the memories we share.",
-    "buttonText": "One last thing",
-    "finishedHeading": "And that's our little story!",
-    "endingMessage": "The real prize is the memories we share. ♡",
-    "questions": [
-      {
-        "question": "Where did we first meet?",
-        "options": ["At a coffee shop", "At a friend's party", "Online", "At work"],
-        "answer": 0,
-        "success": "Yes! That little coffee shop changed everything. ♡",
-        "wrong": "Not quite — but the memory still makes me smile."
-      },
-      {
-        "question": "What was our first movie together?",
-        "options": ["A romantic comedy", "A thriller", "An animated film", "A documentary"],
-        "answer": 2,
-        "success": "Correct! We laughed the whole way through.",
-        "wrong": "Close — but I'll never forget that one scene."
-      },
-      {
-        "question": "Which little moment would we choose to relive?",
-        "options": ["Our first conversation", "Our funniest memory", "A simple day together"],
-        "answer": 2,
-        "success": "Exactly. The simple days are the best ones.",
-        "wrong": "Every answer is part of our story. ♡"
-      }
-    ]
-  },
-
-  "song": {
-    "src": "assets/music.mp3",
-    "loop": true,
-    "volume": 0.65
-  },
-
-  "finalWish": {
-    "eyebrow": "And this is my wish",
-    "heading": "May We Keep Choosing Each Other",
-    "message": "I don't know what every tomorrow will look like, but I hope it holds more laughter, more little adventures, more memories, and more reasons to be grateful that our paths crossed.",
-    "signature": "With love, always.",
-    "dateText": "A little gift, made just for you."
-  },
-
-  "behaviour": {
-    "nextButtonDelay": 6500
+  "sections": [
+    { "title": "The names", "subtitle": "Who is this galaxy for?", "fields": ["partner1", "partner2"] },
+    { "title": "Welcome message", "subtitle": "Set the mood for the journey.", "fields": ["theme", "heroTitle", "heroSubtitle"] },
+    { "title": "Your love letter", "subtitle": "Put the feelings into words.", "fields": ["letterSalutation", "letter", "letterSignature"] },
+    { "title": "Your memories", "subtitle": "Add photos, album items and timeline events.", "fields": ["photos", "album", "timeline"] },
+    { "title": "Colors & Music", "subtitle": "Tune the vibe and soundtrack.", "fields": ["colors", "musicUrl"] }
+  ],
+  "preview": {
+    "nameField": "partner2",
+    "senderField": "partner1",
+    "messageField": "letter",
+    "photosField": "photos",
+    "themeField": "theme"
   }
 }

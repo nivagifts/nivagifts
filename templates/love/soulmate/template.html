@@ -1,1019 +1,908 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Two Souls, One Moon</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading · Galaxy of Us</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #050510;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      color: #eaeef7;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #starCanvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+    .loading-screen {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #050510;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 100;
+      transition: opacity 0.8s ease;
+      gap: 1.5rem;
+    }
+    .loading-screen.hidden { opacity: 0; pointer-events: none; }
+    .loading-spinner {
+      width: 60px; height: 60px;
+      border: 2px solid #2a2350;
+      border-top: 2px solid #b7a6ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 30px #b7a6ff55;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      color: #b7a6ff; font-size: 1rem; letter-spacing: 4px;
+      text-transform: uppercase;
+      animation: pulse 1.5s infinite alternate;
+    }
+    @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    .page-container {
+      position: relative; z-index: 2;
+      max-width: 1100px; width: 100%;
+      padding: 2rem 1.5rem;
+      display: flex; flex-direction: column;
+      align-items: center;
+      animation: fadeUp 1s ease forwards;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
 
-<style>
-:root {
-    --bg: #101522;
-    --bg2: #1a2034;
-    --text: #f8edf2;
-    --muted: #c8bdcb;
-    --accent: #e8a9c2;
-    --accent2: #b7a8e8;
-}
+    h1, h2, h3 {
+      font-weight: 300; letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(255,220,180,0.7), 0 0 20px rgba(180,160,255,0.5);
+    }
+    h2 {
+      font-size: 2.2rem; margin-bottom: 1.5rem;
+      border-left: 4px solid var(--accent, #b7a6ff);
+      padding-left: 1.2rem; display: inline-block;
+    }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+    .hero {
+      text-align: center; min-height: 70vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      gap: 1.5rem;
+    }
+    .hero h1 {
+      font-size: 4rem;
+      background: linear-gradient(135deg, var(--grad1, #ffe6c7), var(--grad2, #c7b9ff), var(--grad3, #a5d8ff));
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 30px rgba(200,180,255,0.8);
+    }
+    .hero .names {
+      font-size: 1.8rem; color: var(--accent, #c7b9ff);
+      letter-spacing: 6px; font-weight: 300;
+      text-shadow: 0 0 25px var(--accent, #b7a6ff);
+    }
+    .hero p {
+      font-size: 1.25rem; color: #b8c7e0;
+      max-width: 550px;
+    }
+    .song-indicator {
+      display: flex; align-items: center; gap: 10px;
+      color: #9aa9c7; font-size: 0.95rem;
+      opacity: 0.9; margin-top: 1rem;
+    }
+    .pulse-dot {
+      width: 10px; height: 10px;
+      background: var(--accent, #ffd966);
+      border-radius: 50%;
+      box-shadow: 0 0 15px var(--accent, #ffd966);
+      animation: pulse 1.5s infinite alternate;
+    }
 
-body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    overflow-x: hidden;
-}
+    .nav-buttons {
+      display: flex; flex-wrap: wrap;
+      gap: 1.2rem; justify-content: center;
+      margin-top: 2rem;
+    }
+    .nav-btn {
+      background: linear-gradient(145deg, #2a2350, #1a1535);
+      border: 1px solid var(--accent, #8a7ac0);
+      border-radius: 50px;
+      padding: 1rem 2.2rem;
+      font-size: 1.05rem; color: #f0eaff;
+      letter-spacing: 1.5px; cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 0 20px #6a5acd33;
+      text-decoration: none; display: inline-block;
+      font-family: inherit;
+    }
+    .nav-btn:hover {
+      background: #3a3170;
+      box-shadow: 0 0 35px var(--accent, #b7a6ff);
+      border-color: var(--accent, #d9c9ff);
+      transform: translateY(-2px);
+    }
 
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -3;
-    background:
-        radial-gradient(ellipse at 15% 15%, #b7a8e833, transparent 42%),
-        radial-gradient(ellipse at 85% 75%, #e8a9c233, transparent 45%),
-        linear-gradient(145deg, var(--bg), var(--bg2));
-}
+    .couple-panel {
+      display: flex; flex-wrap: wrap;
+      gap: 2rem; justify-content: center; align-items: center;
+      background: rgba(10,10,30,0.55);
+      backdrop-filter: blur(6px);
+      border-radius: 60px 20px 60px 20px;
+      padding: 2.5rem 2rem;
+      border: 1px solid rgba(180,160,255,0.3);
+      box-shadow: 0 0 40px rgba(100,80,200,0.2);
+      width: 100%;
+    }
+    .input-area { display: flex; flex-direction: column; gap: 1.5rem; min-width: 220px; }
+    .input-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .input-group label { font-size: 0.9rem; color: #c0caf5; letter-spacing: 1px; }
+    .input-group input {
+      background: rgba(20,20,40,0.8);
+      border: 1px solid #5a5a8a;
+      border-radius: 40px;
+      padding: 0.8rem 1.2rem;
+      color: white; font-size: 1rem;
+      outline: none; transition: 0.3s; width: 100%;
+      font-family: inherit;
+    }
+    .input-group input:focus {
+      border-color: var(--accent, #b7a6ff);
+      box-shadow: 0 0 20px var(--accent, #b7a6ff55);
+    }
+    .match-btn {
+      background: linear-gradient(145deg, #2a2350, #1a1535);
+      border: 1px solid var(--accent, #8a7ac0);
+      border-radius: 40px;
+      padding: 0.9rem; font-size: 1.1rem;
+      color: #f0eaff; letter-spacing: 2px;
+      cursor: pointer; transition: 0.3s;
+      box-shadow: 0 0 20px #6a5acd33;
+      margin-top: 0.5rem; font-family: inherit;
+    }
+    .match-btn:hover {
+      background: #3a3170;
+      box-shadow: 0 0 35px var(--accent, #b7a6ff);
+      border-color: var(--accent, #d9c9ff);
+    }
+    .moon-panel { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .moon-canvas-container {
+      position: relative; width: 220px; height: 220px;
+      filter: drop-shadow(0 0 35px rgba(200,220,255,0.7));
+    }
+    #moonCanvas {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #cfd8ff, #4b3f6b);
+    }
+    .match-percent {
+      font-size: 2.2rem; font-weight: 300;
+      color: #fff2d4;
+      text-shadow: 0 0 25px var(--accent, #b7a6ff), 0 0 40px #9d8cff;
+      letter-spacing: 3px;
+    }
+    .match-label {
+      font-size: 1rem; color: #bdb9e6;
+      text-transform: uppercase; letter-spacing: 3px;
+    }
 
-#sky { position: fixed; inset: 0; z-index: -2; pointer-events: none; }
+    /* GAME */
+    .game-wrapper {
+      background: rgba(5,8,20,0.65);
+      backdrop-filter: blur(4px);
+      border-radius: 40px; padding: 2rem;
+      border: 1px solid #3a3a6e;
+      box-shadow: 0 0 40px #2f2b5c33;
+      width: 100%;
+    }
+    .game-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 1.5rem;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .score {
+      font-size: 1.5rem; color: #ffd966;
+      text-shadow: 0 0 15px #ffb347;
+    }
+    .game-btn {
+      background: #1e1b3a;
+      border: 1px solid var(--accent, #8a7ac0);
+      color: #ddd6ff;
+      padding: 0.6rem 1.6rem;
+      border-radius: 30px; font-size: 1rem;
+      cursor: pointer; transition: 0.2s;
+      font-family: inherit;
+    }
+    .game-btn:hover { background: #322c5e; border-color: var(--accent, #cbb9ff); }
+    .game-area {
+      position: relative; width: 100%; height: 360px;
+      background: radial-gradient(circle at 50% 50%, #0f0f1f, #03030a);
+      border-radius: 30px; overflow: hidden;
+      border: 1px solid #45407a;
+      box-shadow: inset 0 0 60px #00000088;
+      cursor: crosshair;
+    }
+    .star-game {
+      position: absolute; width: 32px; height: 32px;
+      background: radial-gradient(circle, #fff9c4, #f7d44a);
+      border-radius: 50%;
+      box-shadow: 0 0 30px #f7d44a, 0 0 60px #ffb347;
+      transform: translate(-50%,-50%);
+      animation: twinkle 1s infinite alternate;
+      pointer-events: none;
+    }
+    @keyframes twinkle {
+      from { opacity: 0.6; transform: translate(-50%,-50%) scale(0.9); }
+      to { opacity: 1; transform: translate(-50%,-50%) scale(1.2); }
+    }
+    .game-message {
+      position: absolute; bottom: 15px; left: 0; right: 0;
+      text-align: center; color: #b0a8e0;
+      font-size: 0.95rem; pointer-events: none;
+      background: #00000055; padding: 6px 20px;
+      border-radius: 20px; width: fit-content; margin: 0 auto;
+    }
 
-.star {
-    position: absolute;
-    width: 2px; height: 2px;
-    border-radius: 50%;
-    background: white;
-    animation: twinkle 4s infinite alternate;
-}
+    /* TIMELINE */
+    .timeline {
+      display: flex; flex-direction: column; gap: 2rem;
+      position: relative; padding-left: 2rem; width: 100%;
+    }
+    .timeline::before {
+      content: ''; position: absolute;
+      left: 11px; top: 10px; bottom: 10px; width: 2px;
+      background: linear-gradient(to bottom, var(--accent, #b7a6ff), #4a3f8a, #1e1b3a);
+      box-shadow: 0 0 15px var(--accent, #b7a6ff);
+    }
+    .timeline-item { position: relative; padding-left: 2rem; }
+    .timeline-item::before {
+      content: '✦'; position: absolute; left: -1.7rem; top: 0.2rem;
+      color: var(--accent, #ffd966); font-size: 1.5rem;
+      text-shadow: 0 0 20px #ffb347;
+    }
+    .timeline-item h3 { font-size: 1.4rem; color: #e6deff; }
+    .timeline-item p { color: #b0b8d4; font-size: 1rem; }
 
-@keyframes twinkle { to { opacity: .15; transform: scale(.5); } }
+    /* ALBUM */
+    .album-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.8rem; margin-top: 2rem; width: 100%;
+    }
+    .memory-card {
+      background: rgba(25,20,45,0.7);
+      backdrop-filter: blur(3px);
+      border: 1px solid #5f5a9e;
+      border-radius: 30px 8px 30px 8px;
+      padding: 1.5rem 1rem;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      transition: 0.3s ease;
+      box-shadow: 0 0 25px #28234e;
+      aspect-ratio: 1 / 1;
+      justify-content: center; gap: 0.8rem;
+      transform: rotate(1deg);
+    }
+    .memory-card:nth-child(even) {
+      transform: rotate(-1.5deg);
+      border-radius: 8px 30px 8px 30px;
+    }
+    .memory-card:hover {
+      transform: scale(1.02) rotate(0deg);
+      border-color: var(--accent, #b7a6ff);
+      box-shadow: 0 0 50px #7a6ad0;
+    }
+    .memory-emoji { font-size: 3rem; filter: drop-shadow(0 0 15px var(--accent, #b7a6ff)); }
+    .memory-text { font-size: 0.95rem; color: #d6d0ff; font-weight: 300; }
 
-.page {
-    min-height: 100vh;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 60px 22px 110px;
-}
+    /* LOVE LETTER */
+    .letter-container {
+      background: rgba(15,12,35,0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--accent, #b7a6ff);
+      border-radius: 8px 50px 8px 50px;
+      padding: 3rem 2.5rem;
+      width: 100%; max-width: 700px;
+      position: relative;
+      box-shadow: 0 0 60px rgba(150,120,255,0.25);
+      margin-top: 1rem;
+    }
+    .letter-container::before {
+      content: '✦'; position: absolute;
+      top: -18px; left: 30px;
+      font-size: 2rem; color: var(--accent, #ffd966);
+      text-shadow: 0 0 20px var(--accent, #ffb347);
+    }
+    .letter-container::after {
+      content: '✦'; position: absolute;
+      bottom: -18px; right: 30px;
+      font-size: 2rem; color: var(--accent, #ffd966);
+      text-shadow: 0 0 20px var(--accent, #ffb347);
+    }
+    .letter-salutation {
+      font-size: 1.5rem; color: var(--accent, #c7b9ff);
+      margin-bottom: 1.5rem; font-weight: 300;
+      letter-spacing: 2px;
+    }
+    .letter-body {
+      font-size: 1.05rem; color: #d6d0ff;
+      line-height: 1.9; font-weight: 300;
+      white-space: pre-wrap;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+    .letter-signature {
+      margin-top: 2rem;
+      font-size: 1.3rem;
+      color: var(--accent, #ffd966);
+      text-align: right;
+      font-style: italic;
+      text-shadow: 0 0 20px var(--accent, #b7a6ff);
+    }
+    .letter-date {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #8a87b0;
+      text-align: right;
+      letter-spacing: 2px;
+    }
 
-.page.active { display: flex; animation: pageIn 1s ease; }
+    .back-home { margin-top: 2.5rem; }
 
-@keyframes pageIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.wrap {
-    width: min(100%, 950px);
-    margin: auto;
-    text-align: center;
-}
-
-.eyebrow {
-    font-size: 10px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--accent);
-}
-
-h1 { font: 400 clamp(42px, 7vw, 80px)/1.1 'Playfair Display', serif; margin: 20px 0; }
-h2 { font: 400 clamp(30px, 5vw, 48px)/1.15 'Playfair Display', serif; margin-bottom: 12px; }
-.script { font-family: 'Caveat', cursive; }
-
-.lead, .subtitle {
-    max-width: 650px;
-    margin: 20px auto;
-    color: var(--muted);
-    line-height: 1.9;
-}
-
-.accent { color: var(--accent); }
-button { cursor: pointer; font-family: inherit; }
-
-.primary {
-    border: none;
-    border-radius: 50px;
-    padding: 14px 30px;
-    color: white;
-    font-weight: 600;
-    background: linear-gradient(120deg, var(--accent), var(--accent2));
-    transition: .3s;
-}
-.primary:hover { transform: translateY(-4px); }
-
-.advance {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    pointer-events: none;
-    transition: .5s;
-    z-index: 20;
-}
-.advance.visible { opacity: 1; pointer-events: auto; }
-
-.music-toggle {
-    position: fixed;
-    right: 20px; top: 18px;
-    z-index: 30;
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    border: 1px solid #ffffff30;
-    background: #15192dcc;
-    color: white;
-    font-size: 21px;
-}
-.music-toggle.playing { box-shadow: 0 0 25px var(--accent); }
-.music-toggle.muted { opacity: 0.55; }
-
-/* WELCOME */
-.welcome-content { width: 100%; }
-.welcome-names {
-    font: 400 clamp(22px, 3.5vw, 34px) 'Playfair Display', serif;
-    color: var(--accent);
-    margin: 30px 0 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 18px;
-    flex-wrap: wrap;
-}
-.welcome-names span { color: var(--accent2); font-size: 0.7em; }
-.welcome-decoration {
-    font-size: 64px;
-    color: var(--accent);
-    margin: 10px 0 40px;
-    animation: moonFloat 3s infinite ease-in-out;
-}
-.cover-moon {
-    width: 190px; height: 190px;
-    border-radius: 50%;
-    margin: 35px auto;
-    background: radial-gradient(circle at 35% 30%, #fff9e9, #d0c7b9 45%, #777781 100%);
-    box-shadow: 0 0 75px #c9b6ff55;
-    animation: moonFloat 7s infinite ease-in-out;
-    position: relative;
-}
-@keyframes moonFloat { 50% { transform: translateY(-13px); } }
-
-/* LETTER */
-.letter-page-content { width: 100%; }
-.letter-paper {
-    max-width: 700px;
-    margin: 30px auto;
-    padding: 45px;
-    background: #f6eddd;
-    color: #493d3c;
-    text-align: left;
-    border-radius: 4px;
-    box-shadow: 0 20px 50px #00000055;
-}
-.letter-paper h2 { font-family: 'Caveat', cursive; color: #865b69; margin-bottom: 18px; }
-.handwritten-letter p { font: 25px/1.6 'Caveat', cursive; white-space: pre-line; margin-bottom: 12px; }
-.letter-signature { font: 24px/1.5 'Caveat', cursive; margin-top: 25px; color: #865b69; }
-
-/* MOON */
-.moon-page-content { width: 100%; }
-.moon-pair, .moon-layout {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-    max-width: 750px;
-    margin: 35px auto;
-}
-.moon-card {
-    background: #ffffff0d;
-    border: 1px solid #ffffff20;
-    border-radius: 20px;
-    padding: 22px;
-    text-align: center;
-}
-.moon-canvas {
-    width: 100%;
-    max-width: 200px;
-    display: block;
-    margin: 0 auto 14px;
-}
-.moon-card h3 { font: 400 24px 'Playfair Display', serif; margin-bottom: 6px; }
-.moon-card p { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-.moon-card strong { display: block; font: 400 20px 'Playfair Display', serif; color: var(--accent); margin-top: 8px; }
-.moon-card small { display: block; font-size: 12px; color: var(--muted); margin-top: 6px; }
-.moon-message {
-    max-width: 650px;
-    margin: 20px auto;
-    color: var(--muted);
-    line-height: 1.9;
-    font-style: italic;
-}
-.combined-moon {
-    max-width: 600px;
-    margin: 50px auto 0;
-    text-align: center;
-}
-.full-moon-canvas { width: 100%; max-width: 300px; display: block; margin: 0 auto 20px; }
-.combined-moon h3 { font: 400 26px 'Playfair Display', serif; margin-bottom: 10px; }
-.combined-moon p { color: var(--muted); line-height: 1.8; }
-
-/* ALBUM */
-.album-page-content { width: 100%; }
-.album-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    gap: 20px;
-    margin: 35px auto;
-    text-align: left;
-}
-.album-item {
-    background: #ffffff0d;
-    border: 1px solid #ffffff20;
-    border-radius: 15px;
-    overflow: hidden;
-}
-.album-item img {
-    width: 100%;
-    height: 230px;
-    object-fit: cover;
-    display: block;
-}
-.album-item figcaption {
-    padding: 15px;
-    font: 400 18px 'Playfair Display', serif;
-    color: var(--text);
-}
-.empty-message {
-    text-align: center;
-    color: var(--muted);
-    font-style: italic;
-    margin: 40px 0;
-}
-
-/* TIMELINE */
-.timeline-page-content { width: 100%; }
-.timeline {
-    max-width: 650px;
-    margin: 35px auto;
-    text-align: left;
-    position: relative;
-}
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: 16px; top: 0; bottom: 0;
-    width: 2px;
-    background: linear-gradient(var(--accent), var(--accent2));
-}
-.timeline-item {
-    position: relative;
-    padding: 0 0 30px 48px;
-}
-.timeline-marker {
-    position: absolute;
-    left: 0; top: 0;
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    background: var(--bg2);
-    border: 2px solid var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    color: var(--accent);
-}
-.timeline-card {
-    background: #ffffff0d;
-    border: 1px solid #ffffff20;
-    border-radius: 15px;
-    padding: 18px 20px;
-}
-.timeline-card small { color: var(--accent); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
-.timeline-card h3 { font: 400 22px 'Playfair Display', serif; margin: 6px 0 8px; }
-.timeline-card p { color: var(--muted); line-height: 1.7; font-size: 14px; }
-.timeline-card img {
-    width: 100%;
-    margin-top: 12px;
-    border-radius: 10px;
-    max-height: 220px;
-    object-fit: cover;
-}
-
-/* GAME */
-.game-page-content { width: 100%; }
-.game-card, .game {
-    max-width: 600px;
-    margin: 30px auto;
-    padding: 30px;
-    background: #ffffff10;
-    border: 1px solid #ffffff20;
-    border-radius: 20px;
-    text-align: left;
-}
-.game-progress {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 14px;
-}
-.game-card h3, #gameQuestion {
-    font: 400 clamp(20px, 3vw, 26px)/1.35 'Playfair Display', serif;
-    margin-bottom: 18px;
-}
-.game-options, #gameOptions { display: flex; flex-direction: column; gap: 12px; }
-.game-option {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    border-radius: 12px;
-    background: #ffffff12;
-    color: white;
-    border: 1px solid #ffffff25;
-    text-align: left;
-    font-size: 15px;
-    transition: .2s;
-}
-.game-option:hover:not(:disabled) { background: #e8a9c233; }
-.game-option:disabled { cursor: default; opacity: 0.75; }
-.game-feedback {
-    margin-top: 18px;
-    min-height: 24px;
-    color: var(--accent);
-    font-style: italic;
-}
-
-/* FINAL */
-.final-page-content { width: 100%; max-width: 650px; }
-.final-heart {
-    font-size: 90px;
-    color: var(--accent);
-    margin: 20px 0;
-    animation: moonFloat 3s infinite ease-in-out;
-}
-.final-message {
-    color: var(--muted);
-    line-height: 2;
-    margin: 25px auto;
-    font-size: 16px;
-}
-.final-signature { font: 28px 'Caveat', cursive; color: var(--accent); margin-top: 30px; }
-.final-date { font-size: 13px; color: var(--muted); margin-top: 15px; letter-spacing: 1px; }
-.final-decoration { margin-top: 40px; color: var(--accent2); letter-spacing: 12px; }
-
-.wish {
-    display: none;
-    max-width: 650px;
-    margin: 30px auto;
-    padding: 35px;
-    background: #ffffff10;
-    border: 1px solid #ffffff25;
-    border-radius: 20px;
-    line-height: 2;
-}
-.wish.show { display: block; animation: pageIn 1s; }
-
-@media (max-width: 600px) {
-    .moon-pair, .moon-layout { grid-template-columns: 1fr; }
-    .letter-paper { padding: 25px; }
-    .music-toggle { right: 12px; top: 12px; }
-    .timeline::before { left: 14px; }
-    .timeline-item { padding-left: 44px; }
-    .timeline-marker { width: 30px; height: 30px; }
-}
-</style>
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 2.8rem; }
+      .hero .names { font-size: 1.3rem; letter-spacing: 3px; }
+      .couple-panel { flex-direction: column; }
+      .moon-canvas-container { width: 180px; height: 180px; }
+      .game-area { height: 300px; }
+      .letter-container { padding: 2rem 1.5rem; }
+      .letter-body { font-size: 0.95rem; }
+    }
+  </style>
 </head>
-
 <body>
 
-<div id="sky"></div>
+  <canvas id="starCanvas"></canvas>
 
-<button class="music-toggle" id="musicToggle" aria-label="Mute or unmute music">♫</button>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">loading your galaxy...</div>
+  </div>
 
-<audio id="backgroundMusic" loop></audio>
-
-<main id="site"></main>
-
-<script>
-/* =========================================================
-   NIVA COUPLE GIFT TEMPLATE (FIXED)
-   Content is loaded from config.json (nested shape).
-========================================================= */
-
-let CONFIG = {};
-let currentPage = 0;
-let musicStarted = false;
-
-const site = document.getElementById("site");
-const music = document.getElementById("backgroundMusic");
-const musicToggle = document.getElementById("musicToggle");
-
-const escapeHTML = (value = "") =>
-  String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  })[char]);
-
-const safeURL = (value = "") => {
-  const url = String(value).trim();
-  if (!url) return "";
-  if (/^(https?:\/\/|\.{0,2}\/|assets\/|\/)/i.test(url)) return url;
-  return "";
-};
-
-function getTheme() {
-  const theme = CONFIG.theme || {};
-  const root = document.documentElement;
-  root.style.setProperty("--bg", theme.background || "#100d19");
-  root.style.setProperty("--bg2", theme.backgroundSecondary || "#21152b");
-  root.style.setProperty("--text", theme.text || "#fff5f7");
-  root.style.setProperty("--muted", theme.muted || "#c8b7c8");
-  root.style.setProperty("--accent", theme.accent || "#e99ab5");
-  root.style.setProperty("--accent2", theme.accentSecondary || "#c8a3ef");
-}
-
-function buttonNext(label = "Continue") {
-  return `
-    <button class="primary advance" type="button">
-      ${escapeHTML(label)} <span aria-hidden="true">→</span>
-    </button>
-  `;
-}
-
-function createPage(content, extraClass = "") {
-  const page = document.createElement("section");
-  page.className = `page ${extraClass}`;
-  page.innerHTML = `<div class="wrap">${content}</div>`;
-  site.appendChild(page);
-  return page;
-}
-
-/* ---------------- STARFIELD ---------------- */
-function buildStars() {
-  const sky = document.getElementById("sky");
-  const count = 120;
-  let html = "";
-  for (let i = 0; i < count; i++) {
-    const top = Math.random() * 100;
-    const left = Math.random() * 100;
-    const delay = (Math.random() * 4).toFixed(2);
-    const size = Math.random() > 0.85 ? 3 : 2;
-    html += `<span class="star" style="top:${top}%;left:${left}%;width:${size}px;height:${size}px;animation-delay:${delay}s"></span>`;
-  }
-  sky.innerHTML = html;
-}
-
-/* ---------------- MOON PHASE ---------------- */
-function getMoonPhase(dateString) {
-  const date = new Date(`${dateString}T12:00:00Z`);
-  if (Number.isNaN(date.getTime())) {
-    return { name: "Moon phase unavailable", illumination: 0.5, age: 0, phase: 0.5 };
-  }
-  const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14);
-  const synodicMonth = 29.530588853 * 24 * 60 * 60 * 1000;
-  let ms = ((date.getTime() - knownNewMoon) % synodicMonth + synodicMonth) % synodicMonth;
-  const age = ms / (24 * 60 * 60 * 1000);
-  const phase = age / 29.530588853;
-  const illumination = (1 - Math.cos(phase * 2 * Math.PI)) / 2;
-
-  let name;
-  if (age < 1.85 || age > 27.68) name = "New Moon";
-  else if (age < 5.54) name = "Waxing Crescent";
-  else if (age < 9.23) name = "First Quarter";
-  else if (age < 12.92) name = "Waxing Gibbous";
-  else if (age < 16.61) name = "Full Moon";
-  else if (age < 20.30) name = "Waning Gibbous";
-  else if (age < 23.99) name = "Last Quarter";
-  else name = "Waning Crescent";
-
-  return { name, illumination, age, phase };
-}
-
-function drawMoon(canvas, dateString, seed = 1) {
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  const size = canvas.width;
-  const center = size / 2;
-  const radius = size * 0.40;
-
-  ctx.clearRect(0, 0, size, size);
-
-  const moon = getMoonPhase(dateString);
-  const phaseAngle = (moon.phase || 0) * Math.PI * 2;
-
-  const glow = ctx.createRadialGradient(center, center, radius * 0.5, center, center, radius * 1.5);
-  glow.addColorStop(0, "rgba(255,240,220,0.15)");
-  glow.addColorStop(1, "rgba(255,240,220,0)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, size, size);
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(center, center, radius, 0, Math.PI * 2);
-  ctx.clip();
-
-  const base = ctx.createRadialGradient(
-    center - radius * 0.28, center - radius * 0.32, radius * 0.08,
-    center, center, radius
-  );
-  base.addColorStop(0, "#f3eee1");
-  base.addColorStop(0.55, "#b9b4a9");
-  base.addColorStop(1, "#68666a");
-  ctx.fillStyle = base;
-  ctx.fillRect(center - radius, center - radius, radius * 2, radius * 2);
-
-  let randomSeed = seed * 92821 + 12345;
-  function random() {
-    randomSeed = (randomSeed * 16807) % 2147483647;
-    return (randomSeed - 1) / 2147483646;
-  }
-
-  for (let i = 0; i < 65; i++) {
-    const angle = random() * Math.PI * 2;
-    const distance = Math.sqrt(random()) * radius * 0.91;
-    const x = center + Math.cos(angle) * distance;
-    const y = center + Math.sin(angle) * distance;
-    const craterRadius = 2 + random() * radius * 0.075;
-
-    ctx.beginPath();
-    ctx.arc(x, y, craterRadius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(65,65,65,${0.035 + random() * 0.10})`;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x - craterRadius * 0.18, y - craterRadius * 0.18,
-      craterRadius * 0.78, Math.PI, Math.PI * 1.8);
-    ctx.strokeStyle = "rgba(255,255,255,0.13)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-
-  const image = ctx.getImageData(0, 0, size, size);
-  const pixels = image.data;
-
-  const sunX = Math.sin(phaseAngle);
-  const sunZ = -Math.cos(phaseAngle);
-  const sunY = 0.12;
-
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const dx = (x - center) / radius;
-      const dy = (y - center) / radius;
-      const distanceSquared = dx * dx + dy * dy;
-      if (distanceSquared > 1) continue;
-      const dz = Math.sqrt(1 - distanceSquared);
-      const dot = dx * sunX + dy * sunY + dz * sunZ;
-      const index = (y * size + x) * 4;
-      const brightness = Math.max(0.045, Math.min(1, 0.12 + Math.max(0, dot) * 0.88));
-      pixels[index] *= brightness;
-      pixels[index + 1] *= brightness;
-      pixels[index + 2] *= brightness;
-    }
-  }
-
-  ctx.putImageData(image, 0, 0);
-
-  const edge = ctx.createRadialGradient(
-    center - radius * 0.25, center - radius * 0.28, radius * 0.1,
-    center, center, radius
-  );
-  edge.addColorStop(0, "rgba(255,255,255,0)");
-  edge.addColorStop(0.78, "rgba(0,0,0,0.02)");
-  edge.addColorStop(1, "rgba(0,0,0,0.35)");
-  ctx.fillStyle = edge;
-  ctx.fillRect(center - radius, center - radius, radius * 2, radius * 2);
-
-  ctx.restore();
-
-  ctx.beginPath();
-  ctx.arc(center, center, radius, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(255,255,255,0.22)";
-  ctx.lineWidth = 1;
-  ctx.stroke();
-}
-
-/* ---------------- PAGE 1: WELCOME ---------------- */
-function buildWelcome() {
-  const data = CONFIG.welcome || {};
-  return createPage(`
-    <div class="welcome-content">
-      <div class="eyebrow">${escapeHTML(data.eyebrow || "A little universe of us")}</div>
-      <h1>${escapeHTML(data.title || "Our Story, Written in the Stars")}</h1>
-      <p class="subtitle">${escapeHTML(data.subtitle || "Some moments become memories. Some people become home.")}</p>
-      <div class="welcome-names">
-        ${escapeHTML(CONFIG.couple?.personOne || "You")}
-        <span>✦</span>
-        ${escapeHTML(CONFIG.couple?.personTwo || "Me")}
+  <!-- ========== PAGE: WELCOME ========== -->
+  <div class="page-container" id="page-welcome" style="display: none;">
+    <section class="hero">
+      <div class="names" id="heroNames">you & me</div>
+      <h1 id="heroTitle">soulmate ✦</h1>
+      <p id="heroSubtitle">two souls, one galaxy. where every star remembers your name.</p>
+      <div class="song-indicator">
+        <span class="pulse-dot"></span> <span id="songLabel">ambient love song</span> · plays after you enter <span class="pulse-dot"></span>
       </div>
-      <div class="welcome-decoration" aria-hidden="true">♡</div>
-      ${buttonNext(data.buttonText || "Open our story")}
-    </div>
-  `, "welcome-page");
-}
+      <div class="nav-buttons" id="welcomeNav"></div>
+    </section>
+  </div>
 
-/* ---------------- PAGE 2: LETTER ---------------- */
-function buildLetter() {
-  const data = CONFIG.letter || {};
-  const paragraphs = (data.paragraphs && data.paragraphs.length)
-    ? data.paragraphs
-    : [
-      "There are so many things I wish I could tell you, and sometimes words still feel too small.",
-      "You have become a beautiful part of my everyday life. Even the simplest moments feel special when they have you in them.",
-      "If I could keep one thing forever, it would be the feeling of being able to share this life with you."
-    ];
-
-  return createPage(`
-    <div class="letter-page-content">
-      <div class="eyebrow">${escapeHTML(data.eyebrow || "A letter from my heart")}</div>
-      <div class="letter-paper">
-        <h2>${escapeHTML(data.heading || "To My Favourite Person")}</h2>
-        <div class="handwritten-letter">
-          ${paragraphs.map(p => `<p>${escapeHTML(p)}</p>`).join("")}
+  <!-- ========== PAGE: MATCHING ========== -->
+  <div class="page-container" id="page-matching" style="display: none;">
+    <h2 id="matchingTitle">✦ moon match</h2>
+    <div class="couple-panel">
+      <div class="input-area">
+        <div class="input-group">
+          <label id="labelPartner1">your birth date</label>
+          <input type="date" id="dob1" value="1995-06-15">
         </div>
-        <p class="letter-signature">
-          ${escapeHTML(data.signoff || "With all my love,")}<br>
-          <strong>${escapeHTML(data.senderName || CONFIG.couple?.personOne || "Forever yours")}</strong>
-        </p>
-      </div>
-      ${buttonNext(data.buttonText || "There's something written in the moon")}
-    </div>
-  `, "letter-page");
-}
-
-/* ---------------- PAGE 3: MOONS ---------------- */
-function buildMoonPage() {
-  const couple = CONFIG.couple || {};
-  const moonData = CONFIG.moon || {};
-  const personOneDate = couple.personOneDOB || "2000-01-01";
-  const personTwoDate = couple.personTwoDOB || "2000-06-01";
-  const firstMoon = getMoonPhase(personOneDate);
-  const secondMoon = getMoonPhase(personTwoDate);
-
-  return createPage(`
-    <div class="moon-page-content">
-      <div class="eyebrow">${escapeHTML(moonData.eyebrow || "Written in the universe")}</div>
-      <h2>${escapeHTML(moonData.heading || "Two Birthdays. Two Moons. One Story.")}</h2>
-      <p class="subtitle">${escapeHTML(moonData.description || "The moon was in a different phase on each of your birthdays. Here's what the sky looked like on those dates.")}</p>
-      <div class="moon-pair">
-        <div class="moon-card">
-          <canvas class="moon-canvas" width="320" height="320" data-moon="one"></canvas>
-          <h3>${escapeHTML(couple.personOne || "Person One")}</h3>
-          <p>${escapeHTML(personOneDate)}</p>
-          <strong>${escapeHTML(firstMoon.name)}</strong>
-          <small>${Math.round(firstMoon.illumination * 100)}% illuminated</small>
+        <div class="input-group">
+          <label id="labelPartner2">partner's birth date</label>
+          <input type="date" id="dob2" value="1996-09-23">
         </div>
-        <div class="moon-card">
-          <canvas class="moon-canvas" width="320" height="320" data-moon="two"></canvas>
-          <h3>${escapeHTML(couple.personTwo || "Person Two")}</h3>
-          <p>${escapeHTML(personTwoDate)}</p>
-          <strong>${escapeHTML(secondMoon.name)}</strong>
-          <small>${Math.round(secondMoon.illumination * 100)}% illuminated</small>
+        <button class="match-btn" id="matchBtn">reveal match</button>
+      </div>
+      <div class="moon-panel">
+        <div class="moon-canvas-container">
+          <canvas id="moonCanvas" width="440" height="440"></canvas>
         </div>
+        <div class="match-percent" id="matchPercent">—</div>
+        <div class="match-label" id="matchLabel">soulmate resonance</div>
       </div>
-      <div class="moon-message">${escapeHTML(moonData.message || "Two different nights, two different skies — and somehow, your stories found a way to meet.")}</div>
-      <div class="combined-moon">
-        <canvas class="full-moon-canvas" width="360" height="360"></canvas>
-        <h3>${escapeHTML(moonData.combinedHeading || "A little universe of our own")}</h3>
-        <p>${escapeHTML(moonData.combinedMessage || "Not a scientific moon phase — just a symbol of two lives sharing one beautiful sky.")}</p>
+    </div>
+    <a href="#welcome" class="nav-btn back-home" data-page="welcome">← back to welcome</a>
+  </div>
+
+  <!-- ========== PAGE: LETTER ========== -->
+  <div class="page-container" id="page-letter" style="display: none;">
+    <h2 id="letterTitle">✦ love letter</h2>
+    <div class="letter-container">
+      <div class="letter-salutation" id="letterSalutation">my dearest,</div>
+      <div class="letter-body" id="letterBody"></div>
+      <div class="letter-signature" id="letterSignature">forever yours</div>
+      <div class="letter-date" id="letterDate"></div>
+    </div>
+    <a href="#welcome" class="nav-btn back-home" data-page="welcome">← back to welcome</a>
+  </div>
+
+  <!-- ========== PAGE: GAME ========== -->
+  <div class="page-container" id="page-game" style="display: none;">
+    <h2 id="gameTitle">✦ catch the stars</h2>
+    <div class="game-wrapper">
+      <div class="game-header">
+        <div class="score">✦ <span id="scoreDisplay">0</span></div>
+        <button class="game-btn" id="restartGame">new galaxy</button>
       </div>
-      ${buttonNext(moonData.buttonText || "Let's revisit our memories")}
-    </div>
-  `, "moon-page");
-}
-
-/* ---------------- PAGE 4: ALBUM ---------------- */
-function buildAlbumPage() {
-  const data = CONFIG.album || {};
-  const photos = data.photos || [];
-  const captions = data.captions || [];
-
-  const items = photos.map((photo, index) => {
-    const src = safeURL(photo.src || photo.url || "");
-    if (!src) return "";
-    const alt = photo.alt || captions[index] || `Memory ${index + 1}`;
-    const caption = photo.caption || captions[index] || `Memory ${index + 1}`;
-    return `
-      <figure class="album-item">
-        <img src="${escapeHTML(src)}" alt="${escapeHTML(alt)}" loading="lazy">
-        <figcaption>${escapeHTML(caption)}</figcaption>
-      </figure>
-    `;
-  }).join("");
-
-  return createPage(`
-    <div class="album-page-content">
-      <div class="eyebrow">${escapeHTML(data.eyebrow || "Little pieces of forever")}</div>
-      <h2>${escapeHTML(data.heading || "Our Memory Album")}</h2>
-      <p class="subtitle">${escapeHTML(data.description || "Every picture holds a moment we never want to lose.")}</p>
-      <div class="album-grid">${items}</div>
-      ${photos.length ? "" : `<p class="empty-message">Our favourite memories will live here.</p>`}
-      ${buttonNext(data.buttonText || "See how our story unfolded")}
-    </div>
-  `, "album-page");
-}
-
-/* ---------------- PAGE 5: TIMELINE ---------------- */
-function buildTimelinePage() {
-  const data = CONFIG.timeline || {};
-  const events = data.events || [];
-
-  return createPage(`
-    <div class="timeline-page-content">
-      <div class="eyebrow">${escapeHTML(data.eyebrow || "Every chapter matters")}</div>
-      <h2>${escapeHTML(data.heading || "Our Little Timeline")}</h2>
-      <p class="subtitle">${escapeHTML(data.description || "From the first hello to all the moments that followed.")}</p>
-      <div class="timeline">
-        ${events.map((event, index) => {
-          const img = safeURL(event.image || "");
-          return `
-            <article class="timeline-item">
-              <div class="timeline-marker">${escapeHTML(event.icon || "♡")}</div>
-              <div class="timeline-card">
-                <small>${escapeHTML(event.date || "")}</small>
-                <h3>${escapeHTML(event.title || `Chapter ${index + 1}`)}</h3>
-                <p>${escapeHTML(event.description || "")}</p>
-                ${img ? `<img src="${escapeHTML(img)}" alt="${escapeHTML(event.title || "Timeline memory")}" loading="lazy">` : ""}
-              </div>
-            </article>
-          `;
-        }).join("")}
+      <div class="game-area" id="gameArea">
+        <div class="star-game" id="starGame" style="left: 50%; top: 50%;"></div>
+        <div class="game-message" id="gameMessage">click the glowing star · each catch = 1 lightyear</div>
       </div>
-      ${events.length ? "" : `<p class="empty-message">Our story is still being written.</p>`}
-      ${buttonNext(data.buttonText || "One little game before the final page")}
     </div>
-  `, "timeline-page");
-}
+    <a href="#welcome" class="nav-btn back-home" data-page="welcome">← back to welcome</a>
+  </div>
 
-/* ---------------- PAGE 6: GAME ---------------- */
-function buildGamePage() {
-  const game = CONFIG.game || {};
-  const questions = game.questions || [];
+  <!-- ========== PAGE: TIMELINE ========== -->
+  <div class="page-container" id="page-timeline" style="display: none;">
+    <h2 id="timelineTitle">✦ our orbit</h2>
+    <div class="timeline" id="timelineContainer"></div>
+    <a href="#welcome" class="nav-btn back-home" data-page="welcome">← back to welcome</a>
+  </div>
 
-  const firstQuestion = questions[0] || {
-    question: "Which little moment would we choose to relive?",
-    options: ["Our first conversation", "Our funniest memory", "A simple day together"],
-    answer: 0,
-    success: "Every little moment matters when it's with the right person."
-  };
+  <!-- ========== PAGE: ALBUM ========== -->
+  <div class="page-container" id="page-album" style="display: none;">
+    <h2 id="albumTitle">✦ memory galaxy</h2>
+    <div class="album-grid" id="albumGrid"></div>
+    <a href="#welcome" class="nav-btn back-home" data-page="welcome">← back to welcome</a>
+  </div>
 
-  return createPage(`
-    <div class="game-page-content">
-      <div class="eyebrow">${escapeHTML(game.eyebrow || "A tiny test of our story")}</div>
-      <h2>${escapeHTML(game.heading || "How Well Do You Know Us?")}</h2>
-      <p class="subtitle">${escapeHTML(game.description || "A little game made from the memories we share.")}</p>
-      <div class="game-card">
-        <div class="game-progress" id="gameProgress">Question 1 of ${questions.length || 1}</div>
-        <h3 id="gameQuestion">${escapeHTML(firstQuestion.question)}</h3>
-        <div id="gameOptions" class="game-options">
-          ${firstQuestion.options.map((option, index) => `
-            <button class="game-option" type="button" data-option="${index}">${escapeHTML(option)}</button>
-          `).join("")}
-        </div>
-        <p id="gameFeedback" class="game-feedback" aria-live="polite"></p>
-      </div>
-      ${buttonNext(game.buttonText || "One last thing")}
-    </div>
-  `, "game-page");
-}
+  <!-- Hidden audio element -->
+  <audio id="bgSong" loop>
+    <source src="" type="audio/mpeg">
+  </audio>
 
-/* ---------------- PAGE 7: FINAL ---------------- */
-function buildFinalPage() {
-  const data = CONFIG.finalWish || {};
-  return createPage(`
-    <div class="final-page-content">
-      <div class="eyebrow">${escapeHTML(data.eyebrow || "And this is my wish")}</div>
-      <div class="final-heart" aria-hidden="true">♡</div>
-      <h2>${escapeHTML(data.heading || "May We Keep Choosing Each Other")}</h2>
-      <p class="final-message">${escapeHTML(data.message || "I don't know what every tomorrow will look like, but I hope it holds more laughter, more little adventures, more memories, and more reasons to be grateful that our paths crossed.")}</p>
-      <div class="final-signature">${escapeHTML(data.signature || "With love, always.")}</div>
-      <div class="final-date">${escapeHTML(data.dateText || "")}</div>
-      <div class="final-decoration" aria-hidden="true">✦ ♡ ✦</div>
-    </div>
-  `, "final-page");
-}
+  <script>
+    // ============================================================
+    //  GALAXY LOVE WEBSITE – CONFIG DRIVEN (config.json)
+    // ============================================================
+    (function() {
+      'use strict';
 
-/* ---------------- BUILD ---------------- */
-function buildWebsite() {
-  site.innerHTML = "";
-  buildStars();
+      // ---------- DEFAULT CONFIG ----------
+      const DEFAULT_CONFIG = {
+        theme: 'soulmate',
+        partner1: 'you',
+        partner2: 'me',
+        heroTitle: 'soulmate ✦',
+        heroSubtitle: 'two souls, one galaxy. where every star remembers your name.',
+        letter: 'Every star in the sky reminds me of you.\n\nIn this vast universe, I found my home in your eyes.',
+        letterSalutation: 'my dearest,',
+        letterSignature: 'forever yours',
+        musicUrl: '',
+        colors: {
+          accent: '#b7a6ff',
+          gradient1: '#ffe6c7',
+          gradient2: '#c7b9ff',
+          gradient3: '#a5d8ff',
+          background: '#050510'
+        },
+        album: [
+          '🌙 | the first moon we saw together',
+          '⭐ | a star named after us',
+          '☄️ | our midnight comet',
+          '🌌 | galaxy in your eyes',
+          '💫 | shooting star wish',
+          '🌠 | forever orbit'
+        ],
+        timeline: [
+          'first spark | the universe whispered, and two constellations aligned.',
+          "first 'i love you' | under a shared moon, words became gravity.",
+          'infinite loop | still falling, still glowing, still you.'
+        ]
+      };
 
-  buildWelcome();
-  buildLetter();
-  buildMoonPage();
-  buildAlbumPage();
-  buildTimelinePage();
-  buildGamePage();
-  buildFinalPage();
+      let CONFIG = { ...DEFAULT_CONFIG };
 
-  const pages = [...site.querySelectorAll(".page")];
-  pages.forEach((page, index) => { page.dataset.pageIndex = index; });
+      // ---------- DEEP MERGE ----------
+      function deepMerge(target, source) {
+        const result = { ...target };
+        for (const key in source) {
+          if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+            result[key] = deepMerge(target[key] || {}, source[key]);
+          } else {
+            result[key] = source[key];
+          }
+        }
+        return result;
+      }
 
-  const moonOne = site.querySelector('[data-moon="one"]');
-  const moonTwo = site.querySelector('[data-moon="two"]');
-  const fullMoon = site.querySelector(".full-moon-canvas");
-  drawMoon(moonOne, CONFIG.couple?.personOneDOB || "2000-01-01", 1);
-  drawMoon(moonTwo, CONFIG.couple?.personTwoDOB || "2000-06-01", 2);
-  drawMoon(fullMoon, "2000-01-21", 3);
+      // ---------- LOAD CONFIG ----------
+      async function loadConfig() {
+        try {
+          const res = await fetch('config.json');
+          if (!res.ok) throw new Error('config.json not found');
+          const userConfig = await res.json();
+          CONFIG = deepMerge(DEFAULT_CONFIG, userConfig);
+          console.log('✅ Config loaded');
+        } catch (e) {
+          console.warn('⚠️ Using defaults:', e.message);
+          CONFIG = DEFAULT_CONFIG;
+        }
+      }
 
-  setupPageNavigation(pages);
-  setupCoupleGame();
-}
+      // ---------- APPLY CONFIG ----------
+      function applyConfig() {
+        const root = document.documentElement;
 
-/* ---------------- NAVIGATION ---------------- */
-function setupPageNavigation(pages) {
-  const delay = Number(CONFIG.behaviour?.nextButtonDelay || 6500);
+        // Colors
+        root.style.setProperty('--accent', CONFIG.colors.accent);
+        root.style.setProperty('--grad1', CONFIG.colors.gradient1);
+        root.style.setProperty('--grad2', CONFIG.colors.gradient2);
+        root.style.setProperty('--grad3', CONFIG.colors.gradient3);
+        if (CONFIG.colors.background) document.body.style.background = CONFIG.colors.background;
 
-  pages.forEach((page, index) => {
-    const nextButton = page.querySelector(".advance");
-    if (!nextButton) return;
-    nextButton.style.display = index === pages.length - 1 ? "none" : "";
-    nextButton.addEventListener("click", () => showPage(index + 1));
-  });
+        // Hero
+        const setText = (id, text) => {
+          const el = document.getElementById(id);
+          if (el && text !== undefined) el.textContent = text;
+        };
+        setText('heroNames', `${CONFIG.partner1} & ${CONFIG.partner2}`);
+        setText('heroTitle', CONFIG.heroTitle);
+        setText('heroSubtitle', CONFIG.heroSubtitle);
+        setText('songLabel', 'ambient love song');
 
-  showPage(0);
+        // Letter
+        setText('letterSalutation', CONFIG.letterSalutation || 'my dearest,');
+        setText('letterBody', CONFIG.letter || '');
+        setText('letterSignature', CONFIG.letterSignature || 'forever yours');
+        setText('letterDate', new Date().toLocaleDateString('en-US', {
+          year: 'numeric', month: 'long', day: 'numeric'
+        }));
 
-  // Reveal after delay on page activation.
-  function revealFor(index) {
-    const page = pages[index];
-    if (!page) return;
-    const button = page.querySelector(".advance");
-    if (!button) return;
-    button.classList.remove("visible");
-
-    const gamePageIndex = pages.findIndex(p => p.classList.contains("game-page"));
-    if (index === gamePageIndex) return; // game controls its own reveal
-
-    setTimeout(() => {
-      if (currentPage === index) button.classList.add("visible");
-    }, delay);
-  }
-
-  window.__revealFor = revealFor;
-
-  // Also reveal on window scroll bottom.
-  window.addEventListener("scroll", () => {
-    const page = pages[currentPage];
-    if (!page) return;
-    const button = page.querySelector(".advance");
-    if (!button) return;
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 150) {
-      button.classList.add("visible");
-    }
-  });
-}
-
-function showPage(index) {
-  const pages = [...site.querySelectorAll(".page")];
-  if (index < 0 || index >= pages.length) return;
-  currentPage = index;
-  pages.forEach((page, i) => page.classList.toggle("active", i === index));
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  if (typeof window.__revealFor === "function") window.__revealFor(index);
-}
-
-/* ---------------- GAME ---------------- */
-function setupCoupleGame() {
-  const questions = CONFIG.game?.questions || [];
-  let questionIndex = 0;
-  let score = 0;
-
-  const questionElement = document.getElementById("gameQuestion");
-  const optionsElement = document.getElementById("gameOptions");
-  const feedbackElement = document.getElementById("gameFeedback");
-  const progressElement = document.getElementById("gameProgress");
-
-  if (!questionElement || !optionsElement || !feedbackElement) return;
-
-  if (!questions.length) {
-    questionElement.textContent = "The best part of this story is that it belongs to us.";
-    optionsElement.innerHTML = "";
-    feedbackElement.textContent = "♡";
-    const gamePage = site.querySelector(".game-page");
-    const btn = gamePage?.querySelector(".advance");
-    if (btn) btn.classList.add("visible");
-    return;
-  }
-
-  function showQuestion() {
-    const question = questions[questionIndex];
-    progressElement.textContent = `Question ${questionIndex + 1} of ${questions.length}`;
-    questionElement.textContent = question.question || "";
-    feedbackElement.textContent = "";
-
-    optionsElement.innerHTML = (question.options || []).map((option, index) => `
-      <button class="game-option" type="button" data-option="${index}">${escapeHTML(option)}</button>
-    `).join("");
-
-    optionsElement.querySelectorAll(".game-option").forEach(button => {
-      button.addEventListener("click", () => {
-        const selected = Number(button.dataset.option);
-        const correct = Number(question.answer);
-        optionsElement.querySelectorAll("button").forEach(b => { b.disabled = true; });
-
-        if (selected === correct) {
-          score++;
-          feedbackElement.textContent = question.success || "You got it! ♡";
-        } else {
-          feedbackElement.textContent = question.wrong || "That's okay. Every answer is part of our story. ♡";
+        // Timeline
+        const tlContainer = document.getElementById('timelineContainer');
+        if (tlContainer && Array.isArray(CONFIG.timeline)) {
+          tlContainer.innerHTML = '';
+          CONFIG.timeline.forEach(line => {
+            const [title, text] = line.split('|').map(s => s.trim());
+            const div = document.createElement('div');
+            div.className = 'timeline-item';
+            div.innerHTML = `<h3>${title || ''}</h3><p>${text || ''}</p>`;
+            tlContainer.appendChild(div);
+          });
         }
 
-        setTimeout(() => {
-          questionIndex++;
-          if (questionIndex < questions.length) {
-            showQuestion();
-          } else {
-            questionElement.textContent = CONFIG.game?.finishedHeading || "And that's our little story!";
-            optionsElement.innerHTML = "";
-            progressElement.textContent = "Our little game is complete";
-            feedbackElement.textContent =
-              `${score} out of ${questions.length} — ${CONFIG.game?.endingMessage || "The real prize is the memories we share. ♡"}`;
-            const gamePage = site.querySelector(".game-page");
-            const btn = gamePage?.querySelector(".advance");
-            if (btn) btn.classList.add("visible");
-          }
-        }, 1400);
+        // Album
+        const albumGrid = document.getElementById('albumGrid');
+        if (albumGrid && Array.isArray(CONFIG.album)) {
+          albumGrid.innerHTML = '';
+          CONFIG.album.forEach(line => {
+            const [emoji, text] = line.split('|').map(s => s.trim());
+            const div = document.createElement('div');
+            div.className = 'memory-card';
+            div.innerHTML = `<div class="memory-emoji">${emoji || '✦'}</div>
+                             <div class="memory-text">${text || ''}</div>`;
+            albumGrid.appendChild(div);
+          });
+        }
+
+        // Welcome navigation
+        const welcomeNav = document.getElementById('welcomeNav');
+        if (welcomeNav) {
+          welcomeNav.innerHTML = '';
+          const pages = [
+            { id: 'matching', label: '✦ moon match' },
+            { id: 'letter', label: '✦ love letter' },
+            { id: 'game', label: '✦ catch the stars' },
+            { id: 'timeline', label: '✦ our orbit' },
+            { id: 'album', label: '✦ memory galaxy' }
+          ];
+          pages.forEach(p => {
+            const a = document.createElement('a');
+            a.href = '#' + p.id;
+            a.className = 'nav-btn';
+            a.setAttribute('data-page', p.id);
+            a.textContent = p.label;
+            welcomeNav.appendChild(a);
+          });
+        }
+
+        // Audio
+        const audioEl = document.getElementById('bgSong');
+        if (audioEl && CONFIG.musicUrl) {
+          audioEl.querySelector('source').src = CONFIG.musicUrl;
+          audioEl.load();
+        }
+
+        // Page title
+        document.title = `${CONFIG.partner1} & ${CONFIG.partner2} · ${CONFIG.theme}`;
+      }
+
+      // ---------- STARFIELD ----------
+      const canvas = document.getElementById('starCanvas');
+      const ctx = canvas.getContext('2d');
+      let stars = [];
+      function initStars() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        stars = [];
+        const count = Math.floor((canvas.width * canvas.height) / 8000);
+        for (let i = 0; i < count; i++) {
+          stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.8 + 0.5,
+            alpha: Math.random() * 0.7 + 0.3
+          });
+        }
+      }
+      function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        stars.forEach(s => {
+          ctx.globalAlpha = s.alpha;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
+          ctx.fill();
+          s.x += (Math.random() - 0.5) * 0.1;
+          s.y += (Math.random() - 0.5) * 0.1;
+        });
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(drawStars);
+      }
+      window.addEventListener('resize', initStars);
+      initStars();
+      drawStars();
+
+      // ---------- AMBIENT AUDIO ----------
+      let audioCtx = null;
+      let isPlaying = false;
+
+      function startAmbientSong() {
+        if (isPlaying) return;
+
+        const audioEl = document.getElementById('bgSong');
+        if (audioEl && CONFIG.musicUrl) {
+          audioEl.play().then(() => {
+            isPlaying = true;
+          }).catch(() => playWebAudioFallback());
+          return;
+        }
+        playWebAudioFallback();
+      }
+
+      function playWebAudioFallback() {
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const master = audioCtx.createGain();
+          master.gain.value = 0.12;
+          master.connect(audioCtx.destination);
+
+          const osc1 = audioCtx.createOscillator();
+          const osc2 = audioCtx.createOscillator();
+          osc1.type = 'sine'; osc2.type = 'sine';
+          osc1.frequency.value = 174;
+          osc2.frequency.value = 261.63;
+          osc1.connect(master);
+          osc2.connect(master);
+
+          const lfo = audioCtx.createOscillator();
+          lfo.frequency.value = 0.08;
+          const lfoGain = audioCtx.createGain();
+          lfoGain.gain.value = 0.03;
+          lfo.connect(lfoGain);
+          lfoGain.connect(master.gain);
+
+          const delay = audioCtx.createDelay();
+          delay.delayTime.value = 0.5;
+          const fb = audioCtx.createGain();
+          fb.gain.value = 0.2;
+          delay.connect(fb);
+          fb.connect(delay);
+          const delayGain = audioCtx.createGain();
+          delayGain.gain.value = 0.1;
+          osc1.connect(delayGain);
+          osc2.connect(delayGain);
+          delayGain.connect(delay);
+          delay.connect(master);
+
+          osc1.start(); osc2.start(); lfo.start();
+          isPlaying = true;
+        } catch (e) {
+          console.warn('Web Audio unavailable', e);
+        }
+      }
+
+      let triggered = false;
+      function triggerAudio() {
+        if (triggered) return;
+        triggered = true;
+        startAmbientSong();
+        ['click', 'scroll', 'keydown', 'touchstart'].forEach(ev =>
+          document.removeEventListener(ev, triggerAudio)
+        );
+      }
+      ['click', 'scroll', 'keydown', 'touchstart'].forEach(ev =>
+        document.addEventListener(ev, triggerAudio)
+      );
+
+      // ---------- MULTI-PAGE NAV ----------
+      const pages = {
+        welcome: document.getElementById('page-welcome'),
+        matching: document.getElementById('page-matching'),
+        letter: document.getElementById('page-letter'),
+        game: document.getElementById('page-game'),
+        timeline: document.getElementById('page-timeline'),
+        album: document.getElementById('page-album')
+      };
+
+      function showPage(pageId) {
+        Object.values(pages).forEach(p => { if (p) p.style.display = 'none'; });
+        if (pages[pageId]) {
+          pages[pageId].style.display = 'flex';
+          void pages[pageId].offsetWidth;
+          pages[pageId].style.animation = 'none';
+          pages[pageId].offsetHeight;
+          pages[pageId].style.animation = 'fadeUp 1s ease forwards';
+        }
+        if (history.pushState) history.pushState(null, '', '#' + pageId);
+        else location.hash = pageId;
+      }
+
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.nav-btn');
+        if (!btn) return;
+        e.preventDefault();
+        const pageId = btn.getAttribute('data-page');
+        if (pageId) {
+          showPage(pageId);
+          if (!triggered) triggerAudio();
+        }
       });
-    });
-  }
 
-  showQuestion();
-}
+      window.addEventListener('load', () => {
+        const hash = location.hash.replace('#', '');
+        showPage(hash && pages[hash] ? hash : 'welcome');
+      });
+      window.addEventListener('popstate', () => {
+        const hash = location.hash.replace('#', '');
+        showPage(hash && pages[hash] ? hash : 'welcome');
+      });
 
-/* ---------------- MUSIC ---------------- */
-function setupMusic() {
-  const song = CONFIG.song || {};
-  if (!music || !musicToggle) return;
+      // ---------- MOON MATCH ----------
+      const moonCanvas = document.getElementById('moonCanvas');
+      const moonCtx = moonCanvas ? moonCanvas.getContext('2d') : null;
+      const matchPercentEl = document.getElementById('matchPercent');
+      const dob1 = document.getElementById('dob1');
+      const dob2 = document.getElementById('dob2');
+      const matchBtn = document.getElementById('matchBtn');
 
-  const source = safeURL(song.src || "");
-  if (!source) {
-    musicToggle.style.display = "none";
-    return;
-  }
+      function drawMoon(p1, p2) {
+        if (!moonCtx) return;
+        const w = moonCanvas.width = 440;
+        const h = moonCanvas.height = 440;
+        moonCtx.clearRect(0, 0, w, h);
 
-  music.src = source;
-  music.loop = song.loop !== false;
-  music.volume = Math.min(1, Math.max(0, Number(song.volume ?? 0.65)));
+        const combined = (p1 + p2) / 2;
+        const similarity = 1 - Math.abs(p1 - p2);
+        const glow = 0.6 + similarity * 0.4;
 
-  async function tryPlay() {
-    try {
-      await music.play();
-      musicStarted = true;
-      musicToggle.classList.remove("muted");
-      musicToggle.classList.add("playing");
-      musicToggle.textContent = "♫";
-    } catch {
-      musicStarted = false;
-      musicToggle.classList.add("muted");
-      musicToggle.textContent = "♪";
-    }
-  }
+        moonCtx.shadowColor = '#e0e8ff';
+        moonCtx.shadowBlur = 40 * glow;
+        moonCtx.beginPath();
+        moonCtx.arc(w / 2, h / 2, 160, 0, 2 * Math.PI);
+        moonCtx.fillStyle = '#f0f4ff';
+        moonCtx.fill();
 
-  tryPlay();
-  document.addEventListener("pointerdown", () => { if (!musicStarted) tryPlay(); }, { once: true });
-  document.addEventListener("keydown", () => { if (!musicStarted) tryPlay(); }, { once: true });
+        moonCtx.shadowBlur = 20;
+        moonCtx.shadowColor = '#000';
+        moonCtx.globalCompositeOperation = 'source-atop';
+        moonCtx.beginPath();
+        const offsetX = (combined - 0.5) * 300;
+        moonCtx.arc(w / 2 + offsetX, h / 2, 160, 0, 2 * Math.PI);
+        moonCtx.fillStyle = '#1a1a2e';
+        moonCtx.fill();
 
-  musicToggle.addEventListener("click", async () => {
-    if (music.paused) await tryPlay();
-    else {
-      music.pause();
-      musicToggle.classList.add("muted");
-      musicToggle.classList.remove("playing");
-      musicToggle.textContent = "♪";
-    }
-  });
-}
+        moonCtx.globalCompositeOperation = 'source-over';
+        moonCtx.shadowBlur = 0;
+        moonCtx.shadowColor = 'transparent';
 
-/* ---------------- INIT ---------------- */
-async function initNivaGift() {
-  try {
-    const response = await fetch("./config.json", { cache: "no-store" });
-    if (!response.ok) throw new Error("Could not load config.json");
-    CONFIG = await response.json();
+        moonCtx.globalAlpha = 0.15;
+        for (let i = 0; i < 12; i++) {
+          moonCtx.beginPath();
+          moonCtx.arc(
+            w / 2 + (Math.random() - 0.5) * 200,
+            h / 2 + (Math.random() - 0.5) * 200,
+            Math.random() * 30 + 10, 0, 2 * Math.PI
+          );
+          moonCtx.fillStyle = '#aaaacc';
+          moonCtx.fill();
+        }
+        moonCtx.globalAlpha = 1;
 
-    getTheme();
-    buildWebsite();
-    setupMusic();
+        moonCtx.shadowBlur = 50 * glow;
+        moonCtx.shadowColor = CONFIG.colors.accent;
+        moonCtx.beginPath();
+        moonCtx.arc(w / 2, h / 2, 160, 0, 2 * Math.PI);
+        moonCtx.strokeStyle = '#d9ccff';
+        moonCtx.lineWidth = 3;
+        moonCtx.stroke();
+        moonCtx.shadowBlur = 0;
+      }
 
-    document.title = CONFIG.siteTitle || "Our Little Story";
-  } catch (error) {
-    console.error(error);
-    site.innerHTML = `
-      <section class="page active">
-        <div class="wrap">
-          <div class="welcome-content">
-            <h2>Something went wrong</h2>
-            <p class="subtitle">Please check that config.json is in the same folder as template.html.</p>
-          </div>
-        </div>
-      </section>
-    `;
-  }
-}
+      function computeMatch() {
+        if (!dob1 || !dob2) return;
+        const d1 = new Date(dob1.value);
+        const d2 = new Date(dob2.value);
+        if (isNaN(d1) || isNaN(d2)) return;
 
-initNivaGift();
-</script>
+        const p1 = (d1.getDate() % 29.5) / 29.5;
+        const p2 = (d2.getDate() % 29.5) / 29.5;
+
+        const diffDays = Math.abs(d1 - d2) / (1000 * 60 * 60 * 24);
+        const dateFactor = Math.max(0, 1 - diffDays / 3650);
+        const phaseFactor = 1 - Math.abs(p1 - p2);
+        const percent = Math.round((dateFactor * 0.4 + phaseFactor * 0.6) * 100);
+
+        if (matchPercentEl) matchPercentEl.textContent = percent + '%';
+        drawMoon(p1, p2);
+      }
+
+      if (matchBtn) matchBtn.addEventListener('click', computeMatch);
+      window.addEventListener('load', () => { if (dob1 && dob2) computeMatch(); });
+
+      // ---------- GAME ----------
+      const gameArea = document.getElementById('gameArea');
+      const starEl = document.getElementById('starGame');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const restartBtn = document.getElementById('restartGame');
+      let score = 0;
+      let gameActive = true;
+
+      function moveStar() {
+        if (!gameActive || !gameArea || !starEl) return;
+        const rect = gameArea.getBoundingClientRect();
+        const size = 32;
+        const maxX = rect.width - size;
+        const maxY = rect.height - size;
+        starEl.style.left = (Math.random() * maxX + size / 2) + 'px';
+        starEl.style.top = (Math.random() * maxY + size / 2) + 'px';
+      }
+
+      function resetGame() {
+        score = 0;
+        if (scoreDisplay) scoreDisplay.textContent = '0';
+        gameActive = true;
+        moveStar();
+      }
+
+      if (starEl) {
+        starEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (!gameActive) return;
+          score++;
+          if (scoreDisplay) scoreDisplay.textContent = score;
+          moveStar();
+        });
+      }
+      if (restartBtn) restartBtn.addEventListener('click', resetGame);
+      window.addEventListener('load', () => setTimeout(moveStar, 300));
+      window.addEventListener('resize', () => { if (gameActive) moveStar(); });
+
+      // ---------- INIT ----------
+      loadConfig().then(() => {
+        applyConfig();
+        const hash = location.hash.replace('#', '');
+        showPage(hash && pages[hash] ? hash : 'welcome');
+
+        const loading = document.getElementById('loadingScreen');
+        if (loading) {
+          setTimeout(() => {
+            loading.classList.add('hidden');
+            setTimeout(() => loading.remove(), 800);
+          }, 400);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
