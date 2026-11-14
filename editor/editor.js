@@ -54,6 +54,8 @@ const context = {
 const DRAFT_KEY = DRAFT_KEY_PREFIX + context.templateId;
 const PREVIEW_KEY = PREVIEW_KEY_PREFIX + context.templateId;
 const TEMPLATE_PRICE = TEMPLATE_PRICES[context.templateId] ?? 299;
+let appliedCouponCode = "";
+let appliedCouponPreview = null;
 
 /* ---------- 2. UTILITIES ---------- */
 function showToast(message, ms = 3000) {
@@ -1046,8 +1048,41 @@ function updatePlanSummary() {
   const priceEl = $("#planSummaryPrice");
   const badge = $("#priceBadge");
   if (nameEl) nameEl.textContent = TEMPLATE_PLAN_NAMES[TEMPLATE_PRICE] || "Signature";
-  if (priceEl) priceEl.textContent = `₹${TEMPLATE_PRICE}`;
-  if (badge) badge.textContent = `₹${TEMPLATE_PRICE}`;
+  const payable = appliedCouponPreview?.payable ?? TEMPLATE_PRICE;
+  if (priceEl) priceEl.textContent = `₹${payable}`;
+  if (badge) badge.textContent = `₹${payable}`;
+}
+
+/* ---------- COUPON UI ---------- */
+function initCouponUI() {
+  const input = $("#nivaCouponInput");
+  const apply = $("#nivaApplyCoupon");
+  const status = $("#nivaCouponStatus");
+  const price = $("#nivaCouponPrice");
+  if (!input || !apply) return;
+  const show = (message, state) => {
+    if (status) { status.textContent = message; status.dataset.state = state || ""; }
+  };
+  apply.addEventListener("click", () => {
+    const code = input.value.trim().toUpperCase();
+    if (!code) { appliedCouponCode = ""; appliedCouponPreview = null; show("Enter a coupon code first.", "error"); if(price) price.textContent="No coupon applied."; updatePlanSummary(); return; }
+    if (code === "SHARUBHAI200") {
+      if (TEMPLATE_PRICE !== 599) { show("This coupon is valid only on ₹599 templates.", "error"); return; }
+      appliedCouponCode = code;
+      appliedCouponPreview = { discount: 200, payable: TEMPLATE_PRICE - 200 };
+      show("Coupon applied preview. Final eligibility is checked securely at checkout.", "success");
+    } else if (code === "SHARUBHAI20") {
+      if (TEMPLATE_PRICE <= 1000) { show("20% OFF applies only to eligible order totals above ₹1,000. Multi-template checkout is not enabled yet.", "error"); return; }
+      appliedCouponCode = code;
+      appliedCouponPreview = { discount: Math.round(TEMPLATE_PRICE * .20), payable: TEMPLATE_PRICE - Math.round(TEMPLATE_PRICE * .20) };
+      show("20% coupon applied. Final eligibility is checked at checkout.", "success");
+    } else {
+      appliedCouponCode = ""; appliedCouponPreview = null;
+      show("Invalid coupon code.", "error");
+    }
+    if (appliedCouponPreview && price) price.textContent = `You save ₹${appliedCouponPreview.discount} · Pay ₹${appliedCouponPreview.payable}`;
+    updatePlanSummary();
+  });
 }
 
 /* =========================================================
@@ -1265,7 +1300,7 @@ function updatePlanSummary() {
       const res = await fetch("/api/payments/create-order", {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId: window.NIVAEditor.templateId }),
+        body: JSON.stringify({ templateId: window.NIVAEditor.templateId, couponCode: appliedCouponCode }),
       });
       if (res.status === 404 || res.status === 405 || res.status === 501) return null;
       const data = await res.json().catch(() => ({}));
@@ -1439,6 +1474,7 @@ async function initEditor() {
   try {
     context.config = await loadConfig();
     context.photoSlotLimit = resolvePhotoSlotLimit(context.config);
+    initCouponUI();
     const nameEl = $("#templateName");
     const metaEl = $("#templateMeta");
     if (nameEl) nameEl.textContent = context.config.name;

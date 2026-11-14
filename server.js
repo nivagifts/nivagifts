@@ -333,6 +333,9 @@ async function runMigrations() {
         provider_order_id TEXT,
         provider_payment_id TEXT,
         template_id TEXT,
+        coupon_code TEXT,
+        base_amount_inr INTEGER,
+        discount_inr INTEGER NOT NULL DEFAULT 0,
         consumed BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         paid_at TIMESTAMPTZ
@@ -354,7 +357,30 @@ async function runMigrations() {
           WHERE table_schema='app' AND table_name='payments' AND column_name='paid_at') THEN
           ALTER TABLE app.payments ADD COLUMN paid_at TIMESTAMPTZ;
         END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='coupon_code') THEN
+          ALTER TABLE app.payments ADD COLUMN coupon_code TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='base_amount_inr') THEN
+          ALTER TABLE app.payments ADD COLUMN base_amount_inr INTEGER;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='payments' AND column_name='discount_inr') THEN
+          ALTER TABLE app.payments ADD COLUMN discount_inr INTEGER NOT NULL DEFAULT 0;
+        END IF;
       END $$;`);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app.coupon_redemptions (
+        id BIGSERIAL PRIMARY KEY,
+        user_id BIGINT NOT NULL REFERENCES app.users(id) ON DELETE CASCADE,
+        coupon_code TEXT NOT NULL,
+        payment_id BIGINT NOT NULL REFERENCES app.payments(id) ON DELETE CASCADE,
+        redeemed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE (user_id, coupon_code),
+        UNIQUE (payment_id)
+      );`);
 
     /* 4. GIFTS — references payments, users */
     await pool.query(`
@@ -1348,44 +1374,54 @@ try {
 app.post("/api/payments/create-order", requireAuthenticated, async (req, res, next) => {
   try {
     const { templateId } = req.body || {};
+    const couponCode = String(req.body?.couponCode || "").trim().toUpperCase();
     if (!ALLOWED_TEMPLATE_IDS.has(templateId)) {
       return res.status(400).json({ success: false, message: "Invalid template." });
     }
-    const amount = TEMPLATE_PRICES[templateId];
-    if (!amount) {
-      return res.status(400).json({ success: false, message: "Unknown template price." });
+    const baseAmount = TEMPLATE_PRICES[templateId];
+    if (!baseAmount) return res.status(400).json({ success: false, message: "Unknown template price." });
+
+    let discount = 0;
+    if (couponCode) {
+      if (couponCode === "SHARUBHAI200") {
+        if (baseAmount !== 599) return res.status(400).json({ success: false, message: "This coupon is valid only on ₹599 templates." });
+        const used = await pool.query(
+          `SELECT 1 FROM app.coupon_redemptions WHERE user_id = $1 AND coupon_code = $2 LIMIT 1`,
+          [req.session.userId, couponCode]
+        );
+        if (used.rows.length) return res.status(409).json({ success: false, message: "You have already used this coupon on your account." });
+        discount = 200;
+      } else if (couponCode === "SHARUBHAI20") {
+        if (baseAmount <= 1000) return res.status(400).json({ success: false, message: "SHARUBHAI20 applies only when the eligible order total is above ₹1,000. Multi-template checkout is not enabled yet." });
+        discount = Math.round(baseAmount * 0.20);
+      } else {
+        return res.status(400).json({ success: false, message: "Invalid coupon code." });
+      }
     }
+    const amount = Math.max(1, baseAmount - discount);
 
     if (!razorpay) {
       const orderId = "order_mock_" + crypto.randomBytes(8).toString("hex");
       await pool.query(
-        `INSERT INTO app.payments (user_id, amount_inr, status, provider, provider_order_id, template_id)
-         VALUES ($1, $2, 'pending', 'mock', $3, $4)`,
-        [req.session.userId, amount, orderId, templateId]
+        `INSERT INTO app.payments (user_id, amount_inr, status, provider, provider_order_id, template_id, coupon_code, base_amount_inr, discount_inr)
+         VALUES ($1, $2, 'pending', 'mock', $3, $4, $5, $6, $7)`,
+        [req.session.userId, amount, orderId, templateId, couponCode || null, baseAmount, discount]
       );
-      return res.json({
-        success: true, orderId, amount, currency: "INR",
-        templateId, mock: true,
-      });
+      return res.json({ success: true, orderId, amount, baseAmount, discount, couponCode, currency: "INR", templateId, mock: true });
     }
 
     const order = await razorpay.orders.create({
       amount: amount * 100,
       currency: "INR",
       receipt: "niva_" + crypto.randomBytes(8).toString("hex"),
-      notes: { templateId, userId: String(req.session.userId) },
+      notes: { templateId, userId: String(req.session.userId), couponCode: couponCode || "none" },
     });
-
     await pool.query(
-      `INSERT INTO app.payments (user_id, amount_inr, status, provider, provider_order_id, template_id)
-       VALUES ($1, $2, 'pending', 'razorpay', $3, $4)`,
-      [req.session.userId, amount, order.id, templateId]
+      `INSERT INTO app.payments (user_id, amount_inr, status, provider, provider_order_id, template_id, coupon_code, base_amount_inr, discount_inr)
+       VALUES ($1, $2, 'pending', 'razorpay', $3, $4, $5, $6, $7)`,
+      [req.session.userId, amount, order.id, templateId, couponCode || null, baseAmount, discount]
     );
-
-    res.json({
-      success: true, orderId: order.id, amount, currency: "INR",
-      templateId, keyId: process.env.RAZORPAY_KEY_ID, mock: false,
-    });
+    res.json({ success: true, orderId: order.id, amount, baseAmount, discount, couponCode, currency: "INR", templateId, keyId: process.env.RAZORPAY_KEY_ID, mock: false });
   } catch (err) { next(err); }
 });
 
@@ -1421,6 +1457,15 @@ app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) =
     if (!result.rows.length) {
       return res.status(404).json({ success: false, message: "Order not found or already paid." });
     }
+    const paidOrder = await pool.query(`SELECT user_id, coupon_code FROM app.payments WHERE id = $1`, [result.rows[0].id]);
+    if (paidOrder.rows[0]?.coupon_code === "SHARUBHAI200") {
+      const redeemed = await pool.query(
+        `INSERT INTO app.coupon_redemptions (user_id, coupon_code, payment_id)
+         VALUES ($1, $2, $3) ON CONFLICT (user_id, coupon_code) DO NOTHING RETURNING id`,
+        [paidOrder.rows[0].user_id, paidOrder.rows[0].coupon_code, result.rows[0].id]
+      );
+      if (!redeemed.rows.length) return res.status(409).json({ success: false, message: "This one-time coupon has already been used on your account." });
+    }
     res.json({
       success: true, message: "Payment confirmed.",
       amount: result.rows[0].amount_inr,
@@ -1451,6 +1496,15 @@ app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) =>
     );
     if (!result.rows.length) {
       return res.status(404).json({ success: false, message: "Order not found." });
+    }
+    const paidOrder = await pool.query(`SELECT user_id, coupon_code FROM app.payments WHERE id = $1`, [result.rows[0].id]);
+    if (paidOrder.rows[0]?.coupon_code === "SHARUBHAI200") {
+      const redeemed = await pool.query(
+        `INSERT INTO app.coupon_redemptions (user_id, coupon_code, payment_id)
+         VALUES ($1, $2, $3) ON CONFLICT (user_id, coupon_code) DO NOTHING RETURNING id`,
+        [paidOrder.rows[0].user_id, paidOrder.rows[0].coupon_code, result.rows[0].id]
+      );
+      if (!redeemed.rows.length) return res.status(409).json({ success: false, message: "This one-time coupon has already been used on your account." });
     }
     res.json({ success: true, message: "Payment verified.", amount: result.rows[0].amount_inr });
   } catch (err) { next(err); }

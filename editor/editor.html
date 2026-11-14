@@ -12,6 +12,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="editor.css">
+<style>
+  .niva-coupon-box input{border:1px solid #e5d7bd;border-radius:10px;padding:11px 13px;font:inherit}
+  .niva-coupon-box button{border-radius:999px!important}
+  #nivaCouponStatus[data-state="error"]{color:#b34d58}
+  #nivaCouponStatus[data-state="success"]{color:#63835e}
+</style>
 </head>
 <body>
 
@@ -179,6 +185,16 @@
                 <div id="planSummaryName" style="font-family:var(--display);font-size:1.15rem;color:var(--text);margin-top:2px;">—</div>
               </div>
               <div id="planSummaryPrice" style="font-family:var(--display);font-size:1.6rem;color:var(--rose-deep);font-weight:500;">₹—</div>
+            </div>
+
+            <div class="niva-coupon-box" style="margin:16px 0;padding:15px;border:1px solid #e8d9b8;border-radius:14px;background:linear-gradient(135deg,#fffaf1,#fff);">
+              <label for="nivaCouponInput" style="margin:0 0 8px;display:block;font-weight:600;">Have a discount coupon?</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input id="nivaCouponInput" type="text" maxlength="40" placeholder="Enter coupon code" autocomplete="off" style="flex:1;min-width:160px;text-transform:uppercase;">
+                <button class="button button-secondary" type="button" id="nivaApplyCoupon">Apply</button>
+              </div>
+              <p id="nivaCouponStatus" role="status" aria-live="polite" style="margin:8px 0 0;font-size:.8rem;"></p>
+              <p id="nivaCouponPrice" style="margin:8px 0 0;font-weight:600;color:#9a7540;">No coupon applied.</p>
             </div>
 
             <label for="giftPassword">Gift password</label>
