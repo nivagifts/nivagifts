@@ -1066,12 +1066,12 @@ function initCouponUI() {
   apply.addEventListener("click", () => {
     const code = input.value.trim().toUpperCase();
     if (!code) { appliedCouponCode = ""; appliedCouponPreview = null; show("Enter a coupon code first.", "error"); if(price) price.textContent="No coupon applied."; updatePlanSummary(); return; }
-    if (code === "SHARUBHAI200") {
+    if (code === "SHERUBHAI200") {
       if (TEMPLATE_PRICE !== 599) { show("This coupon is valid only on ₹599 templates.", "error"); return; }
       appliedCouponCode = code;
       appliedCouponPreview = { discount: 200, payable: TEMPLATE_PRICE - 200 };
       show("Coupon applied preview. Final eligibility is checked securely at checkout.", "success");
-    } else if (code === "SHARUBHAI20") {
+    } else if (code === "SHERUBHAI20") {
       if (TEMPLATE_PRICE <= 1000) { show("20% OFF applies only to eligible order totals above ₹1,000. Multi-template checkout is not enabled yet.", "error"); return; }
       appliedCouponCode = code;
       appliedCouponPreview = { discount: Math.round(TEMPLATE_PRICE * .20), payable: TEMPLATE_PRICE - Math.round(TEMPLATE_PRICE * .20) };

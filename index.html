@@ -488,47 +488,47 @@
     }
   </style>
 
-  <style id="sharu-offer-styles">
-    .sharu-offer-section{padding:42px 0 74px;position:relative;overflow:hidden}
-    .sharu-offer-shell{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(220px,.82fr) 1.18fr;min-height:360px;border:1px solid rgba(226,190,112,.55);border-radius:30px;overflow:hidden;background:radial-gradient(circle at 80% 12%,rgba(225,184,95,.2),transparent 32%),linear-gradient(120deg,#100e0b 0%,#21180f 52%,#090909 100%);box-shadow:0 28px 75px rgba(34,22,10,.2)}
-    .sharu-offer-shell:before,.sharu-offer-shell:after{content:"";position:absolute;inset:14px;border:1px solid rgba(218,180,100,.18);border-radius:22px;pointer-events:none;z-index:2}
-    .sharu-offer-shell:after{inset:21px;border-color:rgba(255,255,255,.045)}
-    .sharu-offer-portrait{position:relative;min-height:360px;overflow:hidden;background:#17120d}
-    .sharu-offer-portrait img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:center 23%;filter:saturate(.92);mask-image:linear-gradient(90deg,#000 65%,transparent 100%)}
-    .sharu-offer-portrait:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(12,10,8,.42),transparent 45%),linear-gradient(90deg,transparent 65%,#17120d 100%)}
-    .sharu-offer-copy{position:relative;z-index:3;padding:48px clamp(24px,5vw,68px) 42px 22px;color:#f8f0df;display:flex;flex-direction:column;justify-content:center}
-    .sharu-kicker{color:#d8b66d;text-transform:uppercase;letter-spacing:.25em;font:600 .66rem Inter,sans-serif;display:flex;align-items:center;gap:10px}
-    .sharu-kicker:before{content:"";width:26px;height:1px;background:#d8b66d}
-    .sharu-offer-copy h2{font:500 clamp(2rem,4vw,3.25rem)/1.05 "Playfair Display",Georgia,serif;margin:16px 0 12px;color:#fff6e4}
-    .sharu-offer-copy h2 em{font-style:italic;color:#e2c27d}
-    .sharu-lead{color:#d2c4a9;font:400 1.02rem/1.7 "Cormorant Garamond",Georgia,serif;max-width:520px;margin:0}
-    .sharu-coupon-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:25px}
-    .sharu-coupon{padding:15px 16px;border:1px solid rgba(220,184,105,.4);border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.025));backdrop-filter:blur(8px)}
-    .sharu-coupon small{display:block;color:#d8b66d;letter-spacing:.12em;text-transform:uppercase;font:600 .6rem Inter,sans-serif}
-    .sharu-coupon strong{display:block;color:#fff4dd;font:600 clamp(1.1rem,2vw,1.45rem) "Playfair Display",Georgia,serif;margin:5px 0}
-    .sharu-coupon p{color:#c9bda8;font:400 .75rem/1.45 Inter,sans-serif;margin:0 0 12px}
-    .sharu-copy-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:linear-gradient(110deg,#e2c27d,#b78a3d);color:#1c160d;font:700 .7rem Inter,sans-serif;letter-spacing:.04em;box-shadow:0 5px 18px rgba(205,165,83,.2)}
-    .sharu-copy-btn:hover{transform:translateY(-1px);filter:brightness(1.07)}
-    .sharu-footnote{margin:13px 0 0;color:#aa9b80;font:400 .67rem/1.5 Inter,sans-serif}
-    .sharu-modal{position:fixed;inset:0;z-index:180;background:rgba(7,7,7,.76);backdrop-filter:blur(12px);display:grid;place-items:center;padding:18px;opacity:0;visibility:hidden;pointer-events:none;transition:.3s}
-    .sharu-modal.show{opacity:1;visibility:visible;pointer-events:auto}
-    .sharu-modal-card{width:min(100%,760px);max-height:min(90vh,760px);overflow:auto;position:relative;border-radius:26px;border:1px solid rgba(220,184,105,.55);background:#17130e;box-shadow:0 30px 100px rgba(0,0,0,.55);transform:translateY(16px) scale(.985);transition:.35s}
-    .sharu-modal.show .sharu-modal-card{transform:none}
-    .sharu-modal-top{display:grid;grid-template-columns: .8fr 1.2fr;min-height:330px}
-    .sharu-modal-image{min-height:330px;position:relative;overflow:hidden}
-    .sharu-modal-image img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:center 20%}
-    .sharu-modal-content{padding:40px 34px;color:#f8f0df;display:flex;flex-direction:column;justify-content:center}
-    .sharu-modal-content h2{font:500 clamp(1.8rem,4vw,2.7rem)/1.05 "Playfair Display",Georgia,serif;margin:12px 0;color:#fff4df}
-    .sharu-modal-content h2 span{color:#e2c27d;font-style:italic}
-    .sharu-modal-content p{color:#d0c2a8;font:400 .9rem/1.65 Inter,sans-serif}
-    .sharu-modal-codes{display:grid;gap:10px;margin-top:12px}
-    .sharu-modal-code{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px dashed rgba(220,184,105,.5);border-radius:13px;background:rgba(255,255,255,.045)}
-    .sharu-modal-code b{font:600 1rem Inter,sans-serif;letter-spacing:.08em;color:#f2d99f}
-    .sharu-modal-close{position:absolute;top:12px;right:12px;z-index:5;width:38px;height:38px;border:1px solid rgba(220,184,105,.45);border-radius:50%;background:rgba(10,10,10,.72);color:#f4dfb0;font-size:1.3rem}
-    .sharu-toast{position:fixed;z-index:220;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#17130e;color:#f4dfb0;border:1px solid rgba(220,184,105,.5);border-radius:999px;padding:11px 18px;font:600 .78rem Inter,sans-serif;transition:.25s;box-shadow:0 10px 30px #0004}
-    .sharu-toast.show{opacity:1;transform:translate(-50%,0)}
-    @media(max-width:760px){.sharu-offer-shell{grid-template-columns:1fr}.sharu-offer-portrait{min-height:245px}.sharu-offer-portrait img{object-position:center 27%;mask-image:linear-gradient(180deg,#000 68%,transparent 100%)}.sharu-offer-copy{padding:25px 24px 30px}.sharu-coupon-grid{grid-template-columns:1fr}.sharu-modal-top{grid-template-columns:1fr}.sharu-modal-image{min-height:190px;max-height:210px}.sharu-modal-image img{object-position:center 25%}.sharu-modal-content{padding:25px 22px 28px}}
-    @media(prefers-reduced-motion:reduce){.sharu-modal,.sharu-modal-card,.sharu-toast{transition:none}}
+  <style id="sheru-offer-styles">
+    .sheru-offer-section{padding:42px 0 74px;position:relative;overflow:hidden}
+    .sheru-offer-shell{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(220px,.82fr) 1.18fr;min-height:360px;border:1px solid rgba(226,190,112,.55);border-radius:30px;overflow:hidden;background:radial-gradient(circle at 80% 12%,rgba(225,184,95,.2),transparent 32%),linear-gradient(120deg,#100e0b 0%,#21180f 52%,#090909 100%);box-shadow:0 28px 75px rgba(34,22,10,.2)}
+    .sheru-offer-shell:before,.sheru-offer-shell:after{content:"";position:absolute;inset:14px;border:1px solid rgba(218,180,100,.18);border-radius:22px;pointer-events:none;z-index:2}
+    .sheru-offer-shell:after{inset:21px;border-color:rgba(255,255,255,.045)}
+    .sheru-offer-portrait{position:relative;min-height:360px;overflow:hidden;background:#17120d}
+    .sheru-offer-portrait img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:center 23%;filter:saturate(.92);mask-image:linear-gradient(90deg,#000 65%,transparent 100%)}
+    .sheru-offer-portrait:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(12,10,8,.42),transparent 45%),linear-gradient(90deg,transparent 65%,#17120d 100%)}
+    .sheru-offer-copy{position:relative;z-index:3;padding:48px clamp(24px,5vw,68px) 42px 22px;color:#f8f0df;display:flex;flex-direction:column;justify-content:center}
+    .sheru-kicker{color:#d8b66d;text-transform:uppercase;letter-spacing:.25em;font:600 .66rem Inter,sans-serif;display:flex;align-items:center;gap:10px}
+    .sheru-kicker:before{content:"";width:26px;height:1px;background:#d8b66d}
+    .sheru-offer-copy h2{font:500 clamp(2rem,4vw,3.25rem)/1.05 "Playfair Display",Georgia,serif;margin:16px 0 12px;color:#fff6e4}
+    .sheru-offer-copy h2 em{font-style:italic;color:#e2c27d}
+    .sheru-lead{color:#d2c4a9;font:400 1.02rem/1.7 "Cormorant Garamond",Georgia,serif;max-width:520px;margin:0}
+    .sheru-coupon-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:25px}
+    .sheru-coupon{padding:15px 16px;border:1px solid rgba(220,184,105,.4);border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.025));backdrop-filter:blur(8px)}
+    .sheru-coupon small{display:block;color:#d8b66d;letter-spacing:.12em;text-transform:uppercase;font:600 .6rem Inter,sans-serif}
+    .sheru-coupon strong{display:block;color:#fff4dd;font:600 clamp(1.1rem,2vw,1.45rem) "Playfair Display",Georgia,serif;margin:5px 0}
+    .sheru-coupon p{color:#c9bda8;font:400 .75rem/1.45 Inter,sans-serif;margin:0 0 12px}
+    .sheru-copy-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:linear-gradient(110deg,#e2c27d,#b78a3d);color:#1c160d;font:700 .7rem Inter,sans-serif;letter-spacing:.04em;box-shadow:0 5px 18px rgba(205,165,83,.2)}
+    .sheru-copy-btn:hover{transform:translateY(-1px);filter:brightness(1.07)}
+    .sheru-footnote{margin:13px 0 0;color:#aa9b80;font:400 .67rem/1.5 Inter,sans-serif}
+    .sheru-modal{position:fixed;inset:0;z-index:180;background:rgba(7,7,7,.76);backdrop-filter:blur(12px);display:grid;place-items:center;padding:18px;opacity:0;visibility:hidden;pointer-events:none;transition:.3s}
+    .sheru-modal.show{opacity:1;visibility:visible;pointer-events:auto}
+    .sheru-modal-card{width:min(100%,760px);max-height:min(90vh,760px);overflow:auto;position:relative;border-radius:26px;border:1px solid rgba(220,184,105,.55);background:#17130e;box-shadow:0 30px 100px rgba(0,0,0,.55);transform:translateY(16px) scale(.985);transition:.35s}
+    .sheru-modal.show .sheru-modal-card{transform:none}
+    .sheru-modal-top{display:grid;grid-template-columns: .8fr 1.2fr;min-height:330px}
+    .sheru-modal-image{min-height:330px;position:relative;overflow:hidden}
+    .sheru-modal-image img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:center 20%}
+    .sheru-modal-content{padding:40px 34px;color:#f8f0df;display:flex;flex-direction:column;justify-content:center}
+    .sheru-modal-content h2{font:500 clamp(1.8rem,4vw,2.7rem)/1.05 "Playfair Display",Georgia,serif;margin:12px 0;color:#fff4df}
+    .sheru-modal-content h2 span{color:#e2c27d;font-style:italic}
+    .sheru-modal-content p{color:#d0c2a8;font:400 .9rem/1.65 Inter,sans-serif}
+    .sheru-modal-codes{display:grid;gap:10px;margin-top:12px}
+    .sheru-modal-code{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px dashed rgba(220,184,105,.5);border-radius:13px;background:rgba(255,255,255,.045)}
+    .sheru-modal-code b{font:600 1rem Inter,sans-serif;letter-spacing:.08em;color:#f2d99f}
+    .sheru-modal-close{position:absolute;top:12px;right:12px;z-index:5;width:38px;height:38px;border:1px solid rgba(220,184,105,.45);border-radius:50%;background:rgba(10,10,10,.72);color:#f4dfb0;font-size:1.3rem}
+    .sheru-toast{position:fixed;z-index:220;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#17130e;color:#f4dfb0;border:1px solid rgba(220,184,105,.5);border-radius:999px;padding:11px 18px;font:600 .78rem Inter,sans-serif;transition:.25s;box-shadow:0 10px 30px #0004}
+    .sheru-toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:760px){.sheru-offer-shell{grid-template-columns:1fr}.sheru-offer-portrait{min-height:245px}.sheru-offer-portrait img{object-position:center 27%;mask-image:linear-gradient(180deg,#000 68%,transparent 100%)}.sheru-offer-copy{padding:25px 24px 30px}.sheru-coupon-grid{grid-template-columns:1fr}.sheru-modal-top{grid-template-columns:1fr}.sheru-modal-image{min-height:190px;max-height:210px}.sheru-modal-image img{object-position:center 25%}.sheru-modal-content{padding:25px 22px 28px}}
+    @media(prefers-reduced-motion:reduce){.sheru-modal,.sheru-modal-card,.sheru-toast{transition:none}}
   </style>
 
 </head>
@@ -567,7 +567,7 @@
         <a href="index.html#templates">Templates</a>
         <a href="index.html#reviews">Reviews</a>
         <a href="index.html#pricing">Pricing</a>
-        <a href="index.html#sharuOffer">Offers</a>
+        <a href="index.html#sheruOffer">Offers</a>
         <a href="index.html#faq">FAQ</a>
         <a href="index.html#suggestion">Suggestions</a>
         <a href="index.html#contact">Contact</a>
@@ -850,32 +850,32 @@
     </section>
 
 
-    <!-- SHARU BHAI × NIVA EXCLUSIVE OFFERS -->
-    <section class="sharu-offer-section" id="sharuOffer">
+    <!-- SHERU × NIVA EXCLUSIVE OFFERS -->
+    <section class="sheru-offer-section" id="sheruOffer">
       <div class="wrap">
-        <div class="sharu-offer-shell">
-          <div class="sharu-offer-portrait">
-            <img src="public/assets/images/sharu.png" alt="Sharu Bhai exclusive NIVA offer artwork" loading="lazy">
+        <div class="sheru-offer-shell">
+          <div class="sheru-offer-portrait">
+            <img src="public/assets/images/sheru.png" alt="Sheru exclusive NIVA offer artwork" loading="lazy">
           </div>
-          <div class="sharu-offer-copy">
-            <span class="sharu-kicker">A special collaboration</span>
-            <h2>Sharu Bhai <em>Exclusive Offers</em></h2>
-            <p class="sharu-lead">A little royal treatment for your biggest moments. Unlock a special NIVA deal with the coupon that suits your order.</p>
-            <div class="sharu-coupon-grid">
-              <article class="sharu-coupon">
+          <div class="sheru-offer-copy">
+            <span class="sheru-kicker">A special collaboration</span>
+            <h2>Sheru <em>Exclusive Offers</em></h2>
+            <p class="sheru-lead">A little royal treatment for your biggest moments. Unlock a special NIVA deal with the coupon that suits your order.</p>
+            <div class="sheru-coupon-grid">
+              <article class="sheru-coupon">
                 <small>First-time treat · ₹599 templates</small>
                 <strong>₹200 OFF</strong>
                 <p>Pay just ₹399 on an eligible ₹599 template. One successful use per account.</p>
-                <button class="sharu-copy-btn" type="button" data-copy-coupon="SHARUBHAI200">Copy SHARUBHAI200 ↗</button>
+                <button class="sheru-copy-btn" type="button" data-copy-coupon="SHERUBHAI200">Copy SHERUBHAI200 ↗</button>
               </article>
-              <article class="sharu-coupon">
+              <article class="sheru-coupon">
                 <small>Big order privilege · Above ₹1,000</small>
                 <strong>20% OFF</strong>
                 <p>For eligible orders above ₹1,000. Reusable on every qualifying purchase.</p>
-                <button class="sharu-copy-btn" type="button" data-copy-coupon="SHARUBHAI20">Copy SHARUBHAI20 ↗</button>
+                <button class="sheru-copy-btn" type="button" data-copy-coupon="SHERUBHAI20">Copy SHERUBHAI20 ↗</button>
               </article>
             </div>
-            <p class="sharu-footnote">Only one coupon can be applied per order. The 20% offer activates when NIVA checkout supports an eligible order total above ₹1,000.</p>
+            <p class="sheru-footnote">Only one coupon can be applied per order. The 20% offer activates when NIVA checkout supports an eligible order total above ₹1,000.</p>
           </div>
         </div>
       </div>
@@ -1064,7 +1064,7 @@
           <a href="index.html#templates">Templates</a>
           <a href="index.html#reviews">Reviews</a>
           <a href="index.html#pricing">Pricing</a>
-        <a href="index.html#sharuOffer">Offers</a>
+        <a href="index.html#sheruOffer">Offers</a>
           <a href="index.html#faq">FAQ</a>
           <a href="index.html#suggestion">Suggestions</a>
           <a href="index.html#contact">Contact</a>
@@ -2393,31 +2393,31 @@
   </script>
 
 
-  <!-- SHARU BHAI OFFER POPUP -->
-  <div class="sharu-modal" id="sharuOfferModal" role="dialog" aria-modal="true" aria-labelledby="sharuModalTitle">
-    <div class="sharu-modal-card">
-      <button class="sharu-modal-close" type="button" id="sharuModalClose" aria-label="Close offers">×</button>
-      <div class="sharu-modal-top">
-        <div class="sharu-modal-image"><img src="public/assets/promotions/sharu-bhai.png" alt="Sharu Bhai offer artwork"></div>
-        <div class="sharu-modal-content">
-          <span class="sharu-kicker">Sharu Bhai × NIVA</span>
-          <h2 id="sharuModalTitle">A royal deal is <span>waiting for you.</span></h2>
+  <!-- SHERU BHAI OFFER POPUP -->
+  <div class="sheru-modal" id="sheruOfferModal" role="dialog" aria-modal="true" aria-labelledby="sheruModalTitle">
+    <div class="sheru-modal-card">
+      <button class="sheru-modal-close" type="button" id="sheruModalClose" aria-label="Close offers">×</button>
+      <div class="sheru-modal-top">
+        <div class="sheru-modal-image"><img src="public/assets/images/sheru.png" alt="Sheru Bhai offer artwork"></div>
+        <div class="sheru-modal-content">
+          <span class="sheru-kicker">Sheru Bhai × NIVA</span>
+          <h2 id="sheruModalTitle">A royal deal is <span>waiting for you.</span></h2>
           <p>Copy your exclusive coupon and paste it at checkout to unlock your offer.</p>
-          <div class="sharu-modal-codes">
-            <div class="sharu-modal-code"><div><small>₹200 OFF · One use per account</small><br><b>SHARUBHAI200</b></div><button class="sharu-copy-btn" type="button" data-copy-coupon="SHARUBHAI200">COPY</button></div>
-            <div class="sharu-modal-code"><div><small>20% OFF · Orders above ₹1,000</small><br><b>SHARUBHAI20</b></div><button class="sharu-copy-btn" type="button" data-copy-coupon="SHARUBHAI20">COPY</button></div>
+          <div class="sheru-modal-codes">
+            <div class="sheru-modal-code"><div><small>₹200 OFF · One use per account</small><br><b>SHERUBHAI200</b></div><button class="sheru-copy-btn" type="button" data-copy-coupon="SHERUBHAI200">COPY</button></div>
+            <div class="sheru-modal-code"><div><small>20% OFF · Orders above ₹1,000</small><br><b>SHERUBHAI20</b></div><button class="sheru-copy-btn" type="button" data-copy-coupon="SHERUBHAI20">COPY</button></div>
           </div>
-          <p class="sharu-footnote">Offer terms apply. One coupon per order. The 20% coupon requires an eligible order total above ₹1,000.</p>
+          <p class="sheru-footnote">Offer terms apply. One coupon per order. The 20% coupon requires an eligible order total above ₹1,000.</p>
         </div>
       </div>
     </div>
   </div>
-  <div class="sharu-toast" id="sharuCopyToast" role="status" aria-live="polite">Coupon copied!</div>
+  <div class="sheru-toast" id="sheruCopyToast" role="status" aria-live="polite">Coupon copied!</div>
   <script>
     (() => {
-      const modal = document.getElementById("sharuOfferModal");
-      const close = document.getElementById("sharuModalClose");
-      const toast = document.getElementById("sharuCopyToast");
+      const modal = document.getElementById("sheruOfferModal");
+      const close = document.getElementById("sheruModalClose");
+      const toast = document.getElementById("sheruCopyToast");
       if (!modal) return;
       const closeModal = () => { modal.classList.remove("show"); document.body.style.overflow = ""; };
       close?.addEventListener("click", closeModal);
@@ -2436,11 +2436,11 @@
         }
         if (toast) { toast.textContent = code + " copied!"; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2200); }
         btn.textContent = "COPIED ✓";
-        setTimeout(() => { btn.textContent = btn.dataset.copyCoupon === "SHARUBHAI200" ? "Copy SHARUBHAI200 ↗" : "Copy SHARUBHAI20 ↗"; if(btn.closest(".sharu-modal-code")) btn.textContent="COPY"; }, 1800);
+        setTimeout(() => { btn.textContent = btn.dataset.copyCoupon === "SHERUBHAI200" ? "Copy SHERUBHAI200 ↗" : "Copy SHERUBHAI20 ↗"; if(btn.closest(".sheru-modal-code")) btn.textContent="COPY"; }, 1800);
       }));
       try {
-        if (!sessionStorage.getItem("niva_sharu_offer_seen")) {
-          setTimeout(() => { modal.classList.add("show"); document.body.style.overflow = "hidden"; sessionStorage.setItem("niva_sharu_offer_seen","1"); }, 1100);
+        if (!sessionStorage.getItem("niva_sheru_offer_seen")) {
+          setTimeout(() => { modal.classList.add("show"); document.body.style.overflow = "hidden"; sessionStorage.setItem("niva_sheru_offer_seen","1"); }, 1100);
         }
       } catch {}
     })();

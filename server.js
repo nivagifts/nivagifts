@@ -1383,7 +1383,7 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
 
     let discount = 0;
     if (couponCode) {
-      if (couponCode === "SHARUBHAI200") {
+      if (couponCode === "SHERUBHAI200") {
         if (baseAmount !== 599) return res.status(400).json({ success: false, message: "This coupon is valid only on ₹599 templates." });
         const used = await pool.query(
           `SELECT 1 FROM app.coupon_redemptions WHERE user_id = $1 AND coupon_code = $2 LIMIT 1`,
@@ -1391,8 +1391,8 @@ app.post("/api/payments/create-order", requireAuthenticated, async (req, res, ne
         );
         if (used.rows.length) return res.status(409).json({ success: false, message: "You have already used this coupon on your account." });
         discount = 200;
-      } else if (couponCode === "SHARUBHAI20") {
-        if (baseAmount <= 1000) return res.status(400).json({ success: false, message: "SHARUBHAI20 applies only when the eligible order total is above ₹1,000. Multi-template checkout is not enabled yet." });
+      } else if (couponCode === "SHERUBHAI20") {
+        if (baseAmount <= 1000) return res.status(400).json({ success: false, message: "SHERUBHAI20 applies only when the eligible order total is above ₹1,000. Multi-template checkout is not enabled yet." });
         discount = Math.round(baseAmount * 0.20);
       } else {
         return res.status(400).json({ success: false, message: "Invalid coupon code." });
@@ -1458,7 +1458,7 @@ app.post("/api/payments/confirm", requireAuthenticated, async (req, res, next) =
       return res.status(404).json({ success: false, message: "Order not found or already paid." });
     }
     const paidOrder = await pool.query(`SELECT user_id, coupon_code FROM app.payments WHERE id = $1`, [result.rows[0].id]);
-    if (paidOrder.rows[0]?.coupon_code === "SHARUBHAI200") {
+    if (paidOrder.rows[0]?.coupon_code === "SHERUBHAI200") {
       const redeemed = await pool.query(
         `INSERT INTO app.coupon_redemptions (user_id, coupon_code, payment_id)
          VALUES ($1, $2, $3) ON CONFLICT (user_id, coupon_code) DO NOTHING RETURNING id`,
@@ -1498,7 +1498,7 @@ app.post("/api/payments/verify", requireAuthenticated, async (req, res, next) =>
       return res.status(404).json({ success: false, message: "Order not found." });
     }
     const paidOrder = await pool.query(`SELECT user_id, coupon_code FROM app.payments WHERE id = $1`, [result.rows[0].id]);
-    if (paidOrder.rows[0]?.coupon_code === "SHARUBHAI200") {
+    if (paidOrder.rows[0]?.coupon_code === "SHERUBHAI200") {
       const redeemed = await pool.query(
         `INSERT INTO app.coupon_redemptions (user_id, coupon_code, payment_id)
          VALUES ($1, $2, $3) ON CONFLICT (user_id, coupon_code) DO NOTHING RETURNING id`,

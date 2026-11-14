@@ -1,5 +1,5 @@
 /* =========================================================
-   NIVI v4.3 — Emotional Companion Robot
+   NIVI v4.4 — Emotional Companion Robot
    - 8 emotions (happy/sad/angry/excited/shy/smile/thinking/neutral)
    - ✅ Fixed position (no floating explorer mode)
    - Context-aware section reactions
@@ -7,9 +7,10 @@
    - Chat + modal robot unified
    - Mobile-first, reduced-motion safe
    - ✅ Compact contact card (single row, auto-hides)
-   - ✅ Deep privacy + refund knowledge
+   - ✅ Deep privacy + refund + offers knowledge
    - ✅ Friendly, clean, structured replies
    - ✅ Advanced chat: follow-ups, richer intents, better fallbacks
+   - ✅ NEW: Sheru Bhai offer knowledge + all 13 templates
    ========================================================= */
 (() => {
   "use strict";
@@ -30,14 +31,14 @@
   })();
 
   const PAGE_HINTS = {
-    home:      "You're on the NIVA home page — ask me about gifts, pricing, or signing up.",
+    home:      "You're on the NIVA home page — ask me about gifts, pricing, offers, or signing up.",
     editor:    "You're in the gift editor — try 'How to save a draft?' or 'How to publish?'.",
     "my-gifts":"You're in My Gifts — ask 'What is a draft?' or 'How to delete a gift?'.",
     privacy:   "You're on Privacy & Safety — ask me about privacy, safety or refunds.",
   };
 
   const PAGE_TOOLS = {
-    home:      "✦ Browse **templates**, check **pricing**, or tap **Sign up** to start your first gift.",
+    home:      "✦ Explore **templates**, check **pricing**, grab the **Sheru offers**, or tap **Sign up** to start your first gift.",
     editor:    "✦ Your tools: **live preview** (right side), **Save Draft** (top-right), and **Publish** (bottom).",
     "my-gifts":"✦ Three tabs: **Drafts**, **Published**, **Wishlist** — tap any to manage your gifts.",
     privacy:   "✦ Read how we encrypt gifts with **AES-256-GCM** right in your browser. Your data stays yours.",
@@ -121,28 +122,23 @@
   })();
 
   /* -------------------------------------------------------
-     2. KNOWLEDGE BASE — friendlier, cleaner, structured
+     2. KNOWLEDGE BASE — updated with all templates + offers
      ------------------------------------------------------- */
   const KB = [
     { id: "about", tag: "About", emotion: "smile",
       keywords: ["what is niva","about niva","about","explain niva","what is this","what do you do"],
-      answer: "**NIVA** is a place to create beautiful personalised digital gifts ✦\n\nLove letters, proposals, birthday surprises — you pick a template, add your own words, photos and music, then share a **private, password-protected link** with someone special. 💌\n\nEverything is made to feel personal, not generic.",
-      next: ["Pricing?","How to create a gift?","Is it private?"] },
+      answer: "**NIVA** is a place to create beautiful personalised digital gifts ✦\n\nLove letters, proposals, birthday surprises, memory journeys — you pick a template, add your own words, photos and music, then share a **private, password-protected link** with someone special. 💌\n\nEverything is made to feel personal, not generic.",
+      next: ["Pricing?","How to create a gift?","Offers?","Is it private?"] },
 
     { id: "pricing", tag: "Pricing", emotion: "excited",
       keywords: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"],
-      answer: "Here's our simple pricing 💕\n\n• **Special Letter** — ₹39\n• **Essential** — ₹99\n• **Signature** — ₹299\n• **Evermore** — ₹599\n\nYou only pay **when you publish** — drafting and previewing is always free. ✦",
-      next: ["What is the Love Letter?","How to create a gift?","Templates"] },
-
-    { id: "special-letter", tag: "Love Letter", emotion: "shy",
-      keywords: ["special letter","love letter","loveletter","39","letter only","single letter","cheap","cheapest"],
-      answer: "The **Love Letter** is our sweetest little gift — just ₹39 💌\n\nYou get two handwritten-style love letter pages, sealed with a beautiful envelope-opening animation. You'll find it right in the templates grid. ♥",
-      next: ["Pricing?","How to create a gift?"] },
+      answer: "Here's our full pricing ✨\n\n**₹39**\n• Love Letter\n• Apology Letter\n\n**₹99**\n• Essential\n• Memory Box\n• Birthday Special\n\n**₹299**\n• Signature\n• Birthday Magic\n• Besties\n• Date Invitation\n• Constellation Proposal\n• Memory Roll\n\n**₹599**\n• Evermore\n• Eternal Love\n• Love Proposal\n• Eternal Anniversary\n• Soulmate\n\nYou only pay **when you publish** — drafting and previewing is always free. Use a **Sheru coupon** for extra savings! 💕",
+      next: ["Templates?","Offers?","How to create a gift?"] },
 
     { id: "templates", tag: "Templates", emotion: "excited",
-      keywords: ["template","templates","design","designs","theme","options","what can i make","kinds","types"],
-      answer: "Here are the templates you can choose from ✦\n\n• **Eternal Love** — ₹599\n• **Love Proposal** — ₹599\n• **Birthday Magic** — ₹299\n• **Love Letter** — ₹39\n• **Eternal Anniversary** — ₹599\n\nTap any template to see a live preview before you commit. ♥",
-      next: ["Pricing?","How to create a gift?"] },
+      keywords: ["template","templates","design","designs","theme","options","what can i make","kinds","types","list"],
+      answer: "Here are all our templates ✦\n\n**💌 Letters (₹39)**\n• Love Letter\n• Apology Letter\n\n**📷 Memories (₹99–₹299)**\n• Memory Box (₹99)\n• Memory Roll (₹299)\n\n**🎂 Birthday (₹99–₹299)**\n• Birthday Special (₹99)\n• Birthday Magic (₹299)\n\n**💛 Friendship (₹299)**\n• Besties\n\n**♥ Love (₹299–₹599)**\n• Date Invitation (₹299)\n• Constellation Proposal (₹299)\n• Love Proposal (₹599)\n• Eternal Love (₹599)\n• Soulmate (₹599)\n• Eternal Anniversary (₹599)\n\nTap any template on the home page to preview it live. ♥",
+      next: ["Pricing?","Offers?","How to create a gift?"] },
 
     { id: "howto", tag: "How to create", emotion: "thinking",
       keywords: ["how to create","how do i make","make a gift","create gift","start","begin","steps","how does it work"],
@@ -162,7 +158,7 @@
     { id: "payment", tag: "Payment", emotion: "thinking",
       keywords: ["payment","pay","razorpay","upi","card","how to pay","checkout","billing"],
       answer: "Payments are handled securely by **Razorpay** — UPI, cards, netbanking ✦\n\nYou only pay once, at the moment you publish a gift. Drafting and previewing is always free. ♥",
-      next: ["Refund policy?","Sign up"] },
+      next: ["Refund policy?","Offers?","Sign up"] },
 
     { id: "account", tag: "Account", emotion: "happy",
       keywords: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password","username"],
@@ -170,9 +166,14 @@
       next: ["Sign up","Sign in","Forgot password"] },
 
     { id: "mygifts", tag: "My Gifts", emotion: "smile",
-      keywords: ["my gifts","my gifts page","drafts","wishlist","saved","saved gifts","account page"],
-      answer: "Head to **My Gifts** from the home page ♥\n\nYou'll find three tabs:\n• **Drafts** — works in progress\n• **Published** — finished gifts + shareable links\n• **Wishlist** — templates you've hearted ♥\n\nTap any tab to manage your gifts. ✦",
-      next: ["Delete a gift?","What is a draft?"] },
+      keywords: ["my gifts","my gifts page","drafts","wishlist","saved","saved gifts","account page","my gifts & drafts"],
+      answer: "Head to **My Gifts** from the home page menu ♥\n\nYou'll find three tabs:\n• **Drafts** — works in progress\n• **Published** — finished gifts + shareable links\n• **Wishlist** — templates you've hearted ♥\n\nTap any tab to manage your gifts. ✦",
+      next: ["Delete a gift?","What is a draft?","Wishlist?"] },
+
+    { id: "wishlist", tag: "Wishlist", emotion: "smile",
+      keywords: ["wishlist","heart","favourite","favorite","saved template","save template"],
+      answer: "Wishlist is where your **hearted templates** live ♥\n\n• Tap the small **♡ heart** on any template card to add it\n• It turns **♥** when saved\n• Find them all in **My Gifts → Wishlist**\n\nYou need to be signed in to save templates. ✦",
+      next: ["My Gifts?","Templates?","Sign in"] },
 
     { id: "draft", tag: "Drafts", emotion: "thinking",
       keywords: ["draft","drafts","save","autosave","unsaved","work in progress"],
@@ -189,11 +190,11 @@
       answer: "You can upload photos, video and audio ✦\n\n• **Total per gift:** up to 1 GB\n• **Photos:** 800 MB each\n• **Videos:** 800 MB\n• **Audio:** 200 MB\n\nLive preview updates as you add them. ♥",
       next: ["How to create a gift?","Is it private?"] },
 
-    /* ---------- REFUND KNOWLEDGE (detailed) ---------- */
+    /* ---------- REFUND KNOWLEDGE ---------- */
     { id: "refund", tag: "Refunds", emotion: "smile",
       keywords: ["refund","refunds","money back","chargeback","return money","cancel payment","reimburse"],
       answer: "Here's the **Refund & Payment Protection** policy, simplified ♥\n\n**You can request a refund if:**\n• Payment succeeded but **no gift link** was generated\n• The gift link shows **\"Page Not Found\"** because of a real technical issue\n• The delivered gift **materially differs** from the preview you selected\n• Another **verified NIVA-side technical failure** blocks access\n\n**You generally cannot get a refund for:**\n• Change of mind after the gift works correctly\n• Disliking colours, fonts, animations or style\n• Wanting a different template after purchase\n\nReview the template preview carefully before buying. ♥",
-      next: ["How to request a refund?","Refund timeline?","Payments?"] },
+      next: ["How to request a refund?","Refund timeline?","Contact support?"] },
 
     { id: "refund-how", tag: "Refund · How", emotion: "thinking",
       keywords: ["how to request refund","how do i get a refund","refund process","request refund","claim refund","apply refund"],
@@ -210,7 +211,7 @@
       answer: "A refund is generally **not** available when the gift link was generated successfully and the gift opens and works as described 🥺\n\nThat includes:\n• Disliking the theme, colours, fonts or animations\n• Wanting a different template after purchase\n• Changing your mind after correct delivery\n• Preferring a different appearance when the gift matches its preview\n\nIf the delivered gift **materially differs** from the selected preview, send screenshots or a recording via **@niva.gifts** — we'll investigate whether it's a genuine technical/delivery error. ♥",
       next: ["Refund policy?","How to request a refund?","Contact support?"] },
 
-    /* ---------- SAFETY / RULES KNOWLEDGE ---------- */
+    /* ---------- SAFETY / RULES ---------- */
     { id: "safety", tag: "Safety", emotion: "thinking",
       keywords: ["safety","safe use","rules","use rules","harass","threat","abuse","consent","permission"],
       answer: "A thoughtful gift should make someone feel **respected**, not pressured ♥\n\nPlease:\n• Use NIVA lawfully and respectfully\n• Don't create gifts to threaten, harass, impersonate or humiliate\n• Don't share intimate or embarrassing material without clear permission\n• Don't upload malware or try to bypass passwords\n• Don't use a gift link to track or repeatedly contact someone who doesn't want contact\n• Protect minors' personal information and images especially\n\nIf a gift accidentally reveals something private, **stop sharing** the link and password right away. ✦",
@@ -225,7 +226,7 @@
     { id: "contact", tag: "Contact", emotion: "smile",
       keywords: ["contact","support","help","email you","reach you","talk to someone","instagram","insta","dm","message","human"],
       answer: "You can reach NIVA here ♥\n\n• **Instagram** — [@niva.gifts](https://instagram.com/niva.gifts)\n• **NIVI's own Instagram** — [@nivitherobo](https://instagram.com/nivitherobo)\n• **Email** — nivatheofficial@gmail.com\n\nJust tap the small contact row under the chat whenever you want to open one. ✦",
-      next: ["Refund policy?","Pricing?","Sign up"] },
+      next: ["Refund policy?","Pricing?","Offers?"] },
 
     { id: "recipient", tag: "Recipient", emotion: "smile",
       keywords: ["recipient","open gift","receive","someone sent","unlock","unlock gift"],
@@ -236,6 +237,62 @@
       keywords: ["editor","edit","live preview","preview","customise","customize","how does the editor"],
       answer: "The editor is where your gift comes alive ✦\n\n• **Left side:** your words, photos, music\n• **Right side:** live preview updating as you type\n• **Top right:** Save Draft\n• **Bottom:** set gift password & publish\n\nIt's designed to be calm and simple. ♥",
       next: ["How to create a gift?","Save draft"] },
+
+    /* ---------- SHERU BHAI OFFERS ---------- */
+    { id: "offers", tag: "Offers", emotion: "excited",
+      keywords: ["offer","offers","coupon","coupons","discount","promo","promo code","deal","deals","sheru","sheru bhai","sherubhai","saving","save money","sale"],
+      answer: "We have **Sheru Bhai exclusive offers** right now 🎉\n\n**1. SHERUBHAI200 — ₹200 OFF**\n• For **₹599 templates**\n• Pay just **₹399** instead of ₹599\n• One successful use per account\n\n**2. SHERUBHAI20 — 20% OFF**\n• For **orders above ₹1,000**\n• Reusable on every qualifying purchase\n• Activates when checkout supports an eligible order total above ₹1,000\n\n**Only one coupon per order.** Copy the code and paste it at checkout. ♥\n\nScroll to the **Sheru Exclusive Offers** section on the home page to copy them easily.",
+      next: ["How to apply a coupon?","Pricing?","Templates?"] },
+
+    { id: "offers-how", tag: "Offers · How", emotion: "thinking",
+      keywords: ["how to apply coupon","apply coupon","use coupon","where to enter coupon","coupon code","redeem coupon","how to use offer"],
+      answer: "Here's how to use a Sheru coupon ♥\n\n**1.** Pick a template you love\n**2.** Click **Customise** and open the editor\n**3.** When you're ready to publish, click **Pay / Publish**\n**4.** At the Razorpay checkout, look for the **coupon / promo code** field\n**5.** Paste **SHERUBHAI200** or **SHERUBHAI20**\n**6.** The discount will apply automatically if your order qualifies\n\n**Quick reminder:**\n• Only one coupon per order\n• SHERUBHAI200 is for ₹599 templates\n• SHERUBHAI20 needs an order total above ₹1,000\n\nIf the coupon doesn't work, contact **@niva.gifts** on Instagram. ♥",
+      next: ["Offers?","Pricing?","Refund policy?"] },
+
+    { id: "offers-200", tag: "SHERUBHAI200", emotion: "excited",
+      keywords: ["sherubhai200","200 off","200 discount","₹200 off","rupees 200 off"],
+      answer: "**SHERUBHAI200 — ₹200 OFF** ✦\n\n• Applies to **₹599 templates** (Eternal Love, Love Proposal, Eternal Anniversary, Soulmate)\n• You pay **₹399** instead of ₹599\n• **One successful use per account**\n\nCopy the code from the **Sheru Exclusive Offers** section on the home page, then paste it at Razorpay checkout. ♥",
+      next: ["Offers?","How to apply a coupon?","Pricing?"] },
+
+    { id: "offers-20", tag: "SHERUBHAI20", emotion: "excited",
+      keywords: ["sherubhai20","20 off","20% off","20 percent off","percent off","discount 20"],
+      answer: "**SHERUBHAI20 — 20% OFF** ✦\n\n• Applies to **eligible orders above ₹1,000**\n• **Reusable** on every qualifying purchase\n• Activates when checkout supports an eligible order total above ₹1,000\n\nExample: a ₹1,199 order → save ~₹240.\n\nCopy the code from the **Sheru Exclusive Offers** section on the home page, then paste it at Razorpay checkout. ♥",
+      next: ["Offers?","How to apply a coupon?","Pricing?"] },
+
+    /* ---------- REVIEWS ---------- */
+    { id: "reviews", tag: "Reviews", emotion: "smile",
+      keywords: ["review","reviews","rating","stars","feedback","customer review","testimonial","what people say"],
+      answer: "You'll find **real reviews** from gift-givers on the home page ♥\n\n• Scroll to the **Reviews** section\n• Real ratings from **1 to 5 stars**\n• Written by verified customers\n\n**Want to write your own?**\n1. Scroll to the *Write a review* card\n2. Tap the stars to rate\n3. Type your experience\n4. Hit **Submit review ♥**\n\nYou need to be signed in to submit. ✦",
+      next: ["How to write a review?","Sign in","Contact support?"] },
+
+    { id: "reviews-how", tag: "Reviews · How", emotion: "thinking",
+      keywords: ["how to write review","write a review","submit review","leave a review","add review","post review"],
+      answer: "Writing a review is easy ♥\n\n**1.** Scroll to the **Reviews** section on the home page\n**2.** Find the **Write a review** card\n**3.** Tap the stars to choose your rating (1–5)\n**4.** Type your experience (at least 10 characters)\n**5.** Hit **Submit review ♥**\n\nYou must be **signed in** to submit. Reviews go live instantly after posting. ✦",
+      next: ["Reviews?","Sign in","Contact support?"] },
+
+    /* ---------- SUGGESTION BOX ---------- */
+    { id: "suggestion", tag: "Suggestions", emotion: "smile",
+      keywords: ["suggestion","suggestions","suggestion box","idea","ideas","feature request","feedback form","suggest"],
+      answer: "Have an idea for NIVA? Tell us ♥\n\nScroll to the **Suggestion Box** section on the home page.\n\n• **Name** — optional\n• **Email** — optional (so we can reply!)\n• **Your suggestion** — required (5–1000 characters)\n\nIdeas like *new templates*, *new features* or *issues* are all welcome. ✦",
+      next: ["Contact support?","Reviews?","Templates?"] },
+
+    /* ---------- LIVE VISITORS ---------- */
+    { id: "live", tag: "Live Visitors", emotion: "smile",
+      keywords: ["live visitors","people online","who is online","visitors","live count","people online indicator"],
+      answer: "The **small green pill** in the bottom-left corner shows how many people are currently online ♥\n\n• Updates every 25 seconds\n• Goes quiet when you tab away\n• Turns back on when you return\n\nIt's a live count of active visitors on NIVA. ✦",
+      next: ["What is NIVA?","Reviews?"] },
+
+    /* ---------- STATS ---------- */
+    { id: "stats", tag: "Stats", emotion: "excited",
+      keywords: ["stats","statistics","how many templates","how many gifts","gifts sent","happy recipients","uptime"],
+      answer: "Here's what the **NIVA stats** show ✦\n\n• **Templates** — how many designs we offer\n• **Gifts Sent** — total gifts created\n• **Happy Recipients** — people who received them\n• **Uptime** — % of time the site stays live\n\nYou'll see these animated on the home page under the hero. They update as NIVA grows. ♥",
+      next: ["Templates?","Reviews?","What is NIVA?"] },
+
+    /* ---------- WELCOME SCREEN ---------- */
+    { id: "welcome", tag: "Welcome", emotion: "shy",
+      keywords: ["welcome screen","intro","splash screen","opening animation","logo animation"],
+      answer: "That's our **welcome screen** ♥\n\n• It shows the NIVA logo, brand name and tagline\n• Plays once per session\n• Fades away after a couple of seconds\n\nIt's a small hello before the main site opens. ✦",
+      next: ["What is NIVA?","Templates?"] },
   ];
 
   /* -------------------------------------------------------
@@ -245,11 +302,11 @@
     { id: "greeting", emotion: "happy",
       keywords: ["hello","hi","hey","namaste","vanakkam","sup","yo","hola"],
       answer: () => pick([
-        "Hi there! ♥ I'm **NIVI** — NIVA's little robot guide.\n\nAsk me about gifts, pricing, privacy or refunds — or say **sign up** / **sign in**.",
-        "Hello! ✦ I'm **NIVI**.\n\nI can help with templates, pricing, privacy, refunds, or signing in. What would you like to know?",
+        "Hi there! ♥ I'm **NIVI** — NIVA's little robot guide.\n\nAsk me about gifts, pricing, offers, privacy or refunds — or say **sign up** / **sign in**.",
+        "Hello! ✦ I'm **NIVI**.\n\nI can help with templates, pricing, offers, privacy, refunds, or signing in. What would you like to know?",
         "Hey! 💗 I'm **NIVI**, your little love guide.\n\nAsk me anything about NIVA — or say **sign in** to get started.",
       ]),
-      next: ["What is NIVA?","Pricing?","Refund policy?","Sign in"] },
+      next: ["What is NIVA?","Pricing?","Offers?","Sign in"] },
 
     { id: "thanks", emotion: "shy",
       keywords: ["thank","thanks","thx","ty","appreciate"],
@@ -258,7 +315,7 @@
         "You're so welcome! 💕 Glad I could help.",
         "Happy to help! ✦ Ask me anything else.",
       ]),
-      next: ["How to create a gift?","Pricing?"] },
+      next: ["How to create a gift?","Offers?","Pricing?"] },
 
     { id: "bye", emotion: "sad",
       keywords: ["bye","goodbye","see you","later","cya"],
@@ -271,7 +328,7 @@
 
     { id: "whoami", emotion: "smile",
       keywords: ["who are you","your name","whats your name","what is your name","are you real","nivi"],
-      answer: () => "I'm **NIVI** — NIVA's little robot guide ✦\n\nI can help you understand NIVA, answer privacy or refund questions, or even sign you in / sign you up. Just ask! 💗",
+      answer: () => "I'm **NIVI** — NIVA's little robot guide ✦\n\nI can help you understand NIVA, answer privacy, refund or offer questions, or even sign you in / sign you up. Just ask! 💗",
       next: ["Sign up","Sign in","What is NIVA?"] },
 
     { id: "compliment", emotion: "shy",
@@ -281,7 +338,7 @@
         "Aww ♥ — I'm just doing my little robot job! 💗",
         "You're too kind! ✦ My circuits are blushing!",
       ]),
-      next: ["What is NIVA?","Pricing?"] },
+      next: ["What is NIVA?","Offers?","Pricing?"] },
 
     { id: "rude", emotion: "angry",
       keywords: ["stupid","dumb","useless","hate you","shut up","boring bot","ugly"],
@@ -299,12 +356,12 @@
         "Right?! ✦ NIVA is pretty magical!",
         "Aww thank you! 🎉 Want to try making one?",
       ]),
-      next: ["How to create a gift?","Templates"] },
+      next: ["How to create a gift?","Templates?","Offers?"] },
 
     { id: "confused", emotion: "thinking",
       keywords: ["i don't understand","dont understand","confused","not clear","explain again","simpler"],
-      answer: () => "No problem at all ♥ — let me keep it simple:\n\n• Want to **make** a gift? → say *how to create*\n• Want to know **cost**? → say *pricing*\n• Worried about **privacy**? → say *privacy*\n• Money issue or refund? → say *refund*\n• Want to sign in or sign up? → say *sign in* / *sign up*\n\nWhich one shall we start with? ✦",
-      next: ["Pricing?","Privacy?","Refund policy?","Sign in"] },
+      answer: () => "No problem at all ♥ — let me keep it simple:\n\n• Want to **make** a gift? → say *how to create*\n• Want to know **cost**? → say *pricing*\n• Want a **discount**? → say *offers*\n• Worried about **privacy**? → say *privacy*\n• Money issue or refund? → say *refund*\n• Want to sign in or sign up? → say *sign in* / *sign up*\n\nWhich one shall we start with? ✦",
+      next: ["Pricing?","Offers?","Privacy?","Sign in"] },
 
     { id: "howareyou", emotion: "happy",
       keywords: ["how are you","how you doing","how do you do","you okay","you good"],
@@ -313,7 +370,7 @@
         "Running at 100% battery and happy to help! 💕 What do you need?",
         "All circuits happy! ♥ How can I help you today?",
       ]),
-      next: ["What is NIVA?","Pricing?","Sign in"] },
+      next: ["What is NIVA?","Offers?","Sign in"] },
 
     { id: "joke", emotion: "excited",
       keywords: ["joke","funny","make me laugh","tell me something fun"],
@@ -322,7 +379,13 @@
         "Here's one ♥ Why did the robot break up with the calendar?\n\nBecause it needed *space*! 🚀😄",
         "Hehe 💕 Why was the gift so good at keeping secrets?\n\nBecause it was **encrypted**! 🔒😄",
       ]),
-      next: ["What is NIVA?","How to create a gift?"] },
+      next: ["What is NIVA?","Offers?","How to create a gift?"] },
+
+    /* ---------- NEW: high-priority offer intent ---------- */
+    { id: "offers-intent", emotion: "excited",
+      keywords: ["offer","offers","coupon","discount","promo","deal","sheru","sherubhai","save"],
+      answer: () => "We have **Sheru Bhai exclusive offers** 🎉\n\n**SHERUBHAI200** — ₹200 OFF on ₹599 templates\n**SHERUBHAI20** — 20% OFF on orders above ₹1,000\n\nOnly one coupon per order. Scroll to the **Sheru Exclusive Offers** section to copy them, then paste at checkout. ♥",
+      next: ["How to apply a coupon?","Pricing?","Templates?"] },
   ];
 
   const AUTH_INTENTS = [
@@ -332,9 +395,9 @@
   ];
 
   const FALLBACKS = [
-    "Hmm, I'm not totally sure I got that ♥\n\nTry asking about **pricing**, **templates**, **privacy**, **refund**, or say **sign up** / **sign in**.",
-    "That one's a little beyond me 😅\n\nYou can ask about **privacy**, **refunds**, **pricing**, or say **sign in**. What would you like?",
-    "I'd love to help — but I didn't quite catch that ♥\n\nTry **privacy**, **refund policy**, **pricing**, or say **sign in**.",
+    "Hmm, I'm not totally sure I got that ♥\n\nTry asking about **pricing**, **templates**, **offers**, **privacy**, **refund**, or say **sign up** / **sign in**.",
+    "That one's a little beyond me 😅\n\nYou can ask about **privacy**, **refunds**, **pricing**, **offers**, or say **sign in**. What would you like?",
+    "I'd love to help — but I didn't quite catch that ♥\n\nTry **offers**, **privacy**, **refund policy**, **pricing**, or say **sign in**.",
   ];
 
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -450,7 +513,7 @@
   }
 
   /* -------------------------------------------------------
-     7. STYLES — robot now fixed, no exploring classes
+     7. STYLES — robot fixed, no exploring classes
      ------------------------------------------------------- */
   const style = document.createElement("style");
   style.textContent = `
@@ -1160,8 +1223,8 @@
       <div class="niva-bot-quick" id="nivaBotQuick">
         <button type="button" data-q="What is NIVA?">💗 About NIVA</button>
         <button type="button" data-q="Pricing?">✨ Pricing</button>
+        <button type="button" data-q="Offers?">🎉 Offers</button>
         <button type="button" data-q="Privacy?">🔒 Privacy</button>
-        <button type="button" data-q="Refund policy?">💸 Refunds</button>
       </div>
 
       <div class="nivi-contact-card" id="niviContactCard" aria-label="Contact NIVA">
@@ -1184,7 +1247,7 @@
       </div>
 
       <form class="niva-bot-input" id="nivaBotForm">
-        <input id="nivaBotInput" type="text" placeholder="Ask about gifts, privacy or refunds..." autocomplete="off" maxlength="300" aria-label="Type your question">
+        <input id="nivaBotInput" type="text" placeholder="Ask about gifts, offers, privacy or refunds..." autocomplete="off" maxlength="300" aria-label="Type your question">
         <button type="submit" aria-label="Send message">➤</button>
       </form>
     </div>
@@ -1298,7 +1361,7 @@
     quick.innerHTML = "";
     const base = items && items.length
       ? items
-      : ["What is NIVA?", "Pricing?", "Privacy?", "Refund policy?"];
+      : ["What is NIVA?", "Pricing?", "Offers?", "Refund policy?"];
     base.slice(0, 4).forEach(q => {
       const b = document.createElement("button");
       b.type = "button";
@@ -1308,7 +1371,7 @@
     });
   }
 
-  const HISTORY_KEY = "nivi-history-v3";
+  const HISTORY_KEY = "nivi-history-v4";
   function saveHistory() {
     try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(state.history.slice(-30))); } catch {}
   }
@@ -1499,7 +1562,7 @@
         const display = data.user.username || data.user.email.split("@")[0];
         reactEmotion("happy");
         addMessage("🎉 You're in, **@" + display + "**! Welcome back ♥✦");
-        renderNextChips(["Create a gift", "Pricing?"]);
+        renderNextChips(["Create a gift", "Offers?"]);
         return;
       }
       state.authFlow = "set-password";
@@ -1542,7 +1605,7 @@
       const display = data.user.username || data.user.email.split("@")[0];
       applyEmotion("excited");
       addMessage("🎉 You're all set, **@" + display + "**! Welcome to NIVA ♥✦\n\nReady to create your first gift?");
-      renderNextChips(["Create a gift", "Pricing?", "Templates"]);
+      renderNextChips(["Create a gift", "Offers?", "Pricing?"]);
       return;
     }
 
@@ -1591,7 +1654,7 @@
       const display = data.user.username || data.user.email.split("@")[0];
       applyEmotion("excited");
       addMessage("🎉 Welcome back, **@" + display + "**! ♥✦\n\nWhat would you like to do?");
-      renderNextChips(["Create a gift", "My gifts", "Pricing?"]);
+      renderNextChips(["Create a gift", "My gifts", "Offers?"]);
       return;
     }
 
@@ -1686,7 +1749,6 @@
   function composeReply(query) {
     const q = String(query || "").toLowerCase().trim();
 
-    // Follow-up: "more", "tell me more", etc.
     if (state.lastTopicId && /^(more|tell me more|and\?|and|continue|elaborate|really\?|go on)$/.test(q)) {
       const entry = KB.find(e => e.id === state.lastTopicId);
       if (entry) {
@@ -1767,7 +1829,7 @@
           `Hi! ♥ I'm **NIVI** — NIVA's little robot guide.\n\n` +
           `${loggedIn}${PAGE_HINTS[PAGE] || ""}\n\n` +
           `**Tools on this page:**\n${PAGE_TOOLS[PAGE] || ""}\n\n` +
-          `I can also help with **privacy**, **refunds**, or **sign you in / up**. Just ask. ♥`;
+          `I can also help with **privacy**, **refunds**, **offers**, or **sign you in / up**. Just ask. ♥`;
         addRaw(renderRich(greet), "bot");
         state.history.push({ who: "bot", html: greet });
         saveHistory();
@@ -1803,11 +1865,13 @@
       pricing: "💰 Pricing section spotted — scroll to see all tiers!",
       templates: "🎨 Templates! Tap one to preview it live ✦",
       refunds: "💸 Refund policy here — ask me if anything is unclear!",
+      offers: "🎉 Sheru offers! Copy a coupon before checkout.",
     };
     const selectors = [
       ["#pricing, .pricing-section, [data-section='pricing']", "pricing"],
       ["#templates, .templates-section, [data-section='templates']", "templates"],
       ["#refunds, .refund-section", "refunds"],
+      ["#sheruOffer, .sheru-offer-section", "offers"],
     ];
     if (!("IntersectionObserver" in window)) return;
 
@@ -1819,7 +1883,7 @@
           if (e.isIntersecting && !state.sectionSeen[key]) {
             state.sectionSeen[key] = true;
             if (panel.classList.contains("open")) return;
-            reactEmotion("excited", 2600);
+            reactEmotion(key === "offers" ? "excited" : "excited", 2600);
           }
         });
       }, { threshold: 0.4 });
@@ -2164,7 +2228,7 @@
     open: openPanel,
     close: closePanel,
     ask: (q) => { openPanel(); respond(q); },
-    version: "4.3.0",
+    version: "4.4.0",
     emotion: (e, ms) => reactEmotion(e, ms),
     speak: (text, emotion) => { ensureModalRobot(); speak(text, emotion); },
     narrateError: (paneId, text) => { ensureModalRobot(); narrateError(paneId, text); },
@@ -2172,6 +2236,10 @@
     contact: {
       instagram: "https://instagram.com/niva.gifts",
       email: "nivatheofficial@gmail.com",
+    },
+    offers: {
+      sherubhai200: "SHERUBHAI200",
+      sherubhai20: "SHERUBHAI20",
     },
   };
 })();
