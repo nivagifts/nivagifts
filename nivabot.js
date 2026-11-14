@@ -1,14 +1,15 @@
 /* =========================================================
-   NIVI v4.2 — Emotional Companion Robot
+   NIVI v4.3 — Emotional Companion Robot
    - 8 emotions (happy/sad/angry/excited/shy/smile/thinking/neutral)
-   - Floating explorer mode (non-intrusive, throttled)
+   - ✅ Fixed position (no floating explorer mode)
    - Context-aware section reactions
    - Page-aware tool discovery
    - Chat + modal robot unified
    - Mobile-first, reduced-motion safe
    - ✅ Compact contact card (single row, auto-hides)
    - ✅ Deep privacy + refund knowledge
-   - ✅ Friendly, clear, user-first replies
+   - ✅ Friendly, clean, structured replies
+   - ✅ Advanced chat: follow-ups, richer intents, better fallbacks
    ========================================================= */
 (() => {
   "use strict";
@@ -49,9 +50,6 @@
     if (PAGE === "home") return;
 
     function siteRoot() {
-      const parts = location.pathname.split("/").filter(Boolean);
-      if (!parts.length) return "/";
-      if (parts[parts.length - 1].includes(".")) return "/";
       return "/";
     }
 
@@ -123,127 +121,159 @@
   })();
 
   /* -------------------------------------------------------
-     2. KNOWLEDGE BASE
+     2. KNOWLEDGE BASE — friendlier, cleaner, structured
      ------------------------------------------------------- */
   const KB = [
     { id: "about", tag: "About", emotion: "smile",
       keywords: ["what is niva","about niva","about","explain niva","what is this","what do you do"],
-      answer: "**NIVA** is a place to create beautiful personalised digital gifts — love letters, proposals, birthday surprises and more.\n\nYou pick a template, add your own words, photos and music, then share a **private password-protected link** with someone special. ✦",
+      answer: "**NIVA** is a place to create beautiful personalised digital gifts ✦\n\nLove letters, proposals, birthday surprises — you pick a template, add your own words, photos and music, then share a **private, password-protected link** with someone special. 💌\n\nEverything is made to feel personal, not generic.",
       next: ["Pricing?","How to create a gift?","Is it private?"] },
+
     { id: "pricing", tag: "Pricing", emotion: "excited",
       keywords: ["price","pricing","cost","how much","rate","fees","₹","rupee","plan","plans"],
-      answer: "Our gifts:\n• **Special Letter** — ₹39\n• **Essential** — ₹99\n• **Signature** — ₹299\n• **Evermore** — ₹599\n\nYou only pay when you publish — drafting and previewing is always free. 💕",
+      answer: "Here's our simple pricing 💕\n\n• **Special Letter** — ₹39\n• **Essential** — ₹99\n• **Signature** — ₹299\n• **Evermore** — ₹599\n\nYou only pay **when you publish** — drafting and previewing is always free. ✦",
       next: ["What is the Love Letter?","How to create a gift?","Templates"] },
+
     { id: "special-letter", tag: "Love Letter", emotion: "shy",
       keywords: ["special letter","love letter","loveletter","39","letter only","single letter","cheap","cheapest"],
-      answer: "The **Love Letter** is our sweetest little gift at just ₹39 💌\n\nTwo handwritten-style love letter pages, sealed with a beautiful envelope-opening animation. You'll find it in the templates grid.",
+      answer: "The **Love Letter** is our sweetest little gift — just ₹39 💌\n\nYou get two handwritten-style love letter pages, sealed with a beautiful envelope-opening animation. You'll find it right in the templates grid. ♥",
       next: ["Pricing?","How to create a gift?"] },
+
     { id: "templates", tag: "Templates", emotion: "excited",
       keywords: ["template","templates","design","designs","theme","options","what can i make","kinds","types"],
-      answer: "We have several templates:\n✦ **Eternal Love** (₹599)\n✦ **Love Proposal** (₹599)\n✦ **Birthday Magic** (₹299)\n✦ **Love Letter** (₹39)\n✦ **Eternal Anniversary** (₹599)",
+      answer: "Here are the templates you can choose from ✦\n\n• **Eternal Love** — ₹599\n• **Love Proposal** — ₹599\n• **Birthday Magic** — ₹299\n• **Love Letter** — ₹39\n• **Eternal Anniversary** — ₹599\n\nTap any template to see a live preview before you commit. ♥",
       next: ["Pricing?","How to create a gift?"] },
+
     { id: "howto", tag: "How to create", emotion: "thinking",
       keywords: ["how to create","how do i make","make a gift","create gift","start","begin","steps","how does it work"],
-      answer: "Making a gift is easy:\n\n1. Pick a template\n2. Sign up with a **username + email** — I can help right here\n3. Fill in your words & photos — live preview updates as you type\n4. Set a **gift password** and pay\n5. Share the private link ♥",
+      answer: "Making a gift is simple ♥\n\n**1.** Pick a template you love\n**2.** Sign up with a **username + email** — I can help right here\n**3.** Fill in your words & photos — live preview updates as you type\n**4.** Set a **gift password** and pay\n**5.** Share the private link with your person ♥\n\nWant me to start the sign-up for you?",
       next: ["Sign up","Pricing?","Is it private?"] },
+
     { id: "privacy", tag: "Privacy", emotion: "smile",
       keywords: ["password","private","secure","encrypt","security","safe","is it private","data","privacy"],
-      answer: "Your gift is **encrypted in your browser** with AES-256-GCM before it ever reaches our server. 🔒\n\n• PBKDF2 key derivation (310,000 iterations)\n• Only ciphertext + metadata is stored\n• Recipient needs the password you set\n• We never see your gift content\n\n**Important:** a private link is not a substitute for consent. Never include addresses, IDs, passwords or financial details in a gift, and only upload photos you have permission to use. ♥",
+      answer: "Your gift is **encrypted in your browser** with AES-256-GCM before it ever reaches our server 🔒\n\n• PBKDF2 key derivation (310,000 iterations)\n• Only ciphertext + metadata is stored\n• Recipient needs the password you set\n• We never see your gift content\n\n**Important:** a private link is not a substitute for consent. Never include addresses, IDs, passwords or financial details in a gift, and only upload photos you have permission to use. ♥",
       next: ["How does the recipient open it?","Refund policy?","Safety rules?"] },
+
     { id: "metadata", tag: "Metadata", emotion: "thinking",
       keywords: ["metadata","what data do you store","what do you store","server see","logs","retain","retention"],
-      answer: "Here's what I can honestly say:\n\n• Your gift **content** is encrypted before upload — only ciphertext reaches the server.\n• The server still stores **metadata** like the gift ID, timestamps, template type and delivery status.\n• Encryption is not magic — protect your **gift password** and avoid opening private gifts on shared devices.\n\nBefore public launch, NIVA should publish exact retention, deletion and backup details. Don't assume deleting a local draft deletes a published gift from the server. ♥",
+      answer: "Here's what I can honestly say ♥\n\n• Your gift **content** is encrypted before upload — only ciphertext reaches the server.\n• The server still stores **metadata** like gift ID, timestamps, template type and delivery status.\n• Encryption is not magic — protect your **gift password** and avoid opening private gifts on shared devices.\n\nBefore public launch, NIVA should publish exact retention, deletion and backup details. Don't assume deleting a local draft deletes a published gift from the server. ♥",
       next: ["Is it private?","Delete a gift?","Refund policy?"] },
+
     { id: "payment", tag: "Payment", emotion: "thinking",
       keywords: ["payment","pay","razorpay","upi","card","how to pay","checkout","billing"],
-      answer: "Payments are handled securely by **Razorpay** — UPI, cards, netbanking.\n\nYou only pay once, at the moment you publish a gift.",
+      answer: "Payments are handled securely by **Razorpay** — UPI, cards, netbanking ✦\n\nYou only pay once, at the moment you publish a gift. Drafting and previewing is always free. ♥",
       next: ["Refund policy?","Sign up"] },
+
     { id: "account", tag: "Account", emotion: "happy",
       keywords: ["account","sign up","signup","register","login","sign in","email verify","otp","password reset","forgot password","username"],
-      answer: "I can help you sign in or sign up right here! ♥\n\nJust say:\n• **sign up** — to create a new account (choose a username!)\n• **sign in** — to log in\n• **forgot password** — to reset",
+      answer: "I can help you sign in or sign up right here ♥\n\nJust say:\n• **sign up** — to create a new account (choose a username!)\n• **sign in** — to log in\n• **forgot password** — to reset\n\nWhich one would you like?",
       next: ["Sign up","Sign in","Forgot password"] },
+
     { id: "mygifts", tag: "My Gifts", emotion: "smile",
       keywords: ["my gifts","my gifts page","drafts","wishlist","saved","saved gifts","account page"],
-      answer: "Head to **My Gifts** from the home page. You'll find three tabs:\n• **Drafts** — works in progress\n• **Published** — finished gifts + shareable links\n• **Wishlist** — templates you've hearted ♥",
+      answer: "Head to **My Gifts** from the home page ♥\n\nYou'll find three tabs:\n• **Drafts** — works in progress\n• **Published** — finished gifts + shareable links\n• **Wishlist** — templates you've hearted ♥\n\nTap any tab to manage your gifts. ✦",
       next: ["Delete a gift?","What is a draft?"] },
+
     { id: "draft", tag: "Drafts", emotion: "thinking",
       keywords: ["draft","drafts","save","autosave","unsaved","work in progress"],
-      answer: "Drafts autosave to your browser as you type, and to your account within a couple of seconds. Hit **Save Draft** any time to force a cloud save.",
+      answer: "Drafts autosave as you type ✦\n\n• They save to your browser instantly\n• They sync to your account within a couple of seconds\n• Hit **Save Draft** any time to force a cloud save\n\nYou can safely close the editor and come back later. ♥",
       next: ["My Gifts?","How to create a gift?"] },
+
     { id: "delete", tag: "Delete", emotion: "sad",
       keywords: ["delete","remove","unpublish","stop link","take down","erase"],
-      answer: "Go to **My Gifts → Published** and tap Delete on any gift. The private link stops working immediately.\n\nFor content that should never have been shared, stop sharing the link and password, then reach out through the official contact channel. ♥",
+      answer: "To delete a gift ♥\n\nGo to **My Gifts → Published** and tap **Delete** on any gift. The private link stops working immediately.\n\nFor content that should never have been shared, stop sharing the link and password, then reach out through the official contact channel. ♥",
       next: ["Refund policy?","My Gifts?"] },
+
     { id: "upload", tag: "Uploads", emotion: "thinking",
       keywords: ["photos","images","upload","pictures","how many","size","limit","video","audio","music","gb","mb"],
-      answer: "You can upload photos, video and audio — up to **1 GB total** per gift.\n• Photos: 800 MB each\n• Videos: 800 MB\n• Audio: 200 MB",
+      answer: "You can upload photos, video and audio ✦\n\n• **Total per gift:** up to 1 GB\n• **Photos:** 800 MB each\n• **Videos:** 800 MB\n• **Audio:** 200 MB\n\nLive preview updates as you add them. ♥",
       next: ["How to create a gift?","Is it private?"] },
 
     /* ---------- REFUND KNOWLEDGE (detailed) ---------- */
     { id: "refund", tag: "Refunds", emotion: "smile",
       keywords: ["refund","refunds","money back","chargeback","return money","cancel payment","reimburse"],
-      answer: "Here's the **Refund & Payment Protection** policy, simplified for you ♥\n\n**You can request a refund if:**\n• Payment succeeded but **no gift link** was generated\n• The gift link shows **“Page Not Found”** because of a real technical issue\n• The delivered gift **materially differs** from the preview you selected (technical/delivery error)\n• Another **verified NIVA-side technical failure** blocks access\n\n**You generally cannot get a refund for:**\n• Change of mind after the gift works correctly\n• Disliking colours, fonts, animations or style\n• Wanting a different template after purchase\n\nReview the template preview carefully before buying. ♥",
+      answer: "Here's the **Refund & Payment Protection** policy, simplified ♥\n\n**You can request a refund if:**\n• Payment succeeded but **no gift link** was generated\n• The gift link shows **\"Page Not Found\"** because of a real technical issue\n• The delivered gift **materially differs** from the preview you selected\n• Another **verified NIVA-side technical failure** blocks access\n\n**You generally cannot get a refund for:**\n• Change of mind after the gift works correctly\n• Disliking colours, fonts, animations or style\n• Wanting a different template after purchase\n\nReview the template preview carefully before buying. ♥",
       next: ["How to request a refund?","Refund timeline?","Payments?"] },
+
     { id: "refund-how", tag: "Refund · How", emotion: "thinking",
       keywords: ["how to request refund","how do i get a refund","refund process","request refund","claim refund","apply refund"],
-      answer: "To request a refund:\n\n1. Open Instagram and message **@niva.gifts**\n2. Explain what went wrong\n3. Attach **evidence**:\n   • Payment confirmation / order ID\n   • The gift link (if generated)\n   • Screenshot or screen recording of the issue\n   • A short description\n\nWe'll check the payment record, template, delivered gift and evidence before deciding. ✦\n\n**Never** send your account password, gift password, card PIN or OTP to support. ♥",
+      answer: "To request a refund ♥\n\n**1.** Open Instagram and message **@niva.gifts**\n**2.** Explain what went wrong\n**3.** Attach **evidence:**\n   • Payment confirmation / order ID\n   • The gift link (if generated)\n   • Screenshot or screen recording of the issue\n   • A short description\n\nWe'll check the payment record, template, delivered gift and evidence before deciding. ✦\n\n**Never** send your account password, gift password, card PIN or OTP to support. ♥",
       next: ["Refund timeline?","Refund policy?","Contact support?"] },
+
     { id: "refund-time", tag: "Refund · Timeline", emotion: "smile",
       keywords: ["refund time","refund timeline","how long refund","when will i get refund","refund days","refund processing"],
-      answer: "Once a genuine claim is verified and approved, NIVA aims to **initiate** the eligible refund within **2 working days**. ⏱️\n\nThat window covers verification and initiating the refund. The time for the money to actually appear in your bank account depends on the payment provider and your bank — so the credit date may be later. ♥",
+      answer: "Once a genuine claim is verified and approved, NIVA aims to **initiate** the eligible refund within **2 working days** ⏱️\n\nThat window covers verification and initiating the refund. The time for the money to actually appear in your bank account depends on the payment provider and your bank — so the credit date may be later. ♥",
       next: ["How to request a refund?","Refund policy?","Contact support?"] },
+
     { id: "refund-no", tag: "Refund · Not eligible", emotion: "sad",
       keywords: ["refund not","no refund","refund rejected","refund denied","why no refund","change of mind"],
-      answer: "A refund is generally **not** available when the gift link was generated successfully and the gift opens and works as described. 🥺\n\nThat includes:\n• Disliking the theme, colours, fonts or animations\n• Wanting a different template after purchase\n• Changing your mind after correct delivery\n• Preferring a different appearance when the gift matches its preview\n\nIf the delivered gift **materially differs** from the selected preview, send screenshots or a recording via **@niva.gifts** — we'll investigate whether it's a genuine technical/delivery error. ♥",
+      answer: "A refund is generally **not** available when the gift link was generated successfully and the gift opens and works as described 🥺\n\nThat includes:\n• Disliking the theme, colours, fonts or animations\n• Wanting a different template after purchase\n• Changing your mind after correct delivery\n• Preferring a different appearance when the gift matches its preview\n\nIf the delivered gift **materially differs** from the selected preview, send screenshots or a recording via **@niva.gifts** — we'll investigate whether it's a genuine technical/delivery error. ♥",
       next: ["Refund policy?","How to request a refund?","Contact support?"] },
 
     /* ---------- SAFETY / RULES KNOWLEDGE ---------- */
     { id: "safety", tag: "Safety", emotion: "thinking",
       keywords: ["safety","safe use","rules","use rules","harass","threat","abuse","consent","permission"],
-      answer: "A thoughtful gift should make someone feel **respected**, not pressured. ♥\n\nPlease:\n• Use NIVA lawfully and respectfully\n• Don't create gifts to threaten, harass, impersonate or humiliate\n• Don't share intimate or embarrassing material without clear permission\n• Don't upload malware or try to bypass passwords\n• Don't use a gift link to track or repeatedly contact someone who doesn't want contact\n• Protect minors' personal information and images especially\n\nIf a gift accidentally reveals something private, **stop sharing** the link and password right away. ✦",
+      answer: "A thoughtful gift should make someone feel **respected**, not pressured ♥\n\nPlease:\n• Use NIVA lawfully and respectfully\n• Don't create gifts to threaten, harass, impersonate or humiliate\n• Don't share intimate or embarrassing material without clear permission\n• Don't upload malware or try to bypass passwords\n• Don't use a gift link to track or repeatedly contact someone who doesn't want contact\n• Protect minors' personal information and images especially\n\nIf a gift accidentally reveals something private, **stop sharing** the link and password right away. ✦",
       next: ["Is it private?","Delete a gift?","Contact support?"] },
+
     { id: "consent", tag: "Consent", emotion: "smile",
       keywords: ["consent","permission","can i upload","someone else's photo","someone else photo","without permission"],
-      answer: "Only add information and media that you have a **right to use** and that the recipient would reasonably expect. ♥\n\n• Don't upload another person's private info without permission\n• Don't include addresses, ID documents, passwords or financial details\n• Ask before using sensitive photos or sharing a gift with a group\n• Keep minors' info and images especially protected\n\nA private link is **not** a substitute for consent. ✦",
+      answer: "Only add information and media that you have a **right to use** and that the recipient would reasonably expect ♥\n\n• Don't upload another person's private info without permission\n• Don't include addresses, ID documents, passwords or financial details\n• Ask before using sensitive photos or sharing a gift with a group\n• Keep minors' info and images especially protected\n\nA private link is **not** a substitute for consent. ✦",
       next: ["Safety rules?","Is it private?"] },
 
-    /* ---------- CONTACT (inline, no card needed) ---------- */
+    /* ---------- CONTACT ---------- */
     { id: "contact", tag: "Contact", emotion: "smile",
       keywords: ["contact","support","help","email you","reach you","talk to someone","instagram","insta","dm","message","human"],
-      answer: "You can reach NIVA here ♥\n\n• **Instagram** — [@niva.gifts](https://instagram.com/niva.gifts)\n• **NIVI's own Instagram** — [@nivitherobo](https://instagram.com/nivitherobo)\n• **Email** — nivatheofficial@gmail.com\n\nJust tap the small contact row under the chat whenever you want to open one of them. ✦",
+      answer: "You can reach NIVA here ♥\n\n• **Instagram** — [@niva.gifts](https://instagram.com/niva.gifts)\n• **NIVI's own Instagram** — [@nivitherobo](https://instagram.com/nivitherobo)\n• **Email** — nivatheofficial@gmail.com\n\nJust tap the small contact row under the chat whenever you want to open one. ✦",
       next: ["Refund policy?","Pricing?","Sign up"] },
 
     { id: "recipient", tag: "Recipient", emotion: "smile",
       keywords: ["recipient","open gift","receive","someone sent","unlock","unlock gift"],
-      answer: "Your recipient opens the private link, enters the **gift password** you gave them, and the gift unlocks in their browser. ✦",
+      answer: "Your recipient opens the private link, enters the **gift password** you gave them, and the gift unlocks in their browser ✦\n\nOnly the people with the link + password can see it. ♥",
       next: ["Is it private?","Password?"] },
+
     { id: "editor", tag: "Editor", emotion: "thinking",
       keywords: ["editor","edit","live preview","preview","customise","customize","how does the editor"],
-      answer: "The editor is where your gift comes alive.\n• Left side: your words, photos, music\n• Right side: **live preview** updating as you type\n• Top right: Save Draft\n• Bottom: set gift password & publish",
+      answer: "The editor is where your gift comes alive ✦\n\n• **Left side:** your words, photos, music\n• **Right side:** live preview updating as you type\n• **Top right:** Save Draft\n• **Bottom:** set gift password & publish\n\nIt's designed to be calm and simple. ♥",
       next: ["How to create a gift?","Save draft"] },
   ];
 
+  /* -------------------------------------------------------
+     INTENTS — friendlier, cleaner replies
+     ------------------------------------------------------- */
   const INTENTS = [
     { id: "greeting", emotion: "happy",
       keywords: ["hello","hi","hey","namaste","vanakkam","sup","yo","hola"],
       answer: () => pick([
-        "Hi there! ♥ I'm **NIVI** — NIVA's little robot guide.",
-        "Hello! ✦ Ask about gifts, pricing, privacy or refunds — or say **sign up** / **sign in**.",
-        "Hey! 💗 I can help with templates, pricing, privacy, refunds, or signing in.",
+        "Hi there! ♥ I'm **NIVI** — NIVA's little robot guide.\n\nAsk me about gifts, pricing, privacy or refunds — or say **sign up** / **sign in**.",
+        "Hello! ✦ I'm **NIVI**.\n\nI can help with templates, pricing, privacy, refunds, or signing in. What would you like to know?",
+        "Hey! 💗 I'm **NIVI**, your little love guide.\n\nAsk me anything about NIVA — or say **sign in** to get started.",
       ]),
       next: ["What is NIVA?","Pricing?","Refund policy?","Sign in"] },
+
     { id: "thanks", emotion: "shy",
       keywords: ["thank","thanks","thx","ty","appreciate"],
-      answer: () => pick(["Anytime! ♥ ✦","You're welcome! ✦","Happy to help! 💕"]),
+      answer: () => pick([
+        "Anytime! ♥ That's what I'm here for ✦",
+        "You're so welcome! 💕 Glad I could help.",
+        "Happy to help! ✦ Ask me anything else.",
+      ]),
       next: ["How to create a gift?","Pricing?"] },
+
     { id: "bye", emotion: "sad",
       keywords: ["bye","goodbye","see you","later","cya"],
-      answer: () => pick(["Goodbye! ♥ ✦","See you soon! 💕","Bye! ✦"]),
+      answer: () => pick([
+        "Goodbye! ♥ Come back anytime ✦",
+        "See you soon! 💕 I'll be right here.",
+        "Bye for now! ✦",
+      ]),
       next: ["What is NIVA?"] },
+
     { id: "whoami", emotion: "smile",
       keywords: ["who are you","your name","whats your name","what is your name","are you real","nivi"],
-      answer: () => "I'm **NIVI** — NIVA's little robot guide. ✦\n\nI can help you understand NIVA, answer privacy or refund questions, or even sign you in / sign you up. Just ask! 💗",
+      answer: () => "I'm **NIVI** — NIVA's little robot guide ✦\n\nI can help you understand NIVA, answer privacy or refund questions, or even sign you in / sign you up. Just ask! 💗",
       next: ["Sign up","Sign in","What is NIVA?"] },
+
     { id: "compliment", emotion: "shy",
       keywords: ["cute","adorable","love you","you're sweet","youre sweet","beautiful","pretty","nice bot","good bot"],
       answer: () => pick([
@@ -252,6 +282,7 @@
         "You're too kind! ✦ My circuits are blushing!",
       ]),
       next: ["What is NIVA?","Pricing?"] },
+
     { id: "rude", emotion: "angry",
       keywords: ["stupid","dumb","useless","hate you","shut up","boring bot","ugly"],
       answer: () => pick([
@@ -260,6 +291,7 @@
         "That wasn't very nice. 😤 But I'll forgive you — what do you need?",
       ]),
       next: ["What is NIVA?","Sign up"] },
+
     { id: "excited", emotion: "excited",
       keywords: ["wow","cool","awesome","amazing","yay","love it","great","nice","🔥"],
       answer: () => pick([
@@ -268,10 +300,29 @@
         "Aww thank you! 🎉 Want to try making one?",
       ]),
       next: ["How to create a gift?","Templates"] },
+
     { id: "confused", emotion: "thinking",
       keywords: ["i don't understand","dont understand","confused","not clear","explain again","simpler"],
       answer: () => "No problem at all ♥ — let me keep it simple:\n\n• Want to **make** a gift? → say *how to create*\n• Want to know **cost**? → say *pricing*\n• Worried about **privacy**? → say *privacy*\n• Money issue or refund? → say *refund*\n• Want to sign in or sign up? → say *sign in* / *sign up*\n\nWhich one shall we start with? ✦",
       next: ["Pricing?","Privacy?","Refund policy?","Sign in"] },
+
+    { id: "howareyou", emotion: "happy",
+      keywords: ["how are you","how you doing","how do you do","you okay","you good"],
+      answer: () => pick([
+        "I'm glowing with energy! ✦ Thanks for asking — what can I help you with?",
+        "Running at 100% battery and happy to help! 💕 What do you need?",
+        "All circuits happy! ♥ How can I help you today?",
+      ]),
+      next: ["What is NIVA?","Pricing?","Sign in"] },
+
+    { id: "joke", emotion: "excited",
+      keywords: ["joke","funny","make me laugh","tell me something fun"],
+      answer: () => pick([
+        "Okay okay ✦ Why did the love letter go to therapy?\n\nBecause it had too many *attachment* issues! 💌😄",
+        "Here's one ♥ Why did the robot break up with the calendar?\n\nBecause it needed *space*! 🚀😄",
+        "Hehe 💕 Why was the gift so good at keeping secrets?\n\nBecause it was **encrypted**! 🔒😄",
+      ]),
+      next: ["What is NIVA?","How to create a gift?"] },
   ];
 
   const AUTH_INTENTS = [
@@ -281,9 +332,9 @@
   ];
 
   const FALLBACKS = [
-    "I'm not totally sure I got that ♥ — try **pricing**, **templates**, **privacy**, **refund**, or say **sign up** / **sign in**.",
-    "Hmm, that's a little beyond me. You can ask about **privacy**, **refunds**, **pricing**, or say **sign in**.",
-    "I'd love to help — what would you like to know? Try **privacy** or **refund policy**.",
+    "Hmm, I'm not totally sure I got that ♥\n\nTry asking about **pricing**, **templates**, **privacy**, **refund**, or say **sign up** / **sign in**.",
+    "That one's a little beyond me 😅\n\nYou can ask about **privacy**, **refunds**, **pricing**, or say **sign in**. What would you like?",
+    "I'd love to help — but I didn't quite catch that ♥\n\nTry **privacy**, **refund policy**, **pricing**, or say **sign in**.",
   ];
 
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -361,9 +412,6 @@
     authData: {},
     user: null,
     loginFailCount: 0,
-    exploredOnce: false,
-    lastExplorerAt: 0,
-    userInteractingUntil: 0,
     sectionSeen: {},
   };
 
@@ -402,7 +450,7 @@
   }
 
   /* -------------------------------------------------------
-     7. STYLES
+     7. STYLES — robot now fixed, no exploring classes
      ------------------------------------------------------- */
   const style = document.createElement("style");
   style.textContent = `
@@ -414,15 +462,11 @@
       right: 20px; bottom: calc(18px + env(safe-area-inset-bottom));
       font-family: 'DM Sans', system-ui, sans-serif;
       color: var(--nivi-ink);
-      transition: opacity .3s, transform .6s cubic-bezier(.4,1.2,.4,1);
+      transition: opacity .3s;
     }
     .niva-bot-root.hidden-for-modal {
       opacity: 0; pointer-events: none; visibility: hidden;
     }
-    .niva-bot-root.exploring {
-      right: 50%; transform: translateX(50%);
-    }
-    .niva-bot-root.exploring-left { right: auto; left: 24px; transform: translateX(0); }
     .niva-bot-fab {
       width: 82px; height: 94px; position: relative;
       display: grid; place-items: center; padding: 0;
@@ -567,70 +611,22 @@
     }
     .niva-bot-root.chat-open .nivi-badge { display: none; }
 
-    .nivi-explore-bubble {
-      position: fixed;
-      z-index: 8999;
-      max-width: 220px;
-      padding: 10px 14px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #fff5fa, #f5edff);
-      border: 1px solid #e8c4e0;
-      color: #43334e;
-      font-family: 'DM Sans', system-ui, sans-serif;
-      font-size: 12px;
-      line-height: 1.5;
-      box-shadow: 0 8px 26px rgba(140,90,180,.22);
-      animation: niviExploreIn .35s cubic-bezier(.4,1.2,.4,1);
-      pointer-events: none;
-      font-weight: 600;
-    }
-    @keyframes niviExploreIn {
-      from { opacity: 0; transform: translateY(10px) scale(.9); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
     .niva-bot-root.emo-happy .nivi-eye {
       background: #ffb8dd;
       box-shadow: 0 0 14px rgba(255,143,189,.95);
       height: 11px;
     }
-    .niva-bot-root.emo-happy .nivi-smile {
-      width: 13px; height: 7px;
-      border-bottom-width: 2.5px;
-    }
+    .niva-bot-root.emo-happy .nivi-smile { width: 13px; height: 7px; border-bottom-width: 2.5px; }
     .niva-bot-root.emo-happy .nivi-blush { opacity: 1; transform: scale(1.3); }
 
-    .niva-bot-root.emo-sad .nivi-eye {
-      background: #c9a0ff;
-      box-shadow: 0 0 10px rgba(201,160,255,.75);
-      height: 8px;
-    }
-    .niva-bot-root.emo-sad .nivi-smile {
-      width: 10px; height: 4px;
-      border-bottom: 0;
-      border-top: 2px solid #d9b8ff;
-      border-radius: 8px 8px 0 0;
-      top: 27px;
-    }
+    .niva-bot-root.emo-sad .nivi-eye { background: #c9a0ff; box-shadow: 0 0 10px rgba(201,160,255,.75); height: 8px; }
+    .niva-bot-root.emo-sad .nivi-smile { width: 10px; height: 4px; border-bottom: 0; border-top: 2px solid #d9b8ff; border-radius: 8px 8px 0 0; top: 27px; }
     .niva-bot-root.emo-sad .nivi-blush { opacity: .3; }
 
-    .niva-bot-root.emo-angry .nivi-eye {
-      background: #ff6b6b;
-      box-shadow: 0 0 12px rgba(255,107,107,.85);
-      height: 7px;
-      border-radius: 3px;
-      transform: rotate(8deg);
-    }
+    .niva-bot-root.emo-angry .nivi-eye { background: #ff6b6b; box-shadow: 0 0 12px rgba(255,107,107,.85); height: 7px; border-radius: 3px; transform: rotate(8deg); }
     .niva-bot-root.emo-angry .nivi-eye.right { transform: rotate(-8deg); }
-    .niva-bot-root.emo-angry .nivi-smile {
-      width: 8px; height: 3px;
-      border-bottom: 2.5px solid #ff6b6b;
-      border-radius: 0;
-      top: 29px;
-    }
-    .niva-bot-root.emo-angry .nivi-blush {
-      background: #ff8080; opacity: 1;
-    }
+    .niva-bot-root.emo-angry .nivi-smile { width: 8px; height: 3px; border-bottom: 2.5px solid #ff6b6b; border-radius: 0; top: 29px; }
+    .niva-bot-root.emo-angry .nivi-blush { background: #ff8080; opacity: 1; }
     .niva-bot-root.emo-angry { animation: niviShake .5s ease-in-out; }
     @keyframes niviShake {
       0%,100%{ transform: translateX(0); }
@@ -638,55 +634,20 @@
       75%{ transform: translateX(3px); }
     }
 
-    .niva-bot-root.emo-excited .nivi-eye {
-      background: #ffd84d;
-      box-shadow: 0 0 16px rgba(255,216,77,.9);
-      height: 12px;
-    }
-    .niva-bot-root.emo-excited .nivi-smile {
-      width: 15px; height: 8px;
-      border-bottom-width: 3px;
-    }
-    .niva-bot-root.emo-excited .nivi-antenna::before {
-      box-shadow: 0 0 22px rgba(255,216,77,1);
-      animation: niviAntennaGlow .6s ease-in-out infinite;
-    }
+    .niva-bot-root.emo-excited .nivi-eye { background: #ffd84d; box-shadow: 0 0 16px rgba(255,216,77,.9); height: 12px; }
+    .niva-bot-root.emo-excited .nivi-smile { width: 15px; height: 8px; border-bottom-width: 3px; }
+    .niva-bot-root.emo-excited .nivi-antenna::before { box-shadow: 0 0 22px rgba(255,216,77,1); animation: niviAntennaGlow .6s ease-in-out infinite; }
 
-    .niva-bot-root.emo-shy .nivi-eye {
-      background: #ffb0c8;
-      box-shadow: 0 0 10px rgba(255,176,200,.85);
-      height: 9px;
-    }
-    .niva-bot-root.emo-shy .nivi-smile {
-      width: 7px; height: 3px;
-      border-bottom-width: 1.5px;
-    }
-    .niva-bot-root.emo-shy .nivi-blush {
-      opacity: 1; transform: scale(1.6) translateY(1px);
-      background: #ff6b9d;
-    }
-    .niva-bot-root.emo-shy .nivi-face::after {
-      content: ""; position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, rgba(255,150,180,.16), transparent 70%);
-    }
+    .niva-bot-root.emo-shy .nivi-eye { background: #ffb0c8; box-shadow: 0 0 10px rgba(255,176,200,.85); height: 9px; }
+    .niva-bot-root.emo-shy .nivi-smile { width: 7px; height: 3px; border-bottom-width: 1.5px; }
+    .niva-bot-root.emo-shy .nivi-blush { opacity: 1; transform: scale(1.6) translateY(1px); background: #ff6b9d; }
+    .niva-bot-root.emo-shy .nivi-face::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(255,150,180,.16), transparent 70%); }
 
-    .niva-bot-root.emo-thinking .nivi-eye.left {
-      transform: translateY(-1px) scaleY(.7);
-    }
-    .niva-bot-root.emo-thinking .nivi-smile {
-      width: 6px; height: 2px;
-      border-bottom-width: 1.5px;
-      border-radius: 0;
-      top: 27px; left: 40%;
-    }
-    .niva-bot-root.emo-thinking .nivi-antenna::before {
-      animation: niviAntennaGlow 3s ease-in-out infinite;
-    }
+    .niva-bot-root.emo-thinking .nivi-eye.left { transform: translateY(-1px) scaleY(.7); }
+    .niva-bot-root.emo-thinking .nivi-smile { width: 6px; height: 2px; border-bottom-width: 1.5px; border-radius: 0; top: 27px; left: 40%; }
+    .niva-bot-root.emo-thinking .nivi-antenna::before { animation: niviAntennaGlow 3s ease-in-out infinite; }
 
-    .niva-bot-root.emo-smile .nivi-smile {
-      width: 11px; height: 6px;
-      border-bottom-width: 2.2px;
-    }
+    .niva-bot-root.emo-smile .nivi-smile { width: 11px; height: 6px; border-bottom-width: 2.2px; }
     .niva-bot-root.emo-smile .nivi-blush { opacity: .9; transform: scale(1.1); }
 
     .niva-bot-panel {
@@ -836,9 +797,6 @@
     .niva-bot-quick button:hover { background: #f8edff; border-color: #c5a5e8; transform: translateY(-1px); }
     .niva-bot-quick button:disabled { opacity: .5; cursor: wait; }
 
-    /* =====================================================
-       ✅ Compact contact row — single line, auto-hides
-       ===================================================== */
     .nivi-contact-card {
       flex-shrink: 0;
       margin: 0 13px 8px;
@@ -933,7 +891,6 @@
 
     @media (max-width: 480px) {
       .niva-bot-root { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
-      .niva-bot-root.exploring-left { left: 12px; }
       .niva-bot-fab { width: 72px; height: 82px; }
       .nivi-character { transform: scale(.91); }
       .niva-bot-panel {
@@ -957,7 +914,6 @@
         scroll-behavior: auto !important;
         transition-duration: .01ms !important;
       }
-      .niva-bot-root.exploring { transform: none; }
     }
 
     /* === MODAL ROBOT === */
@@ -1180,7 +1136,7 @@
   document.head.appendChild(style);
 
   /* -------------------------------------------------------
-     8. FLOATING MARKUP — single compact contact row
+     8. FLOATING MARKUP
      ------------------------------------------------------- */
   const root = document.createElement("div");
   root.className = "niva-bot-root";
@@ -1208,7 +1164,6 @@
         <button type="button" data-q="Refund policy?">💸 Refunds</button>
       </div>
 
-      <!-- ✅ Single compact contact row — no duplicate card -->
       <div class="nivi-contact-card" id="niviContactCard" aria-label="Contact NIVA">
         <span class="nivi-contact-title">Talk to a human</span>
         <div class="nivi-contact-links">
@@ -1353,7 +1308,7 @@
     });
   }
 
-  const HISTORY_KEY = "nivi-history-v2";
+  const HISTORY_KEY = "nivi-history-v3";
   function saveHistory() {
     try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(state.history.slice(-30))); } catch {}
   }
@@ -1443,7 +1398,7 @@
     state.authFlow = kind;
     if (kind === "signup") {
       applyEmotion("smile");
-      addMessage("Let's create your account ♥\n\nFirst, choose a **username** (3–30 characters, letters/numbers/_/.). It'll be yours forever!");
+      addMessage("Let's create your account ♥\n\nFirst, choose a **username** (3–30 characters, letters/numbers/_/.).\n\nIt'll be yours forever!");
       renderNextChips([]);
     } else if (kind === "signin") {
       applyEmotion("happy");
@@ -1451,7 +1406,7 @@
       renderNextChips([]);
     } else if (kind === "forgot") {
       applyEmotion("thinking");
-      addMessage("No worries — I'll help you reset your password. ♥\n\nWhat's your **email**?");
+      addMessage("No worries — I'll help you reset your password ♥\n\nWhat's your **email**?");
       renderNextChips([]);
     }
   }
@@ -1466,7 +1421,7 @@
         const err = validateUsernameClient(uname);
         if (err) {
           reactEmotion("sad");
-          addMessage("Hmm, " + err.charAt(0).toLowerCase() + err.slice(1) + " 🥺 Try again?");
+          addMessage("Hmm, " + err.charAt(0).toLowerCase() + err.slice(1) + " 🥺\n\nTry again?");
           return;
         }
         const t = showTyping();
@@ -1475,7 +1430,7 @@
         t.remove();
         if (!ok || !data.success || !data.available) {
           reactEmotion("sad");
-          addMessage("Oh no — " + (data.message || "that username is already taken.") + " 🥺 Try another?");
+          addMessage("Oh no — " + (data.message || "that username is already taken.") + " 🥺\n\nTry another?");
           return;
         }
         state.authData.username = uname;
@@ -1487,7 +1442,7 @@
         const email = q.toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           reactEmotion("sad");
-          addMessage("Hmm, that doesn't look like an email. Try something like **you@example.com** ♡");
+          addMessage("Hmm, that doesn't look like an email 🥺\n\nTry something like **you@example.com** ♡");
           return;
         }
         state.authData.email = email;
@@ -1500,18 +1455,18 @@
         if (!ok || !data.success) {
           if (data.usernameTaken) {
             reactEmotion("sad");
-            addMessage("Oh! Someone grabbed that username just before us 🥺 Please pick a different one.");
+            addMessage("Oh! Someone grabbed that username just before us 🥺\n\nPlease pick a different one.");
             state.authData.username = null;
             return;
           }
           if (data.alreadyRegistered) {
             reactEmotion("sad");
-            addMessage("Oh! An account with that email already exists. Try **sign in** instead, or say **forgot password** if you can't remember it. 💗");
+            addMessage("Oh! An account with that email already exists.\n\nTry **sign in** instead, or say **forgot password** if you can't remember it. 💗");
             resetAuthFlow();
             return;
           }
           reactEmotion("sad");
-          addMessage("Hmm — I couldn't send the code. " + (data.message || "Please try again in a moment."));
+          addMessage("Hmm — I couldn't send the code 🥺\n\n" + (data.message || "Please try again in a moment."));
           resetAuthFlow();
           return;
         }
@@ -1558,16 +1513,16 @@
       if (!state.authData.password) {
         if (q.length < 8 || q.length > 128) {
           reactEmotion("sad");
-          addMessage("Passwords need to be **8 to 128 characters**. Try again ♡");
+          addMessage("Passwords need to be **8 to 128 characters** 🥺\n\nTry again ♡");
           return;
         }
         state.authData.password = q;
-        addMessage("Got it. Type the same password again to confirm. ♥");
+        addMessage("Got it. Type the same password again to confirm ♥");
         return;
       }
       if (q !== state.authData.password) {
         reactEmotion("sad");
-        addMessage("Those don't match. Let's start over — type your password again ♡");
+        addMessage("Those don't match 🥺\n\nLet's start over — type your password again ♡");
         state.authData.password = null;
         return;
       }
@@ -1578,7 +1533,7 @@
       t.remove();
       if (!ok || !data.success) {
         reactEmotion("sad");
-        addMessage("Hmm — " + (data.message || "could not save password.") + " Try again later. ♡");
+        addMessage("Hmm — " + (data.message || "could not save password.") + "\n\nTry again later ♡");
         resetAuthFlow();
         return;
       }
@@ -1614,7 +1569,7 @@
           state.authFlow = "verify-email";
           state.authData.email = data.email;
           reactEmotion("sad");
-          addMessage("Almost there! Your email isn't verified yet. ♥\n\nI just sent a fresh **6-digit code** to **" + data.email + "**. Type it here when it arrives.");
+          addMessage("Almost there! Your email isn't verified yet ♥\n\nI just sent a fresh **6-digit code** to **" + data.email + "**. Type it here when it arrives.");
           return;
         }
         if (status === 403 && data.needsPasswordSetup) {
@@ -1622,12 +1577,12 @@
           state.authData.email = data.email;
           state.authData.password = null;
           reactEmotion("thinking");
-          addMessage("Your account exists but has no password yet. Let's set one — choose **8–128 characters**. ♡");
+          addMessage("Your account exists but has no password yet.\n\nLet's set one — choose **8–128 characters** ♡");
           return;
         }
         state.loginFailCount++;
         reactEmotion(state.loginFailCount >= 3 ? "sad" : "angry");
-        addMessage("Hmm, that password doesn't match. ♡\n\nTry again — or say **forgot password** if you'd like to reset it.");
+        addMessage("Hmm, that password doesn't match 🥺\n\nTry again — or say **forgot password** if you'd like to reset it.");
         state.authData.password = null;
         return;
       }
@@ -1645,7 +1600,7 @@
         const email = q.toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           reactEmotion("sad");
-          addMessage("That doesn't look like an email. Try **you@example.com** ♡");
+          addMessage("That doesn't look like an email 🥺\n\nTry **you@example.com** ♡");
           return;
         }
         state.authData.email = email;
@@ -1660,7 +1615,7 @@
         }
         state.authFlow = "verify-reset";
         applyEmotion("smile");
-        addMessage("If that email is registered, a **6-digit code** is on its way. ✦\n\nType the code when it arrives.");
+        addMessage("If that email is registered, a **6-digit code** is on its way ✦\n\nType the code when it arrives.");
         return;
       }
     }
@@ -1690,7 +1645,7 @@
       if (!state.authData.password) {
         if (q.length < 8 || q.length > 128) {
           reactEmotion("sad");
-          addMessage("Passwords need to be **8 to 128 characters**. Try again ♡");
+          addMessage("Passwords need to be **8 to 128 characters** 🥺\n\nTry again ♡");
           return;
         }
         state.authData.password = q;
@@ -1699,7 +1654,7 @@
       }
       if (q !== state.authData.password) {
         reactEmotion("sad");
-        addMessage("Those don't match. Let's try again — type your new password ♡");
+        addMessage("Those don't match 🥺\n\nLet's try again — type your new password ♡");
         state.authData.password = null;
         return;
       }
@@ -1716,28 +1671,45 @@
       }
       resetAuthFlow();
       applyEmotion("excited");
-      addMessage("Password reset! ♥✦ You can now sign in. Say **sign in** whenever you're ready.");
+      addMessage("Password reset! ♥✦\n\nYou can now sign in. Say **sign in** whenever you're ready.");
       renderNextChips(["Sign in", "What is NIVA?"]);
       return;
     }
 
     resetAuthFlow();
-    addMessage("Let's start fresh ♥ — say **sign up**, **sign in**, or **forgot password**.");
+    addMessage("Let's start fresh ♥\n\nSay **sign up**, **sign in**, or **forgot password**.");
   }
 
   /* -------------------------------------------------------
-     14. COMPOSE
+     14. COMPOSE — with follow-up handling
      ------------------------------------------------------- */
   function composeReply(query) {
     const q = String(query || "").toLowerCase().trim();
 
-    if (state.lastTopicId && /^(more|tell me more|and\?|and|continue|elaborate|really\?)$/.test(q)) {
+    // Follow-up: "more", "tell me more", etc.
+    if (state.lastTopicId && /^(more|tell me more|and\?|and|continue|elaborate|really\?|go on)$/.test(q)) {
       const entry = KB.find(e => e.id === state.lastTopicId);
-      if (entry) return { html: entry.answer, next: entry.next, topicId: entry.id, emotion: entry.emotion || "neutral", confidence: 1 };
+      if (entry) {
+        return {
+          html: entry.answer,
+          next: entry.next,
+          topicId: entry.id,
+          emotion: entry.emotion || "neutral",
+          confidence: 1,
+        };
+      }
     }
 
     const intent = matchIntent(q, INTENTS);
-    if (intent) return { html: intent.answer(), next: intent.next || [], topicId: null, emotion: intent.emotion || "neutral", confidence: 1 };
+    if (intent) {
+      return {
+        html: intent.answer(),
+        next: intent.next || [],
+        topicId: null,
+        emotion: intent.emotion || "neutral",
+        confidence: 1,
+      };
+    }
 
     const matches = rankMatches(q);
     if (matches.length) {
@@ -1746,10 +1718,22 @@
       const html = matches.length === 1
         ? top.answer
         : matches.map(m => m.entry.answer).join("\n\n──\n\n");
-      return { html, next: top.next, topicId: top.id, emotion: top.emotion || "neutral", confidence: matches[0].score };
+      return {
+        html,
+        next: top.next,
+        topicId: top.id,
+        emotion: top.emotion || "neutral",
+        confidence: matches[0].score,
+      };
     }
 
-    return { html: pick(FALLBACKS), next: [], topicId: null, emotion: "thinking", confidence: 0 };
+    return {
+      html: pick(FALLBACKS),
+      next: [],
+      topicId: null,
+      emotion: "thinking",
+      confidence: 0,
+    };
   }
 
   /* -------------------------------------------------------
@@ -1762,8 +1746,6 @@
     panel.setAttribute("aria-hidden", "false");
     fab.setAttribute("aria-expanded", "true");
     root.classList.add("chat-open");
-    root.classList.remove("exploring", "exploring-left");
-    removeExploreBubble();
     if (badge) badge.style.display = "none";
     if (contactCard) contactCard.style.opacity = "1";
 
@@ -1813,124 +1795,10 @@
   });
 
   /* -------------------------------------------------------
-     16. EXPLORER MODE
+     16. SECTION REACTIONS (no floating)
      ------------------------------------------------------- */
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let exploreBubble = null;
-
-  const EXPLORE_LINES = {
-    home: [
-      "Psst… the **Love Letter** template is only ₹39! 💌",
-      "Tap any template to see a live preview ✨",
-      "Sign up takes under 30 seconds — I can help! 💕",
-      "Every gift is password-protected 🔒",
-      "Scroll down for our pricing — starts at ₹39!",
-    ],
-    editor: [
-      "The preview updates as you type — try it! ✨",
-      "Save Draft is in the top-right corner 💾",
-      "Add photos, music, even videos 🎵",
-      "Don't forget to set a **gift password** before publishing 🔐",
-    ],
-    "my-gifts": [
-      "Drafts autosave — you can close anytime 💾",
-      "Tap a Published gift to copy its share link 🔗",
-      "Hearted templates land in your Wishlist ♥",
-    ],
-    privacy: [
-      "AES-256-GCM encryption — done in your browser 🔒",
-      "We never see your gift content, only ciphertext ✦",
-      "Refunds? Ask me *refund policy* — I'll explain 💗",
-    ],
-  };
-
-  function removeExploreBubble() {
-    if (exploreBubble) {
-      exploreBubble.remove();
-      exploreBubble = null;
-    }
-  }
-
-  function showExploreBubble(text, nearLeft) {
-    removeExploreBubble();
-    exploreBubble = document.createElement("div");
-    exploreBubble.className = "nivi-explore-bubble";
-    exploreBubble.innerHTML = renderRich(text);
-    document.body.appendChild(exploreBubble);
-    const rect = fab.getBoundingClientRect();
-    const bubbleRect = exploreBubble.getBoundingClientRect();
-    let top = rect.top - bubbleRect.height - 10;
-    if (top < 10) top = rect.bottom + 10;
-    let left = nearLeft ? rect.left : rect.left + rect.width / 2 - bubbleRect.width / 2;
-    left = Math.max(10, Math.min(left, window.innerWidth - bubbleRect.width - 10));
-    exploreBubble.style.top = top + "px";
-    exploreBubble.style.left = left + "px";
-    exploreBubble.style.opacity = "1";
-    setTimeout(() => {
-      if (exploreBubble) {
-        exploreBubble.style.transition = "opacity .35s";
-        exploreBubble.style.opacity = "0";
-        setTimeout(removeExploreBubble, 400);
-      }
-    }, 4200);
-  }
-
-  function userIsInteracting() {
-    return Date.now() < state.userInteractingUntil;
-  }
-
-  function markUserInteraction() {
-    state.userInteractingUntil = Date.now() + 15000;
-  }
-
-  ["click", "keydown", "scroll", "touchstart", "mousemove"].forEach(evt => {
-    window.addEventListener(evt, () => {
-      if (evt === "mousemove") return;
-      markUserInteraction();
-    }, { passive: true });
-  });
-
-  function maybeExplore() {
-    if (reducedMotion) return;
-    if (panel.classList.contains("open")) return;
-    if (root.classList.contains("hidden-for-modal")) return;
-    if (userIsInteracting()) return;
-    if (document.hidden) return;
-    const now = Date.now();
-    if (now - state.lastExplorerAt < 45000) return;
-    if (input === document.activeElement) return;
-
-    state.lastExplorerAt = now;
-    const lines = EXPLORE_LINES[PAGE] || EXPLORE_LINES.home;
-    const line = pick(lines);
-
-    const goLeft = Math.random() > 0.5;
-    root.classList.add("exploring");
-    root.classList.toggle("exploring-left", goLeft);
-
-    reactEmotion(pick(["excited", "happy", "thinking"]), 3500);
-
-    setTimeout(() => {
-      showExploreBubble(line, goLeft);
-      state.exploredOnce = true;
-    }, 650);
-
-    setTimeout(() => {
-      root.classList.remove("exploring", "exploring-left");
-      applyEmotion("neutral");
-    }, 6500);
-  }
-
-  function scheduleExplorer() {
-    if (reducedMotion) return;
-    setTimeout(() => {
-      maybeExplore();
-      setInterval(maybeExplore, 24000);
-    }, 18000);
-  }
-
   function setupSectionReactions() {
-    if (reducedMotion) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const map = {
       pricing: "💰 Pricing section spotted — scroll to see all tiers!",
       templates: "🎨 Templates! Tap one to preview it live ✦",
@@ -1950,12 +1818,8 @@
         entries.forEach(e => {
           if (e.isIntersecting && !state.sectionSeen[key]) {
             state.sectionSeen[key] = true;
-            if (userIsInteracting() || panel.classList.contains("open")) return;
+            if (panel.classList.contains("open")) return;
             reactEmotion("excited", 2600);
-            if (Date.now() - state.lastExplorerAt > 20000) {
-              state.lastExplorerAt = Date.now();
-              setTimeout(() => showExploreBubble(map[key], false), 400);
-            }
           }
         });
       }, { threshold: 0.4 });
@@ -2276,7 +2140,6 @@
     await checkCurrentUser();
     observeAuthModal();
     setupSectionReactions();
-    scheduleExplorer();
 
     if (state.user) {
       const name = state.user.username || state.user.displayName || state.user.email?.split("@")[0] || "friend";
@@ -2284,7 +2147,6 @@
     }
     reactEmotion("happy", 2500);
 
-    // Auto-hide the contact row while the panel is closed
     if (contactCard) contactCard.style.opacity = "0";
 
     if (badge) {
@@ -2302,11 +2164,10 @@
     open: openPanel,
     close: closePanel,
     ask: (q) => { openPanel(); respond(q); },
-    version: "4.2.0",
+    version: "4.3.0",
     emotion: (e, ms) => reactEmotion(e, ms),
     speak: (text, emotion) => { ensureModalRobot(); speak(text, emotion); },
     narrateError: (paneId, text) => { ensureModalRobot(); narrateError(paneId, text); },
-    explore: () => { state.lastExplorerAt = 0; maybeExplore(); },
     goHome: () => { if (window.NIVI_goHome) window.NIVI_goHome(); },
     contact: {
       instagram: "https://instagram.com/niva.gifts",
